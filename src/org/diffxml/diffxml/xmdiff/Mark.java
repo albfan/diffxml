@@ -27,11 +27,12 @@ import org.diffxml.diffxml.*;
 import org.diffxml.diffxml.fmes.NodePos;
 import org.diffxml.diffxml.fmes.Delta;
 import org.diffxml.diffxml.fmes.Pos;
+import org.diffxml.diffxml.fmes.Writer;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.apache.xerces.dom3.Node3;
+import org.apache.xerces.dom.NodeImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.traversal.*;
 import org.w3c.dom.NodeList;
@@ -78,7 +79,7 @@ while (op!=null)
                        		(doc2.getDocumentElement(), ((Element)op).getAttribute("node"));
 		
 			//Mark the node to be inserted in the tree
-			((Node3) node).setUserData("insert","true",null);
+			((NodeImpl) node).setUserData("insert","true",null);
 			}
 		 catch (TransformerException e) {
 			System.err.println("Create could not find node to insert: "+ ((Element)op).getAttribute("node"));}
@@ -96,7 +97,7 @@ while (op!=null)
 				{
 				System.err.println("Could not find node: " +((Element)op).getAttribute("node"));
 				}
-			((Node3) node).setUserData("delete","true",null);
+			((NodeImpl) node).setUserData("delete","true",null);
 			}
 		catch (TransformerException e) {
                         System.err.println("Create could not find node to delete:" + ((Element)op).getAttribute("node"));}
@@ -123,7 +124,7 @@ if (kids!=null)
                 }
         }
 
-if (((Node3)n).getUserData("delete")!=null)
+if (((NodeImpl)n).getUserData("delete")!=null)
 	{
 	//Output delete
 	Pos del_pos=NodePos.get(n);
@@ -136,7 +137,7 @@ public static void ins(Node n, Document es)
 //Think we want an in-order traversal here
 
 //Check if node is inserted
-if (((Node3)n).getUserData("insert")!=null)
+if (((NodeImpl)n).getUserData("insert")!=null)
         {
         //Output insert
 
@@ -159,7 +160,7 @@ if (((Node3)n).getUserData("insert")!=null)
                 if ( kids.item(i).getNodeType()==Node.TEXT_NODE && (i>0) && kids.item(i-1).getNodeType()==Node.TEXT_NODE)
                 	index--;
  
-		if ( ((Node3) n).isSameNode(kids.item(i)))
+		if ( ((NodeImpl) n).isSameNode(kids.item(i)))
                 	break;
  
                 }

@@ -30,7 +30,8 @@ import org.diffxml.diffxml.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element; 
-import org.apache.xerces.dom3.Node3;
+//import org.apache.xerces.dom3.Node3;
+import org.apache.xerces.dom.NodeImpl;
 import org.w3c.dom.NodeList; 
 
 //Class to handle adding operations to output delta
@@ -74,7 +75,7 @@ Node par=n;
 int p=0, itmp=0;
 int left=0, right=0;
 int stack[]=new int[20]; //Just leave this as a static array for speed and ease
-Node3 root=(Node3) n.getOwnerDocument().getDocumentElement();
+NodeImpl root=(NodeImpl) n.getOwnerDocument().getDocumentElement();
 Node con=es.createElement("context");
 
 //Move up num of parents, keeping track of domcn
@@ -86,7 +87,7 @@ for(p=0;p<=DiffFactory.PARENT_CONTEXT;p++)
         int cn=0;
         for (cn=0;cn<v.getLength();cn++)
 		{
-       		if ( ((Node3)v.item(cn)).isSameNode(par))
+       		if ( ((NodeImpl)v.item(cn)).isSameNode(par))
                        break;
 		}
 
@@ -111,7 +112,7 @@ if (!root.isSameNode(par))
         NodeList v=par.getChildNodes();
 	for (cn=0;cn<v.getLength();cn++)
 		{
-                if ( ((Node3)v.item(cn)).isSameNode(par))
+                if ( ((NodeImpl)v.item(cn)).isSameNode(par))
                        break;
 		}
 

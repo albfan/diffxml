@@ -40,7 +40,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.apache.xerces.dom3.Node3;
+//import org.apache.xerces.dom3.Node3;
 import org.apache.xerces.dom.NodeImpl;
 import org.w3c.dom.NodeList;
 import org.apache.xerces.parsers.DOMParser;

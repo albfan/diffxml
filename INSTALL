@@ -2,47 +2,73 @@ diffxml Version 0.92 ALPHA
 patchxml Version 0.92 ALPHA
  
 Install instructions for diffxml and patchxml
----------------------------------------------
+=============================================
 
 If you are reading this file, you should have downloaded and unzipped the 
 source code for diffxml.
 
-The lib directory contains the following third party jars needed by diffxml:
+Requirements:
+-------------
 
-From Apache Xerces and Xalan:
- 
-xalan.jar
-xercesImpl.jar
-xml-apis.jar
-xmlParserAPIs.jar
-xsltc.jar
- 
-From XPP3:
- 
-xpp3_1_0_8a.jar
+Java >= 1.4 (for logging). 
+Ant >= 1.5.4 (untested with older versions).
 
-You should add these jars and the directory this was installed to on your 
-classpath.
-You should then be able to build by compiling diffxml.java.
+The lib directory should contain the following jars:
 
-The easiest way of running the utilities is to edit the diffxml.sh and 
-patchxml.sh scripts so that $INSTALL_DIR points to the directory where 
-diffxml was installed, and $JAR_DIR points to a directory holding the 
-required jar files.
+   dom3-xercesImpl.jar
+   dom3-xml-apis.jar
+   xpp3_1_0_8a.jar
 
-Verify the scripts work by running:
+These files relate to Apache Xerces ( http://xml.apache.org/ ) and XPP3 
+( http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html ). 
+
+Building diffxml:
+-----------------
+
+To just compile the classes run:
+
+   $ant
+
+To build a jar file run:
+
+   $ant jarDiffXML
+
+Testing diffxml:
+----------------
+
+To do a small test to ensure correct compilation run:
+
+   $ ant quickTest
+
+For a fuller test:
+
+   $ ant fullTest
+
+
+Running diffxml:
+----------------
+
+The easiest way of running the utilities is to use the diffxml.sh and 
+patchxml.sh scripts. 
+
+First edit the files so that $DIFFXML_HOME points to the directory where
+diffxml was installed. 
+Next, verify the scripts work by running:
  
-diffxml.sh test1.xml test2.xml > out.xml
-patchxml.sh test1.xml out.xml > result
-diffxml.sh -q result test2.xml
+   $ diffxml.sh test1.xml test2.xml > out.xml
+   $ patchxml.sh test1.xml out.xml > result
+   $ diffxml.sh -q result test2.xml
  
 There should be no output, confirming the files are equivalent.
  
 You can then rename the scripts and add them to a public dir e.g:
  
-cp diffxml.sh /usr/local/bin/diffxml
-cp patchxml.sh /usr/local/bin/patchxml
+   $ cp diffxml.sh /usr/local/bin/diffxml
+   $ cp patchxml.sh /usr/local/bin/patchxml
  
+Finally...
+----------
+
 Please note that this is an unstable alpha release.
 diffxml and patchxml are released under the GNU GPL Version 2.
  
@@ -52,7 +78,7 @@ Good Luck.
 
 Adrian Mouat.
 
-13 December 2003.
+22 December 2003.
 
 ===================================
  

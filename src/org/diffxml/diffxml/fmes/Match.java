@@ -39,7 +39,7 @@ import java.util.StringTokenizer;
 
 import org.apache.xerces.dom.NodeImpl;
 import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.dom3.Node3;
+//import org.apache.xerces.dom3.Node3;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;

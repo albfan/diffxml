@@ -10,7 +10,7 @@
                    jarDiffXML     - packages classes as a jar
                    quickTest      - verifies that the build is working
                    clean          - deletes the build
-     Default target: jarDiffXML
+     Default target: compileDiffXML
   -->
 
 <project default="compileDiffXML" basedir=".">

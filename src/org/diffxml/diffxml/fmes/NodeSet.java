@@ -25,7 +25,6 @@ package org.diffxml.diffxml.fmes;
 
 import org.diffxml.*; 
 import org.w3c.dom.Node;
-import org.apache.xerces.dom3.Node3;
 import org.apache.xerces.dom.NodeImpl;
 import java.util.ArrayList;
 
@@ -35,9 +34,6 @@ public class NodeSet
 private ArrayList set= new ArrayList();
 public void add(Node x, Node y)
 {
-    //Took out cast to Node3
-    //10 oct
-//set.add((Node3) x);
 set.add((NodeImpl) x);
 set.add((NodeImpl) y);
 }
@@ -47,8 +43,6 @@ public void print_set()
 for (int i=0; i<set.size(); i=i+2)
 	{
 	//Print out each node
-	//System.out.println("matched " + ( (Node3) set.get(i)).getUserData("matched"));
-	//System.out.println("inorder " + ( (Node3) set.get(i)).getUserData("inorder"));
 	System.out.println("Node: " + ( (Node) set.get(i)).getNodeName());
 	PrintXML.print((Node) set.get(i));
 	System.out.println("Matches: " + ( (Node) set.get(i+1)).getNodeName());
