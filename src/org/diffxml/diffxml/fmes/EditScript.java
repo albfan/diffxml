@@ -143,7 +143,7 @@ public class EditScript
             final NodeSet matchings)
         {
         InsertPosition pos = findPos(x, matchings);
-        NodePos zPath = NodePos.set(z);
+        NodePos zPath = new NodePos(z);
 
         //Apply insert to doc1
         //The node we want to insert is the import of x with all
@@ -163,7 +163,7 @@ public class EditScript
 
         Delta.Insert(w, zPath.getXPath(), pos.numXPath, pos.charPosition, editScript);
 
-        Delta.addAttrsToDelta(x.getAttributes(), NodePos.set(w).getXPath(), editScript);
+        Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), editScript);
 
         return w;
         }
@@ -197,8 +197,8 @@ public class EditScript
         if (!NodeOps.checkIfSameNode(v, partnerY))
             {
             pos = findPos(x, matchings);
-            NodePos wPath = NodePos.set(w);
-            NodePos zPath = NodePos.set(z);
+            NodePos wPath = new NodePos(w);
+            NodePos zPath = new NodePos(z);
 
             //Following two statements may be unnecessary
             NodeOps.setInOrder(w);
@@ -339,7 +339,7 @@ public class EditScript
         if (!NodeOps.isMatched(n))
             {
             Element par = (Element) n.getParentNode();
-            NodePos delPos = NodePos.set(n);
+            NodePos delPos = new NodePos(n);
 
             Delta.Delete(n, delPos.getXPath(), delPos.getCharPos(),
                     delPos.getLength(), editScript);
@@ -478,9 +478,9 @@ public class EditScript
 
                 //Get partner and position
                 Node a = matchings.getPartner(xKids.item(i));
-                NodePos aPos = NodePos.set(a);
+                NodePos aPos = new NodePos(a);
 
-                NodePos wPos = NodePos.set(w);
+                NodePos wPos = new NodePos(w);
 
                 //Easiest to get context now
                 Element context = getContextBeforeMove(editScript, a);

@@ -45,17 +45,26 @@ public final class NodePos
     /** Character length of associated node.*/
     private int _length;
 
+    /** Child number of associated node.*/
+    private ChildNumber _cn;
+
     /**
      * Default constructor.
+     *
+     * @param n The node to find the position of
      */
 
-    private NodePos()
+    public NodePos(Node n)
         {
         //TODO: Find out why these init values!
 
         _path = "null";
         _charpos = -1;
         _length = -1;
+
+        _cn = new ChildNumber(n);
+
+        set(n);
         }
 
     /**
@@ -129,6 +138,8 @@ public final class NodePos
      *
      * Finds the character offset at which a node starts.
      *
+     * TODO: Findout what method is needed by
+     *
      * @param  siblings NodeList containing the given node and its siblings
      * @param  childNum The DOM position of the node within the list
      * @return          the character position of the node
@@ -156,6 +167,7 @@ public final class NodePos
      * Get the character position of a node.
      *
      * Finds the character offset at which a node starts.
+     * TODO: Findout what method is needed by
      *
      * @param n the node to find the position of
      * @return int the character offset of the node, starting at 1
@@ -169,41 +181,6 @@ public final class NodePos
         return getCharpos(siblings, cn);
         }
 
-    /**
-     * Determines whether XPath index should be incremented.
-     *
-     * Handles differences between DOM index and XPath index
-     *
-     * @param tag      the tag of the node we are looking for
-     * @param siblings the siblings of the node we are looking for
-     * @param i        the current position in siblings
-     * @return         true if index should be incremented
-     */
-
-    private static boolean incIndex(final String tag,
-            final NodeList siblings, final int i)
-        {
-        //TODO: Handle comments if needed.
-
-        Node currSib = siblings.item(i);
-
-        boolean inc = true;
-        if (DiffFactory.TAGNAMES)
-            {
-            if (!tag.equals(currSib.getNodeName()))
-                inc = false;
-            }
-
-        //Handle non-coalescing of text nodes
-        if (i > 0)
-            {
-            if (currSib.getNodeType() == Node.TEXT_NODE
-                    && siblings.item(i - 1).getNodeType() == Node.TEXT_NODE)
-                inc = false;
-            }
-
-        return inc;
-        }
 
     /**
      * Calculates the piece of XPath for the current position.
@@ -318,57 +295,36 @@ public final class NodePos
     /**
      * Calculates the XPath, length and character position of a node.
      *
-     * @param n the node to find attributes of
-     * @return object containing attributes of n
+     * @param n the node to find position of
+     * @return object containing position of n
      */
 
-    public static NodePos set(Node n)
+    public void set(Node n)
         {
-        NodePos nPos = new NodePos();
-        String xpath = "";
-        boolean top = true;
-        Node currSib = n;
-        Node root = n.getOwnerDocument().getDocumentElement();
 
         //TODO: Handle nulls better - throw exception?
+        //Shouldn't be handed nulls atall
+
         if (n == null)
-            return nPos;
+            return;
 
-        do
+        Node root = n.getOwnerDocument().getDocumentElement();
+        ChildNumber currChildNo = new ChildNumber(n);
+
+        String xpath = getXPath(n, currChildNo.getXPath(), true);
+
+        NodeList siblings = n.getParentNode().getChildNodes();
+        setCharPos(currChildNo.getDOM(), siblings, this);
+
+        while (!NodeOps.checkIfSameNode(root, n))
             {
-            DiffXML.log.fine("Entered XPath");
-            DiffXML.log.finer(n.getNodeName());
-
-            int index = 0;
-            NodeList siblings = n.getParentNode().getChildNodes();
-
-            int i;
-            for (i = 0; i < siblings.getLength(); i++)
-                {
-                if (incIndex(n.getNodeName(), siblings, i))
-                    index++;
-
-                if (NodeOps.checkIfSameNode(siblings.item(i), n))
-                    break;
-                }
-
-            currSib = siblings.item(i);
-            if (NodeOps.checkIfSameNode(currSib, n))
-                {
-                xpath = getXPath(currSib, index, top) + xpath;
-
-                if (top)
-                    {
-                    top = false;
-                    setCharPos(i, siblings, nPos);
-                    }
-                }
             n = n.getParentNode();
-            }
-        while (!NodeOps.checkIfSameNode(root, currSib));
 
-        nPos._path = xpath;
-        return nPos;
+            currChildNo.setChildNumber(n);
+            xpath = getXPath(n, currChildNo.getXPath(), false) + xpath;
+            }
+
+        _path = xpath;
         }
 }
 
