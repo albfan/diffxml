@@ -37,9 +37,42 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-public class XmDiff
+public class XmDiff extends Diff
 {
     private final static boolean OUTPUT_ARRAY=false;
+
+
+    public boolean diff(String f1, String f2)
+        {
+        try
+            {
+            xmdiff( f1, f2 );
+            }
+
+        catch (Exception e)
+            {
+            System.err.println("XmDiff failed: " + e);
+            System.exit(2);
+            }
+
+        return true;
+        }
+
+    public boolean diff(File f1, File f2)
+        {
+        try 
+            { 
+            xmdiff( f1.getPath(), f2.getPath() ); 
+            }
+
+        catch (Exception e)
+            {
+            System.err.println("XmDiff failed: " + e);
+            System.exit(2);
+            }
+
+        return true;
+        }
 
     public void xmdiff(String f1, String f2)
         throws XmlPullParserException, IOException

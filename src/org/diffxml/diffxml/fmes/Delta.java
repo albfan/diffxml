@@ -78,7 +78,7 @@ Node3 root=(Node3) n.getOwnerDocument().getDocumentElement();
 Node con=es.createElement("context");
 
 //Move up num of parents, keeping track of domcn
-for(p=0;p<=Fmes.PARENT_CONTEXT;p++)
+for(p=0;p<=DiffFactory.PARENT_CONTEXT;p++)
 	{
         Node tmp=par.getParentNode();
         //Get domcn of *previous* node
@@ -134,7 +134,7 @@ while (p>=1)
         if (! root.isSameNode(par))
       		{
                 NodeList par_sibs=par.getParentNode().getChildNodes();
-                left=stack[p]-Fmes.PARENT_SIBLING_CONTEXT;
+                left=stack[p]-DiffFactory.PARENT_SIBLING_CONTEXT;
                 if (left<0)
                        left=0;
 
@@ -159,7 +159,7 @@ while (p>=1)
 //Now par should be n
 //Add any sibling context
 NodeList sibs=n.getParentNode().getChildNodes();
-left=stack[0]-Fmes.SIBLING_CONTEXT;
+left=stack[0]-DiffFactory.SIBLING_CONTEXT;
 
 if (left<0)
 	left=0;
@@ -175,7 +175,7 @@ app_node.appendChild(op);
 //db.on=false;
 
 //Add right siblings
-right=stack[0]+Fmes.SIBLING_CONTEXT;
+right=stack[0]+DiffFactory.SIBLING_CONTEXT;
 if (right>=sibs.getLength())
 	right=sibs.getLength()-1;
 
@@ -192,9 +192,9 @@ while(itmp<=right)
 //Only a point if par_sib>0
 
 
-if (Fmes.PARENT_SIBLING_CONTEXT>0)
+if (DiffFactory.PARENT_SIBLING_CONTEXT>0)
 	{
-	for(p=1;p<=Fmes.PARENT_CONTEXT;p++)
+	for(p=1;p<=DiffFactory.PARENT_CONTEXT;p++)
 		{
 		par=n.getParentNode();
 
@@ -207,7 +207,7 @@ if (Fmes.PARENT_SIBLING_CONTEXT>0)
 		NodeList par_sibs=n.getParentNode().getChildNodes();
 		//Note that we now want to work outwards, not inwards
 		//Note that we corrupt the stack here!!
-		right=stack[p]+Fmes.PARENT_SIBLING_CONTEXT;
+		right=stack[p]+DiffFactory.PARENT_SIBLING_CONTEXT;
 		if (right>=par_sibs.getLength())
 			right=par_sibs.getLength()-1;
 
@@ -228,7 +228,7 @@ return (Element)con;
 public static void Insert(Node n, String parent, 
 		int childno, int charpos, Document es)
 {
-if (Fmes.DUL)
+if (DiffFactory.DUL)
 	{
 	Element ins=es.createElement("insert");
 	ins.setAttribute("parent",parent);
@@ -247,7 +247,7 @@ if (Fmes.DUL)
 
 	//Add any context information
 
-	if (Fmes.CONTEXT)
+	if (DiffFactory.CONTEXT)
 		ins=addContext(n, ins);
 	
 	es.getDocumentElement().appendChild(ins);
@@ -298,7 +298,7 @@ else
 
 public static void Delete(Node n, String path, int charpos, int length, Document es)
 {
-if (Fmes.DUL)
+if (DiffFactory.DUL)
 	{
 	Element del=es.createElement("delete");
 	del.setAttribute("node",path);
@@ -309,9 +309,9 @@ if (Fmes.DUL)
 	if (length!=-1)
 		del.setAttribute("length", (""+length) );
 
-	if (Fmes.REVERSE_PATCH)
+	if (DiffFactory.REVERSE_PATCH)
 		del=addRevContext(n, del);
-	else if (Fmes.CONTEXT)
+	else if (DiffFactory.CONTEXT)
 		del=addContext(n,  del);
 
 	es.getDocumentElement().appendChild(del);
@@ -347,9 +347,9 @@ if (ncharpos!=-1)
 mov.setAttribute("parent",parent);
 mov.setAttribute("childno", ( ""+childno));
 
-if (Fmes.REVERSE_PATCH)
+if (DiffFactory.REVERSE_PATCH)
 	addRevContext(n,mov);
-else if (Fmes.CONTEXT)
+else if (DiffFactory.CONTEXT)
 	{
 	Element con=es.createElement("context");
 	con.appendChild(mark);

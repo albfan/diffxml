@@ -62,20 +62,20 @@ Document es= new DocumentImpl();
 
 Element root = es.createElement("delta");
 //Append any context information
-if (Fmes.CONTEXT)
+if (DiffFactory.CONTEXT)
 	{
-	root.setAttribute("sib_context",""+Fmes.SIBLING_CONTEXT);
-	root.setAttribute("par_context",""+Fmes.PARENT_CONTEXT);
-	root.setAttribute("par_sib_context",""+Fmes.PARENT_SIBLING_CONTEXT);
+	root.setAttribute("sib_context",""+DiffFactory.SIBLING_CONTEXT);
+	root.setAttribute("par_context",""+DiffFactory.PARENT_CONTEXT);
+	root.setAttribute("par_sib_context",""+DiffFactory.PARENT_SIBLING_CONTEXT);
 	}
 
-if (Fmes.REVERSE_PATCH)
+if (DiffFactory.REVERSE_PATCH)
 	root.setAttribute("reverse_patch","true");
 
-if (!Fmes.ENTITIES)
+if (!DiffFactory.ENTITIES)
 	root.setAttribute("resolve_entities","false");	
 
-if (!Fmes.DUL)
+if (!DiffFactory.DUL)
 	{
 	//Change root to dul style
 	root=es.createElement("modifications");
@@ -198,7 +198,7 @@ while (!fifo.isEmpty())
 		String path;
 
 		//XPath different if expanding tagnames
-		if (Fmes.TAGNAMES && a_len!=0)
+		if (DiffFactory.TAGNAMES && a_len!=0)
 			{
 			//Find in order index of element
 			NodeList k=x.getParentNode().getChildNodes();	
@@ -302,7 +302,7 @@ while (!fifo.isEmpty())
 
 
 			Element mark=es.createElement("mark");
-                	if (Fmes.CONTEXT)
+                	if (DiffFactory.CONTEXT)
                        		{
                         	mark.appendChild(es.importNode(w,true));
                         	mark=Delta.addContext(w, mark);
@@ -512,7 +512,7 @@ for (int i=0; i<x_kids.getLength(); i++)
 		//For programming ease we actually want to get any old context now
 
 		Element mark=es.createElement("mark");
-		if (Fmes.CONTEXT)
+		if (DiffFactory.CONTEXT)
 			{
 			mark.appendChild(es.importNode(a,true));
 			mark=Delta.addContext(a, mark);

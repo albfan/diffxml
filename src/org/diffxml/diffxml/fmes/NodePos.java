@@ -97,7 +97,7 @@ do
 		x = (NodeImpl) kids.item(i);
 		//Increment index, unless text node following text node
 
-		if (Fmes.TAGNAMES)
+		if (DiffFactory.TAGNAMES)
 		    {
 		    if (tag.equals(x.getNodeName()))
 			index++;
@@ -118,7 +118,7 @@ do
 		if (x.isSameNode(n))
 			{
 			xpath="[" + index + "]" + xpath;
-			if (Fmes.TAGNAMES)
+			if (DiffFactory.TAGNAMES)
 				{
 				//special case for top node
 				if (top)

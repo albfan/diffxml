@@ -1,21 +1,21 @@
 /*
-   Program to difference two XML files
+Program to difference two XML files
 
-   Copyright (C) 2002  Adrian Mouat
+Copyright (C) 2003  Adrian Mouat
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 2
-   of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Author: Adrian Mouat
 email: amouat@postmaster.co.uk
@@ -23,13 +23,6 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml;
 
-import org.diffxml.diffxml.fmes.Fmes;
-import org.diffxml.diffxml.xmdiff.XmDiff;
-
-import org.xml.sax.SAXException;
-import org.apache.xerces.parsers.DOMParser;
-import org.w3c.dom.Document;
-import java.io.UnsupportedEncodingException;
 import java.io.File;
 import java.io.IOException;
 
@@ -50,6 +43,7 @@ public class DiffXML
 {
 
     private static final String VERSION = "0.92 ALPHA";
+
     //The files to be differenced
     private static String _file1;
     private static String _file2;
@@ -86,54 +80,54 @@ public class DiffXML
 
             //"wordy" arguments
             if (arg.equals("-brief"))
-                Fmes.BRIEF = true;
+                DiffFactory.BRIEF = true;
             else if (arg.equals("-ignore-all-whitespace"))
                 {
-                Fmes.IGNORE_ALL_WHITESPACE = true;
-                Fmes.IGNORE_WHITESPACE_NODES = true;
+                DiffFactory.IGNORE_ALL_WHITESPACE = true;
+                DiffFactory.IGNORE_WHITESPACE_NODES = true;
                 }
             else if (arg.equals("-ignore-leading-whitespace"))
                 {
-                Fmes.IGNORE_LEADING_WHITESPACE = true;
-                Fmes.IGNORE_WHITESPACE_NODES = true;
+                DiffFactory.IGNORE_LEADING_WHITESPACE = true;
+                DiffFactory.IGNORE_WHITESPACE_NODES = true;
                 }
             else if (arg.equals("-ignore-empty-nodes"))
-                Fmes.IGNORE_WHITESPACE_NODES = true;
+                DiffFactory.IGNORE_WHITESPACE_NODES = true;
             else if (arg.equals("-ignore-case"))
-                Fmes.IGNORE_CASE = true;
+                DiffFactory.IGNORE_CASE = true;
             else if (arg.equals("-ignore-comments"))
-                Fmes.IGNORE_COMMENTS = true;
+                DiffFactory.IGNORE_COMMENTS = true;
             else if (arg.equals("-ignore-processing-instructions"))
-                Fmes.IGNORE_PROCESSING_INSTRUCTIONS = true;
+                DiffFactory.IGNORE_PROCESSING_INSTRUCTIONS = true;
             else if (arg.equals("-version"))
                 printVersion();
             else if (arg.equals("-help") || arg.equals("--help"))
                 printHelp();
             else if (arg.equals("-fmes"))
-                Fmes.FMES = true;
+                DiffFactory.FMES = true;
             else if (arg.equals("-xmdiff"))
-                Fmes.FMES = false;
+                DiffFactory.FMES = false;
             else if (arg.equals("-tagnames"))
-                Fmes.TAGNAMES = true;
+                DiffFactory.TAGNAMES = true;
             else if (arg.equals("-reverse-patch"))
-                Fmes.REVERSE_PATCH = true;
+                DiffFactory.REVERSE_PATCH = true;
             else if (arg.equals("-sibling-context"))
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
             else if (arg.equals("-parent-context"))
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
             else if (arg.equals("-parent-sibling-context"))
                 {
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
                 //Defaults to 0 if not specified at all, 1 if speced
-                Fmes.PARENT_SIBLING_CONTEXT = 1;
+                DiffFactory.PARENT_SIBLING_CONTEXT = 1;
                 }
             else if (arg.equals("-xupdate"))
-                Fmes.DUL = false;
+                DiffFactory.DUL = false;
             else if (arg.equals("-dul"))
-                Fmes.DUL = true;
+                DiffFactory.DUL = true;
             else if (arg.equals("-remove-entities"))
                 {
-                Fmes.ENTITIES = false;
+                DiffFactory.ENTITIES = false;
                 System.err.println("STERN WARNING: Removing entities may lead to "
                         + "incorrect or misleading results");
                 }
@@ -151,8 +145,8 @@ public class DiffXML
                     System.exit(2);
                     }
 
-                Fmes.CONTEXT = true;
-                Fmes.SIBLING_CONTEXT = num;
+                DiffFactory.CONTEXT = true;
+                DiffFactory.SIBLING_CONTEXT = num;
                 }
             else if (arg.startsWith("-parent-context="))
                 {
@@ -165,8 +159,8 @@ public class DiffXML
                     System.exit(2);
                     }
 
-                Fmes.CONTEXT = true;
-                Fmes.PARENT_CONTEXT = num;
+                DiffFactory.CONTEXT = true;
+                DiffFactory.PARENT_CONTEXT = num;
                 }
             else if (arg.startsWith("-parent-sibling-context="))
                 {
@@ -179,14 +173,14 @@ public class DiffXML
                     System.exit(2);
                     }
 
-                Fmes.CONTEXT = true;
-                Fmes.PARENT_SIBLING_CONTEXT = num;
+                DiffFactory.CONTEXT = true;
+                DiffFactory.PARENT_SIBLING_CONTEXT = num;
                 }
 
             //Short arguments with arguments
             else if (arg.equals("-C"))
                 {
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
                 if (i < args.length)
                     {
                     //Next argument must be a number
@@ -197,7 +191,7 @@ public class DiffXML
                                 "-C needs positive integer argument");
                         System.exit(2);
                         }
-                    Fmes.SIBLING_CONTEXT = num;
+                    DiffFactory.SIBLING_CONTEXT = num;
                     }
                 else
                     {
@@ -207,7 +201,7 @@ public class DiffXML
                 }
             else if (arg.equals("-P"))
                 {
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
                 if (i < args.length)
                     {
                     //Next argument must be a number
@@ -218,7 +212,7 @@ public class DiffXML
                                 "-P needs positive integer argument");
                         System.exit(2);
                         }
-                    Fmes.PARENT_CONTEXT = num;
+                    DiffFactory.PARENT_CONTEXT = num;
                     }
                 else
                     {
@@ -228,7 +222,7 @@ public class DiffXML
                 }
             else if (arg.equals("-S"))
                 {
-                Fmes.CONTEXT = true;
+                DiffFactory.CONTEXT = true;
                 if (i < args.length)
                     {
                     //Next argument must be a number
@@ -239,7 +233,7 @@ public class DiffXML
                                 "-S needs positive integer argument");
                         System.exit(2);
                         }
-                    Fmes.PARENT_SIBLING_CONTEXT = num;
+                    DiffFactory.PARENT_SIBLING_CONTEXT = num;
                     }
                 else
                     {
@@ -254,55 +248,55 @@ public class DiffXML
                     flag = arg.charAt(j);
                     switch (flag) {
                         case 'q':
-                            Fmes.BRIEF = true;
+                            DiffFactory.BRIEF = true;
                             break;
                         case 's':
-                            Fmes.IGNORE_ALL_WHITESPACE = true;
+                            DiffFactory.IGNORE_ALL_WHITESPACE = true;
                             break;
                         case 'w':
-                            Fmes.IGNORE_LEADING_WHITESPACE = true;
+                            DiffFactory.IGNORE_LEADING_WHITESPACE = true;
                             break;
                         case 'e':
-                            Fmes.IGNORE_WHITESPACE_NODES = true;
+                            DiffFactory.IGNORE_WHITESPACE_NODES = true;
                             break;
                         case 'i':
-                            Fmes.IGNORE_CASE = true;
+                            DiffFactory.IGNORE_CASE = true;
                             break;
                         case 'r':
-                            Fmes.IGNORE_COMMENTS = true;
+                            DiffFactory.IGNORE_COMMENTS = true;
                             break;
                         case 'I':
-                            Fmes.IGNORE_PROCESSING_INSTRUCTIONS = true;
+                            DiffFactory.IGNORE_PROCESSING_INSTRUCTIONS = true;
                             break;
                         case 'V':
                             printVersion();
                             break;
                         case 'c':
-                            Fmes.CONTEXT = true;
+                            DiffFactory.CONTEXT = true;
                             break;
                         case 'h':
                             printHelp();
                             break;
                         case 'f':
-                            Fmes.FMES = true;
+                            DiffFactory.FMES = true;
                             break;
                         case 'x':
-                            Fmes.FMES = false;
+                            DiffFactory.FMES = false;
                             break;
                         case 't':
-                            Fmes.TAGNAMES = true;
+                            DiffFactory.TAGNAMES = true;
                             break;
                         case 'X':
-                            Fmes.DUL = false;
+                            DiffFactory.DUL = false;
                             break;
                         case 'D':
-                            Fmes.DUL = true;
+                            DiffFactory.DUL = true;
                             break;
                         case 'p':
-                            Fmes.REVERSE_PATCH = true;
+                            DiffFactory.REVERSE_PATCH = true;
                             break;
                         case 'n':
-                            Fmes.ENTITIES = false;
+                            DiffFactory.ENTITIES = false;
                             break;
 
                         default:
@@ -381,28 +375,6 @@ public class DiffXML
         }
 
     /**
-     * Writes given XML document to standard out.
-     *
-     * Uses UTF8 encoding.
-     *
-     * @param doc
-     */
-
-    private static void outputXML(final Document doc)
-        {
-        Writer writer = new Writer();
-        try {
-            writer.setOutput(System.out, "UTF8");
-        }
-        catch (UnsupportedEncodingException e) {
-            System.err.println("Unable to set output. Exiting.");
-            System.exit(1);
-        }
-        writer.setCanonical(false);
-        writer.write(doc);
-        }
-
-    /**
      * Checks if input files exist.
      *
      * Outputs error message if input not found.
@@ -428,48 +400,6 @@ public class DiffXML
         return true;
         }
 
-    /**
-     * Sets various features on the DOM Parser.
-     *
-     * Sets features relevant to entities, DTD and entity-ref nodes
-     *
-     * @param parser
-     */
-
-    private static void initParser(final DOMParser parser)
-        {
-        try
-            {
-            //These features affect whether entities are reolved or not
-            if (!Fmes.ENTITIES)
-                {
-                parser.setFeature(
-                        "http://xml.org/sax/features/external-general-entities",
-                        false);
-                parser.setFeature(
-                        "http://xml.org/sax/features/external-parameter-entities",
-                        false);
-                }
-
-            //Turn off DTD stuff - if DTD support changes recondsider
-            parser.setFeature(
-                    "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
-                    false);
-            parser.setFeature(
-                    "http://apache.org/xml/features/nonvalidating/load-external-dtd",
-                    false);
-
-            //We don't want entity-ref-nodes, either text or no text
-            parser.setFeature(
-                    "http://apache.org/xml/features/dom/create-entity-ref-nodes",
-                    false);
-            }
-        catch (SAXException e)
-            {
-            System.err.println("Could not set parser feature" + e);
-            }
-        }
-
     public static void main(final String[] args)
         {
 
@@ -479,95 +409,16 @@ public class DiffXML
             { System.err.println("Unable to instantiate logger " + ex); }
 
         //Set options - instantiates _file1 and _file2
-        parseArgs(args); 
+        parseArgs(args);
 
         //Check files exist
         if (!filesExist())
             System.exit(2);
 
-        /* If xmdiff only call diff and exit 
-           STILL TO ADD FUNCTIONALITY FOR DETERMINING WHETHER ANY DIFFERENCES FOUND
-
-           An abstract factory would be nice, but isn't used due to the difference in
-           what is returned. Both produce a delta, but fmes returns an XML document, the
-           other directly outputs the delta.
-
-           This may have to change when xmdiff is updated to properly use options.
-           */
-
-        if (!Fmes.FMES)
-            {
-            try { (new XmDiff()).xmdiff(_file1, _file2); }
-
-            catch (Exception e)
-                {
-                System.err.println("xmdiff failed: " + e);
-                System.exit(2);
-                }
-
+        //Do diff and exit
+        Diff d = DiffFactory.createDiff();
+        if (d.diff(_file1, _file2))
             System.exit(1);
-            }
-
-        //otherwise use fmes
-        //Consider putting code for parsing files in Fmes
-
-        DOMParser parser = new DOMParser();
-
-        initParser(parser);
-
-        //Ignore whitespace nodes
-        //Table.ign_ws_nodes=true;
-
-        //Parse XML files
-        Document doc1, doc2;
-
-        try
-            {
-            parser.parse(_file1);
-            }
-        catch (Exception e)
-            {
-            System.err.println("Failed to parse document: " + e);
-            System.exit(2);
-            }
-
-        doc1 = parser.getDocument();
-
-        try
-            {
-            parser.parse(_file2);
-            }
-        catch (Exception e)
-            {
-            System.err.println("Failed to parse document: " + e);
-            System.exit(2);
-            }
-
-        doc2 = parser.getDocument();
-
-        Document delta = (new Fmes()).diff(doc1, doc2);
-
-        //Determine if documents differ
-        //This could be done quicker inside Match
-
-        boolean differ = false;
-        if (delta.getDocumentElement().getChildNodes().getLength() > 0)
-            differ = true;
-
-        if (!Fmes.BRIEF)
-            outputXML(delta);
-
-        if (differ)
-            {
-            //If in brief mode, don't output delta, only whether files differ
-            if (Fmes.BRIEF)
-                {
-                System.out.println("XML documents " + _file1 + " and "
-                        + _file2 + " differ");
-                }
-
-            System.exit(1);
-            }
         else
             System.exit(0);
 

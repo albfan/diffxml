@@ -24,12 +24,19 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Document;
+import org.diffxml.diffxml.Diff;
+import org.diffxml.diffxml.fmes.Writer;
+import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.fmes.NodeSet;
 import org.diffxml.diffxml.fmes.Match;
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.EditScript;
+import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 import java.util.StringTokenizer;
+import java.io.UnsupportedEncodingException;
+import java.io.File;
 
 /**
  * Fmes finds the differences between two DOM documents.
@@ -41,7 +48,7 @@ import java.util.StringTokenizer;
  * @author 	Adrian Mouat
  */
 
-public class Fmes
+public class Fmes extends Diff
 {
     /*
      * Fields to set various options
@@ -58,7 +65,6 @@ public class Fmes
      * Also note these options should be on an abstract father
      * class to Fmes/pulldiff, not in Fmes only.
      * However, at present only Fmes makes use of them.
-     */
     
 
     //Report only if files differ
@@ -127,6 +133,7 @@ public class Fmes
     //Resolving of entities
     public static boolean ENTITIES=true;
 
+    */
 
     /**
      * Determines if the given node should be ignored.
@@ -139,20 +146,145 @@ public class Fmes
     public static boolean isBanned(Node n)
         {
 	//Check if ignorable whitespace
-	if (IGNORE_WHITESPACE_NODES && n.getNodeType()==Node.TEXT_NODE)
+	if (DiffFactory.IGNORE_WHITESPACE_NODES && n.getNodeType()==Node.TEXT_NODE)
 	    {
             StringTokenizer st = new StringTokenizer(n.getNodeValue());
             if (!st.hasMoreTokens())
                 return true;
             }
         //Check if ignorable comment
-        if (IGNORE_COMMENTS && n.getNodeType()==Node.COMMENT_NODE)
+        if (DiffFactory.IGNORE_COMMENTS && n.getNodeType()==Node.COMMENT_NODE)
             return true;
  
-        if (IGNORE_PROCESSING_INSTRUCTIONS  && n.getNodeType()==Node.PROCESSING_INSTRUCTION_NODE)
+        if (DiffFactory.IGNORE_PROCESSING_INSTRUCTIONS  && n.getNodeType()==Node.PROCESSING_INSTRUCTION_NODE)
             return true;
  
         return false;
+        }
+
+    /**
+     * Sets various features on the DOM Parser.
+     *
+     * Sets features relevant to entities, DTD and entity-ref nodes
+     *
+     * @param parser
+     */
+ 
+    private static void initParser(final DOMParser parser)
+        {
+        try
+            {
+            //These features affect whether entities are reolved or not
+            if (!DiffFactory.ENTITIES)
+                {
+                parser.setFeature(
+                        "http://xml.org/sax/features/external-general-entities",
+                        false);
+                parser.setFeature(
+                        "http://xml.org/sax/features/external-parameter-entities",
+                        false);
+                }
+
+            //Turn off DTD stuff - if DTD support changes recondsider
+            parser.setFeature(
+                    "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
+                    false);
+            parser.setFeature(
+                    "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                    false);
+
+            //We don't want entity-ref-nodes, either text or no text
+            parser.setFeature(
+                    "http://apache.org/xml/features/dom/create-entity-ref-nodes",
+                    false);
+            }
+        catch (SAXException e)
+            {
+            System.err.println("Could not set parser feature" + e);
+            }
+        }
+
+    public boolean diff(File file1, File file2)
+        {
+        return diff(file1.getPath(), file2.getPath());
+        }
+
+    public boolean diff(String file1, String file2)
+        {
+        DOMParser parser = new DOMParser();
+        initParser(parser);
+        Document doc1, doc2;
+
+        try
+            {
+            parser.parse(file1);
+            }
+        catch (Exception e)
+            {
+            System.err.println("Failed to parse document: " + e);
+            System.exit(2);
+            }
+
+        doc1 = parser.getDocument();
+
+        try
+            {
+            parser.parse(file2);
+            }
+        catch (Exception e)
+            {
+            System.err.println("Failed to parse document: " + e);
+            System.exit(2);
+            }
+
+        doc2 = parser.getDocument();
+
+        Document delta = (new Fmes()).diff(doc1, doc2);
+        //Determine if documents differ
+        //This could be done quicker inside Match
+
+        boolean differ = false;
+        if (delta.getDocumentElement().getChildNodes().getLength() > 0)
+            differ = true;
+
+        if (!DiffFactory.BRIEF)
+            outputXML(delta);
+
+        if (differ)
+            {
+            //If in brief mode, don't output delta, only whether files differ
+            if (DiffFactory.BRIEF)
+                {
+                System.out.println("XML documents " + file1 + " and "
+                        + file2 + " differ");
+                }
+
+            return true;
+            }
+        else
+            return false;
+        }
+
+    /**
+     * Writes given XML document to standard out.
+     *
+     * Uses UTF8 encoding.
+     *
+     * @param doc
+     */
+ 
+    private static void outputXML(final Document doc)
+        {
+        Writer writer = new Writer();
+        try {
+            writer.setOutput(System.out, "UTF8");
+        }
+        catch (UnsupportedEncodingException e) {
+            System.err.println("Unable to set output. Exiting.");
+            System.exit(1);
+        }
+        writer.setCanonical(false);
+        writer.write(doc);
         }
 
     /**

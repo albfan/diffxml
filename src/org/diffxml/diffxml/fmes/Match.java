@@ -108,7 +108,7 @@ if (a.getNodeType()==Node.TEXT_NODE)
 	String a_str=a.getNodeValue();
 	String b_str=b.getNodeValue();
 	
-	if (Fmes.IGNORE_ALL_WHITESPACE)
+	if (DiffFactory.IGNORE_ALL_WHITESPACE)
 		{
 		//Ignore all whitespace
 		//Remove whitespace from nodes before comparison
@@ -122,7 +122,7 @@ if (a.getNodeType()==Node.TEXT_NODE)
 		while (st.hasMoreTokens())
                         b_str=b_str+st.nextToken();	
 		}		
-	else if (Fmes.IGNORE_LEADING_WHITESPACE)
+	else if (DiffFactory.IGNORE_LEADING_WHITESPACE)
 		{
 		//Ignore leading ws
 		//just call trim
@@ -132,7 +132,7 @@ if (a.getNodeType()==Node.TEXT_NODE)
 
 	//Check case optn
 	
-	if (Fmes.IGNORE_CASE)
+	if (DiffFactory.IGNORE_CASE)
 		{
 		//Just make it all lower
 		a_str.toLowerCase();
