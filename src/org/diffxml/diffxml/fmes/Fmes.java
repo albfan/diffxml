@@ -245,18 +245,13 @@ public class Fmes extends Diff
         //Match Nodes
         Match match = new Match();
 
-        //Consider changing not to throw exception
         NodeSet matchings = new NodeSet();
-        try { matchings = match.fastMatch(doc1, doc2); }
-        catch (Exception e)
-            {
-            System.err.println("Failed to match nodes: " + e);
-            System.exit(2);
-            }
+        matchings = match.fastMatch(doc1, doc2);
 
         //Create Edit Script
+        EditScript es = new EditScript();
         DiffXML.log.entering("diff", "EditScript.create");
-        Document delta = EditScript.create(doc1, doc2, matchings);
+        Document delta = es.create(doc1, doc2, matchings);
         DiffXML.log.exiting("diff", "EditScript.create");
 
         return delta;

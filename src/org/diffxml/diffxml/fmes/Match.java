@@ -66,88 +66,117 @@ public class Match
 
     private static final boolean OUTPUT_MATCHED_NODES = false;
 
-    private boolean equal(final Node a, final Node b)
+    /**
+     * Compares two elements two determine whether they should be matched.
+     *
+     * @param a  First element
+     * @param b  Potential match for b
+     * @return   true if nodes match, false otherwise
+     */
+
+    private boolean compareElements(final Node a, final Node b)
         {
-        //Currently returns false but should throw exception?
+        //Check NodeNames equal
+        if (a.getNodeName() != b.getNodeName())
+            return false;
+
+        //Check attributes equal
+        NamedNodeMap aAttrs = a.getAttributes();
+        NamedNodeMap bAttrs = b.getAttributes();
+
+        int numberAttrs = 0;
+        if (aAttrs != null)
+            numberAttrs = aAttrs.getLength();
+
+        for (int i = 0; i < numberAttrs; i++)
+            {
+            //Check if attr exists in other tag
+            if (bAttrs.getNamedItem(aAttrs.item(i).getNodeName()) == null)
+                return false;
+
+            if (!bAttrs.getNamedItem(aAttrs.item(i).getNodeName())
+                    .getNodeValue().equals(aAttrs.item(i).getNodeValue()))
+                {
+                return false;
+                }
+            }
+        //Consider comparing positions of elements, or if kids matched etc
+        return true;
+        }
+
+    /**
+     * Compares two text nodes to determine if they should be matched.
+     *
+     * Takes into account whitespace options.
+     *
+     * @param a  First node
+     * @param b  Potential match for a
+     * @return   True if nodes match, false otherwise
+     */
+
+    private boolean compareTextNodes(final Node a, final Node b)
+        {
+
+        String aString = a.getNodeValue();
+        String bString = b.getNodeValue();
+
+        if (DiffFactory.IGNORE_ALL_WHITESPACE)
+            {
+            //Remove whitespace from nodes before comparison
+            //Check nextToken doesn't skip first
+            StringTokenizer st = new StringTokenizer(aString);
+            aString = "";
+            while (st.hasMoreTokens())
+                aString = aString + st.nextToken();
+
+            st = new StringTokenizer(bString);
+            bString = "";
+            while (st.hasMoreTokens())
+                bString = bString + st.nextToken();
+            }
+        else if (DiffFactory.IGNORE_LEADING_WHITESPACE)
+            {
+            //Ignore leading ws
+            //just call trim
+            aString = aString.trim();
+            bString = bString.trim();
+            }
+
+        //Check case optn
+
+        if (DiffFactory.IGNORE_CASE)
+            return (aString.equalsIgnoreCase(bString));
+
+        return (aString.equals(bString));
+        }
+
+    /**
+     * Compares 2 nodes to determine wheter they should match.
+     *
+     * TODO: Verify each of the comparisons.
+     * TODO: Check if more comparisons are needed
+     *
+     * @param a  first node
+     * @param b  potential match for a
+     * @return   true if nodes match, false otherwise
+     */
+
+    private boolean compareNodes(final Node a, final Node b)
+        {
 
         if (a.getNodeType() != b.getNodeType())
             return false;
 
-
-        //if Node is an element
-        if (a.getNodeType() == Node.ELEMENT_NODE)
+        switch (a.getNodeType())
             {
-            //Check NodeNames equal
-            if (a.getNodeName() != b.getNodeName())
-                return false;
-
-            //Check attributes equal
-            NamedNodeMap aAttrs = a.getAttributes();
-            NamedNodeMap bAttrs = b.getAttributes();
-
-            int numberAttrs = 0;
-            if (aAttrs != null)
-                numberAttrs = aAttrs.getLength();
-
-            for (int i = 0; i < numberAttrs; i++)
-                {
-                //Check if attr exists in other tag
-                if (bAttrs.getNamedItem(aAttrs.item(i).getNodeName()) == null)
-                    return false;
-
-                if (!bAttrs.getNamedItem(aAttrs.item(i).getNodeName())
-                        .getNodeValue().equals(aAttrs.item(i).getNodeValue()))
-                    {
-                    //System.out.println("Equal: attributes not equal");
-                    return false;
-                    }
-                }
-            //Consider comparing positions of elements, or if kids matched etc
-            return true;
+            case Node.ELEMENT_NODE:
+                return compareElements(a, b);
+            case Node.TEXT_NODE:
+                return compareTextNodes(a, b);
+            default:
+                return (a.getNodeValue().equals(b.getNodeValue()));
             }
 
-        //If node is a text node
-        if (a.getNodeType() == Node.TEXT_NODE)
-            {
-            //Need to check whitespace and case options
-            String aString = a.getNodeValue();
-            String bString = b.getNodeValue();
-
-            if (DiffFactory.IGNORE_ALL_WHITESPACE)
-                {
-                //Ignore all whitespace
-                //Remove whitespace from nodes before comparison
-                //Check nextToken doesn't skip first
-                StringTokenizer st = new StringTokenizer(aString);
-                aString = "";
-                while (st.hasMoreTokens())
-                    aString = aString + st.nextToken();
-
-                st = new StringTokenizer(bString);
-                bString = "";
-                while (st.hasMoreTokens())
-                    bString = bString + st.nextToken();
-                }
-            else if (DiffFactory.IGNORE_LEADING_WHITESPACE)
-                {
-                //Ignore leading ws
-                //just call trim
-                aString = aString.trim();
-                bString = bString.trim();
-                }
-
-            //Check case optn
-
-            if (DiffFactory.IGNORE_CASE)
-                return (aString.equalsIgnoreCase(bString));
-
-            return (aString.equals(bString));
-            }
-
-        //Node is not a text node or element, so just compare value and return.
-
-        //System.out.println("Equal: elements equal");
-        return (a.getNodeValue().equals(b.getNodeValue()));
         }
 
     /**
@@ -171,7 +200,7 @@ public class Match
      * @return          the resultant NodeIterator
      */
 
-    private NodeIterator makeIterator(String nodeType, Document doc)
+    private NodeIterator makeIterator(final String nodeType, final Document doc)
         {
 
         //Should really be bottom up, but shouldn't make big diff
@@ -188,6 +217,113 @@ public class Match
         }
 
     /**
+     * Searches NodeIterator for a node matching given node.
+     *
+     * Marks nodes matched and adds nodes to NodeSet if match found.
+     *
+     * @param node     the node to be matched
+     * @param ni       the NodeIterator to look through
+     * @param matchSet the NodeSet to add the pair to
+     *
+     * @return true if a match is found, false if not
+     */
+
+    private boolean matchNode(final NodeImpl node, final NodeIterator ni,
+            final NodeSet matchSet)
+        {
+        if (node.getUserData("matched").equals("true"))
+            {
+            return false;
+            }
+
+        NodeImpl currNode = (NodeImpl) ni.nextNode();
+
+        while (currNode != null)
+            {
+            if (currNode.getUserData("matched").equals("false")
+                    && compareNodes(node, currNode))
+                {
+                matchSet.add(node, currNode);
+                markMatched(node, currNode);
+
+                return true;
+                }
+            currNode = (NodeImpl) ni.nextNode();
+            }
+
+        return false;
+        }
+
+    /**
+     * Matches elements with a given name from two documents.
+     *
+     * @param elementName  The name of the elements to match
+     * @param doc1         The original document
+     * @param doc2         The modified document
+     * @param matchSet     The NodeSet to add mathcing elements to
+     */
+
+    private void matchElements(final String elementName, final Document doc1,
+            final Document doc2, final NodeSet matchSet)
+        {
+
+        NodeList listA = doc1.getElementsByTagName(elementName);
+        NodeList listB = doc2.getElementsByTagName(elementName);
+
+
+        for (int a = 0; a < listA.getLength(); a++)
+            {
+            NodeImpl nodeA = (NodeImpl) listA.item(a);
+
+            if (nodeA.getUserData("matched").equals("false"))
+                {
+                for (int b = 0; b < listB.getLength(); b++)
+                    {
+                    NodeImpl nodeB = (NodeImpl) listB.item(b);
+
+                    if (nodeB.getUserData("matched").equals("false")
+                            && compareNodes(nodeA, nodeB))
+                        {
+                        matchSet.add(nodeA, nodeB);
+                        markMatched(nodeA, nodeB);
+
+                        break;
+                        }
+                    }
+                }
+            }
+        }
+
+    /**
+     * Matches nodes of nodeType in doc1 to doc2 and stores pairs in NodeSet.
+     *
+     * TODO: Ensure we have to detach iterator.
+     *
+     * @param nodeType  The type of nodes to match (text or comment)
+     * @param doc1      The original document
+     * @param doc2      The modified document
+     * @param matchSet  The NodeSet to store the pairs in
+     */
+
+    private void matchNodes(final String nodeType, final Document doc1,
+            final Document doc2, final NodeSet matchSet)
+        {
+        NodeIterator ni1 = makeIterator(nodeType, doc1);
+        NodeIterator ni2 = makeIterator(nodeType, doc2);
+
+        NodeImpl nodeA = (NodeImpl) ni1.nextNode();
+
+        while (nodeA != null)
+            {
+            matchNode(nodeA, ni2, matchSet);
+            nodeA = (NodeImpl) ni1.nextNode();
+
+            ni2.detach();
+            ni2 = makeIterator(nodeType, doc2);
+            }
+        }
+
+    /**
      * Performs fast match algorithm on given DOM documents.
      *
      * TODO: Possible searching wrong way could be causing bad matches,
@@ -200,8 +336,7 @@ public class Match
      */
 
     public final NodeSet fastMatch(final Document doc1, final Document doc2)
-    throws Exception {
-
+        {
         NodeSet matchSet = new NodeSet();
 
         doc1.getDocumentElement().normalize();
@@ -222,84 +357,18 @@ public class Match
         while (treeIter.hasNext())
             {
             curr = (NodeInfo) treeIter.next();
-
             wantedName = curr.getTag();
 
             DiffXML.log.finer("Wanted Node: " + wantedName);
 
-            //Get all nodes in both documents with this tag
+            //Get all nodes in both documents with wantedName tag
             if (wantedName.equals("#text") || wantedName.equals("#comment"))
                 {
-                NodeIterator ni1 = makeIterator(wantedName, doc1);
-                NodeIterator ni2 = makeIterator(wantedName, doc2);
-
-                NodeImpl na = (NodeImpl) ni1.nextNode();
-                NodeImpl nb = (NodeImpl) ni2.nextNode();
-
-                while (na != null)
-                    {
-                    if (na.getUserData("matched").equals("false"))
-                        {
-                        while (nb != null)
-                            {
-                            if (nb.getUserData("matched").equals("false")
-                                    && equal(na, nb))
-                                {
-                                //Add nodes to matching set
-                                matchSet.add(na, nb);
-                                markMatched(na, nb);
-
-                                break;
-                                }
-                            nb = (NodeImpl) ni2.nextNode();
-                            }
-                        }
-                    else
-                        {
-                        //Shouldn't be possible to get here
-                        DiffXML.log.warning("Node should NOT be matched");
-                        }
-
-                    na = (NodeImpl) ni1.nextNode();
-
-                    ni2.detach();
-                    ni2 = makeIterator(wantedName, doc2);
-                    nb = (NodeImpl) ni2.nextNode();
-                    }
-
+                matchNodes(wantedName, doc1, doc2, matchSet);
                 }
             else
                 {
-                NodeList tg1 = doc1.getElementsByTagName(wantedName);
-                NodeList tg2 = doc2.getElementsByTagName(wantedName);
-
-                //Cycle through tg1 looking for matches in tg2
-
-                for (int a = 0; a < tg1.getLength(); a++)
-                    {
-                    NodeImpl aNode = (NodeImpl) tg1.item(a);
-                    if (aNode.getUserData("matched").equals("false"))
-                        {
-                        //Cycle through tg2 looking for match
-                        //tg_tag:
-                        for (int b = 0; b < tg2.getLength(); b++)
-                            {
-                            NodeImpl bNode = (NodeImpl) tg2.item(b);
-                            if (bNode.getUserData("matched").equals("false")
-                                    && equal(tg1.item(a), tg2.item(b)))
-                                {
-                                //Add nodes to matching set
-                                matchSet.add(tg1.item(a), tg2.item(b));
-
-                                markMatched(aNode, bNode);
-
-                                //Don't think this statement did nowt
-                                //continue tg_tag;
-                                break;
-                                }
-                            }
-                        }
-                    }
+                matchElements(wantedName, doc1, doc2, matchSet);
                 }
             }
 
@@ -308,7 +377,6 @@ public class Match
             matchSet.printSet();
 
         return matchSet;
-
     }
 
     /**
@@ -333,7 +401,7 @@ public class Match
                 NodeFilter.SHOW_ALL, null, false);
 
         NodeImpl node;
-        while ( (node = (NodeImpl) ni.nextNode()) != null)
+        while ((node = (NodeImpl) ni.nextNode()) != null)
             {
             node.setUserData("matched", "false", null);
             node.setUserData("inorder", "true", null);
