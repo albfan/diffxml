@@ -40,7 +40,9 @@ public class EditScript
     /** Prepares an empty Edit Script document.
      *
      * Makes root element, appends any neccessary attributes
-     * and context information
+     * and context information.
+     *
+     * Move to delta.java?
      *
      * @return a properly formatted, empty edit script
      */
@@ -120,6 +122,8 @@ public class EditScript
     /**
      * Adds the children of a node to a fifo stack.
      *
+     * Move to Fifo.java?
+     *
      * @param x    the node whose children are to be added
      * @param fifo the fifo to add the children to.
      */
@@ -145,6 +149,8 @@ public class EditScript
      *
      * If childnum doesn't exist the node is simply appended.
      *
+     * Due to general applicability should be moved to helper class.
+     *
      * @param childNum  the position to add the node to
      * @param parent    the node that is to be the parent
      * @param insNode   the node to be inserted
@@ -163,6 +169,8 @@ public class EditScript
 
     /**
      * Adds inserts for attributes of a node to an EditScript .
+     *
+     * Move to Delta.java?
      *
      * @param attrs       the attributes to be added
      * @param path        the path to the node they are to be added to
@@ -263,6 +271,7 @@ public class EditScript
             ((NodeImpl) w).setUserData("inorder", "true", null);
             ((NodeImpl) x).setUserData("inorder", "true", null);
 
+            //TODO: Make function for following
             Element context = editScript.createElement("mark");
             if (DiffFactory.CONTEXT)
                 {
@@ -284,6 +293,7 @@ public class EditScript
      *
      * Debug thang.
      * Note we stupidly do the same thing 3 times and lose generality.
+     * Move to helper class.
      *
      * @param x  first node
      * @param y  second node
@@ -391,6 +401,7 @@ public class EditScript
             }
 
         //If node isn't matched, delete it
+        //TODO: Make function for following.
         if (((NodeImpl) n).getUserData("matched").equals("false"))
             {
             Element par = (Element) n.getParentNode();
@@ -408,6 +419,7 @@ public class EditScript
      *
      * Not sure about the ignoring of banned nodes.
      * May very well f up move.
+     * Move to helper class if of use to other classes.
      *
      * @param n the parent of the nodes to mark out of order
      */
@@ -432,6 +444,8 @@ public class EditScript
     /**
      * Marks the nodes in the given array "inorder".
      *
+     * Move to helper class if of use to other classes.
+     *
      * @param seq  the nodes to mark "inorder"
      */
 
@@ -453,6 +467,9 @@ public class EditScript
      *
      * This is done in way that is definitely sub-optimal.
      * May need to shrink array size at end.
+     *
+     * Move to helper class?
+     * Should probably be in own class, actual algorithm should be hidden.
      *
      * @param set1      the first set of nodes
      * @param set2      the set of nodes to match against
@@ -485,6 +502,8 @@ public class EditScript
 
     /**
      * Moves nodes that are not in order to correct position.
+     *
+     * TODO: Refactor!
      *
      * @param xKids
      * @param w

@@ -251,8 +251,9 @@ while (op!=null)
 			case Node.TEXT_NODE:
 				ins=doc.createTextNode(value);
 				DiffXML.log.finer("dom_cn=" + dom_cn + " Inserting text: " + value);
-				//careful with cn
-				if (dom_cn==doc_kids.getLength() &&
+				//careful with cn 
+                                //problem when dom_cn = 0, fix suggested by Mauricio Aldazosa Mariaca.
+				if (dom_cn > 0 && dom_cn==doc_kids.getLength() &&
                                         doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
                                         {
                                         if (charpos<=1)
