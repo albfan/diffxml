@@ -34,8 +34,14 @@ import org.apache.xerces.dom.NodeImpl;
  * Methods in this class should be general usefulness.
  */
 
-public class NodeOps
+final class NodeOps
 {
+    /**
+     * Do not allow instantiation.
+     */
+
+    private NodeOps() { }
+
     /**
      * Inserts a given node as numbered child of a parent node.
      *
@@ -61,36 +67,44 @@ public class NodeOps
 
     /**
      * Mark the node as being "inorder".
+     *
+     * @param n the node to mark as "inorder"
      */
 
-    public static void setInOrder(Node n)
+    public static void setInOrder(final Node n)
         {
         ((NodeImpl) n).setUserData("inorder", "true", null);
         }
 
     /**
      * Mark the node as not being "inorder".
+     *
+     * @param n the node to mark as not "inorder"
      */
 
-    public static void setOutOfOrder(Node n)
+    public static void setOutOfOrder(final Node n)
         {
         ((NodeImpl) n).setUserData("inorder", "false", null);
         }
 
     /**
      * Mark the node as being "matched".
+     *
+     * @param n the node to mark as "matched"
      */
 
-    public static void setMatched(Node n)
+    public static void setMatched(final Node n)
         {
         ((NodeImpl) n).setUserData("matched", "true", null);
         }
 
     /**
      * Mark the node as not being "matched".
+     *
+     * @param n the node to mark as not being "matched"
      */
 
-    public static void setNotMatched(Node n)
+    public static void setNotMatched(final Node n)
         {
         ((NodeImpl) n).setUserData("matched", "false", null);
         }
@@ -104,28 +118,49 @@ public class NodeOps
 
     public static void setMatched(final Node nodeA, final Node nodeB)
         {
-        NodeOps.setMatched(nodeA);
-        NodeOps.setMatched(nodeB);
+        setMatched(nodeA);
+        setMatched(nodeB);
         }
 
     /**
      * Check if node is marked "inorder".
      *
      * TODO: Check we can use "equals" in this way
+     *
+     * @param n node to check
+     * @return true if marked "inorder", false otherwise
      */
 
-    public static boolean isInOrder(Node n)
+    public static boolean isInOrder(final Node n)
         {
         return ((NodeImpl) n).getUserData("inorder").equals("true");
         }
 
     /**
      * Check if node is marked "matched".
+     *
+     * @param n node to check
+     * @return true if marked "matched", false otherwise
      */
 
-    public static boolean isMatched(Node n)
+    public static boolean isMatched(final Node n)
         {
         return ((NodeImpl) n).getUserData("matched").equals("true");
         }
 
+    /**
+     * Check if nodes are the same.
+     *
+     * Does not test if data equivalent, but if same node in same doc.
+     * TODO: Test this method!
+     *
+     * @param x first node to check
+     * @param y second node to check
+     * @return true if same node, false otherwise
+     */
+
+    public static boolean checkIfSameNode(final Node x, final Node y)
+        {
+        return (((NodeImpl) x).isSameNode(((NodeImpl) y)));
+        }
 }

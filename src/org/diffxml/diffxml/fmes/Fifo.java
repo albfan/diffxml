@@ -25,6 +25,9 @@ package org.diffxml.diffxml.fmes;
 
 import java.util.ArrayList;
 
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+
 /**
  * Implements a First In First Out list.
  *
@@ -87,6 +90,32 @@ public class Fifo
 
         return _fifo.remove(0);
         }
+
+    /**
+     * Adds the children of a node to the fifo.
+     *
+     *
+     * @param x    the node whose children are to be added
+     * @param fifo the fifo to add the children to.
+     */
+
+    public void addChildrenToFifo(final Node x)
+        {
+        NodeList kids = x.getChildNodes();
+
+        if (kids != null)
+            {
+            for (int i = 0; i < kids.getLength(); i++)
+                {
+                if (Fmes.isBanned(kids.item(i)))
+                    continue;
+
+                this.push(kids.item(i));
+                }
+            }
+        }
+
+
 }
 
 
