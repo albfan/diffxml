@@ -29,8 +29,8 @@ import java.util.ArrayList;
  * Implements a First In First Out list.
  *
  * Equivalent to a stack where elements are removed from
- * the *opposite* end to where the are added. Hence I have
- * used the Stack terms "push" and pop"
+ * the *opposite* end to where the are added. Hence the
+ * Stack terms "push" and pop" are used.
  */
 
 public class Fifo

@@ -66,6 +66,7 @@ public class Fmes extends Diff
             if (!st.hasMoreTokens())
                 return true;
             }
+
         //Check if ignorable comment
         if (DiffFactory.IGNORE_COMMENTS && n.getNodeType() == Node.COMMENT_NODE)
             return true;
@@ -202,8 +203,8 @@ public class Fmes extends Diff
     /**
      * Writes given XML document to standard out.
      *
-     * Uses UTF8 encoding, no identation, preserves spaces.
-     * Made public due to general utility.
+     * Uses UTF8 encoding, no indentation, preserves spaces.
+     * Made public due to general utility - consider moving.
      *
      * @param doc DOM document to output
      */

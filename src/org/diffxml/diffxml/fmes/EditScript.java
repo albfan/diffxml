@@ -207,7 +207,7 @@ public class EditScript
         //Apply insert to doc1
         //The node we want to insert is the import of x with all
         //its text node children
-        //Need to make sure this imports attrs - they should be
+        //TODO: Ensure attributes properly added
 
         Node w = doc1.importNode(x, false);
         ((NodeImpl) w).setUserData("matched", "true", null);
