@@ -1,0 +1,97 @@
+diffxml Version 0.92 ALPHA
+patchxml Version 0.92 ALPHA
+ 
+Install instructions for diffxml and patchxml
+---------------------------------------------
+
+If you are reading this file, you should have downloaded and unzipped the source code
+for diffxml.
+
+The lib directory contains the following third party jars needed by diffxml:
+
+From Apache Xerces and Xalan:
+ 
+xalan.jar
+xercesImpl.jar
+xml-apis.jar
+xmlParserAPIs.jar
+xsltc.jar
+ 
+From XPP3:
+ 
+xpp3_1_0_8a.jar
+
+You should add these jars and the directory this was installed to on your classpath.
+You should then be able to build by compiling diffxml.java.
+
+The easiest way of running the utilities is to edit the diffxml.sh and patch.sh 
+scripts so that $INSTALL_DIR points to the directory where diffxml was installed,
+and $JAR_DIR points to a directory holding the required jar files.
+
+Verify the scripts work by running:
+ 
+diffxml.sh test1.xml test2.xml > out.xml
+patchxml.sh test1.xml out.xml > result
+diffxml.sh -q result test2.xml
+ 
+There should be no output, confirming the files are equivalent.
+ 
+You can then rename the scripts and add them to a public dir e.g:
+ 
+cp diffxml.sh /usr/local/bin/diffxml
+cp patchxml.sh /usr/local/bin/patchxml
+ 
+Please note that this is an unstable alpha release.
+diffxml and patchxml are released under the GNU GPL Version 2.
+ 
+Send any bug reports / problems to amouat@postmaster.co.uk
+
+Good Luck.
+
+Adrian Mouat.
+
+13 December 2003.
+
+===================================
+ 
+Changelog
+
+Version 0.92 ALPHA
+------------------
+
+Several fundamental changes:
+
+- Added Ant build 
+- Re-organisation and renaming of files and directories. 
+- Added jars to standard download.
+- Added automatic test suite to standard download.
+- Started javadoc and refactoring of code base.
+- Use of java logging.
+
+Version 0.91 ALPHA
+------------------
+
+Minor update from 0.9 ALPHA
+Fixed minor problems with scripts and added 2 sample testfiles to download.
+Fixed trimming whitespace problem.
+
+Acknowledgements:
+ 
+Eric Saunders for the Ant build and other help.
+Brian Buesker & Lowell Alleman for bug reports and correspondence.
+
+Apache Xalan and Xerces:
+ 
+http://xml.apache.org
+ 
+This product includes software developed by the
+Apache Software Foundation (http://www.apache.org/).
+ 
+XPP3:
+ 
+http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html
+ 
+This product includes software developed by the Indiana University
+Extreme! Lab (http://www.extreme.indiana.edu/).
+
+

@@ -1,0 +1,95 @@
+/*
+Class to hold data associated with nodes for pulldiff
+ 
+Copyright (C) 2002  Adrian Mouat
+ 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
+Author: Adrian Mouat
+email: amouat@postmaster.co.uk
+*/
+
+package org.diffxml.diffxml.xmdiff;
+
+
+//Holds data associated with tag
+import java.util.Vector;
+
+public class Node
+{
+public static final int TEXT = 0;
+public static final int TAG = 1;
+
+public int type;
+public String value;
+public int depth;
+public int attr_count;
+private Vector attributes;
+
+Node()
+{
+attributes=new Vector();
+depth=0;
+value="";
+type=TAG;
+attr_count=0;
+}
+Node(int t, String n, int d)
+{
+attributes=new Vector();
+depth = d;
+value = n;
+type = t;
+attr_count=0;
+}
+
+public void set(int t, String v, int d)
+{
+depth = d;
+value = v;
+type = t;
+}
+
+public void removeAttrs()
+{
+attributes.removeAllElements();
+attr_count=0;
+}
+
+public void addAttr(String n, String v)
+{
+//System.out.println("Entered addAttr name: " + n + " Value: " +v);
+attributes.add(n);
+attributes.add(v);
+attr_count++;
+}
+
+public String getAttrName(int i)
+{
+if (i>attr_count)
+	return null;
+
+return ((String) attributes.get((2*i)));
+
+}
+
+public String getAttrValue(int i)
+{
+if (i>attr_count)
+        return null;
+ 
+return ((String) attributes.get((2*i)+1));
+}
+}

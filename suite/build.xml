@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+
+<!-- 
+     Build file for  full test of diffxml source
+
+     Notes:     This is a build file for use with the Jakarta Ant build tool.
+     Requires:  jakarta-ant from http://jakarta.apache.org
+     Usage: ant <target>
+     Main targets: jarDiffXML - packages compilation as a jar
+                   quickTest  - verifies that the build is working
+                   clean      - deletes the build
+     Default target: jarDiffXML
+  -->
+
+  <project default="workingTest" basedir="../">
+
+
+<!-- Global properties -->
+
+  <property name="src.dir" value="src"/>
+  <property name="build.dir" value="build"/>
+  <property name="lib.dir" value="lib"/>
+
+  <property name="package" value="org.diffxml"/>
+  <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
+  <property name="patch.class" value="${package}/patchxml/Patchxml"/>
+  <property name="test1.file" value="test1.xml"/>
+  <property name="test2.file" value="test2.xml"/>
+  <property name="diffOut.file" value="suite/diff_out.xml"/>
+  <property name="patchOut.file" value="suite/patch_out.xml"/>
+
+
+<!-- Classpath -->
+
+  <path id="classpath">
+      <pathelement location="${build.dir}"/>
+      <pathelement location="${build.dir}/org.diffxml.jar"/>
+
+      <fileset dir="${lib.dir}">
+	  <include name="*.jar"/>
+      </fileset>
+  </path>
+
+<!-- Test targets -->
+
+  <target name="test" 
+          depends="testDiffXML, testPatch, testEquivalence"
+          description="tests the build"/>
+
+
+  <target name="testDiffXML">
+    <echo message="Executing: diffxml ${test1.file} ${test2.file}"/>
+    <java classname="${diffxml.class}" 
+          dir="${build.dir}" 
+          fork="yes"
+          classpathref="classpath"
+          output="${diffOut.file}">
+       <arg value="../${test1.file}"/>  
+       <arg value="../${test2.file}"/>  
+     </java>
+  </target>
+
+
+  <target name="testPatch">
+    <echo message="Executing: Patch ${test1.file} ${diffOut.file}"/>
+    <java classname="${patch.class}" 
+          dir="${build.dir}" 
+          fork="yes"
+          classpathref="classpath"
+	  failonerror="true"
+          output="${patchOut.file}">
+       <arg value="../${test1.file}"/>
+       <arg value="../${diffOut.file}"/>
+     </java>
+  </target>
+
+
+  <target name="testEquivalence" description="tests diffxml and patch">
+    <echo message="Executing: diffxml -q ${patchOut.file} ${test2.file}"/>
+    <echo message="An exit status of 0 confirms that the compared files are equivalent."/>
+    <java classname="${diffxml.class}" 
+          dir="${build.dir}" 
+          fork="yes"
+          classpathref="classpath"
+          failonerror="true">
+       <arg value="-q"/>  
+       <arg value="../${patchOut.file}"/>  
+       <arg value="../${test2.file}"/>  
+     </java>
+  </target>
+
+
+  <target name="workingTest"
+      description="Regression test against working cases">
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/attr1.xml"/>
+	  <param name="test2.file" value="suite/working/attr2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/correct1.xml"/>
+	  <param name="test2.file" value="suite/working/correct2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/doc1.xml"/>
+	  <param name="test2.file" value="suite/working/doc2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/gnumeric1.xml"/>
+	  <param name="test2.file" value="suite/working/gnumeric2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/re1.xml"/>
+	  <param name="test2.file" value="suite/working/re2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+	  <param name="test1.file" value="suite/working/s1.xml"/>
+	  <param name="test2.file" value="suite/working/s2.xml"/>
+      </antcall>
+
+      <delete file="${diffOut.file}"/>
+      <delete file="${patchOut.file}"/>
+
+  </target>
+  </project>
