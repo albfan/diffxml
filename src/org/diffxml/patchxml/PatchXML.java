@@ -172,277 +172,332 @@ public class PatchXML
         */
         }
 
+    private Node getParentFromAttr(Document doc, NamedNodeMap attrs)
+        {
+        Node parent = null;
+        try {
+            parent = XPathAPI.selectSingleNode(
+                    doc.getDocumentElement(), attrs.getNamedItem("parent").getNodeValue());
+
+        } catch (TransformerException e) 
+            { 
+            System.err.println("Could not resolve XPath for parent for insert");
+            }
+        return parent;
+        }
+
+    private int getNodeTypeFromAttr(NamedNodeMap attrs)
+        {
+        //TODO: Deal with cases when no node type attr
+        return new Integer( attrs.getNamedItem("nodetype").getNodeValue() ).intValue();
+        }
+
+    private int getDOMChildNoFromXPath(NodeList siblings, int xpathcn)
+        {
+        //Doesn't cope with node names instead of numbers
+        int index = 0;
+        int j;
+        for (j = 0;j < siblings.getLength(); j++)
+            {
+            index++;		
+            if (j > 0 && siblings.item(j).getNodeType()==Node.TEXT_NODE 
+                    && siblings.item(j - 1).getNodeType()==Node.TEXT_NODE)
+                index--;
+            if (index==xpathcn)
+                break;
+            }
+        return j;	
+        }
+
+    private String getOpValue(Node op)
+        {
+        NodeList op_kids = op.getChildNodes();
+
+        String value = "";
+        if (op_kids.getLength() > 1)
+            System.err.println("Unexpected children in insert operation");
+
+        else if ( (op_kids.getLength() == 1) 
+                && (op_kids.item(0).getNodeType() == Node.TEXT_NODE) )
+            value = op_kids.item(0).getNodeValue();
+
+        return value;
+        }
+
+    private int getCharPos(NamedNodeMap opAttrs)
+        {
+        int charpos=1;
+
+        if (opAttrs.getNamedItem("charpos") != null)
+            charpos=new Integer( opAttrs.getNamedItem("charpos").getNodeValue() ).intValue();
+
+        return charpos;
+        }
+
+    private boolean atATextNode(NodeList siblings, int domcn)
+        {
+        if (domcn == siblings.getLength())
+            return false;
+
+        if (siblings.item(domcn).getNodeType() != Node.TEXT_NODE)
+            return false;
+
+        return true;
+        }
+
+    private void insertAtCharPos(int charpos, NodeList siblings, 
+            int domcn, Node ins, Node parent)
+        {
+
+        //TODO: Allow inserting into middle of text node
+        //TODO: Handle errors better
+        //TODO: What about appending text nodes
+
+        int currLength = siblings.item(domcn).getNodeValue().length();
+
+        while (atATextNode(siblings, domcn) && (charpos > currLength))
+            {	
+            if (charpos <= currLength)
+                {
+                System.err.println("Insert in middle of text not implemented");
+                System.exit(3);
+                }
+
+            charpos = charpos - currLength;
+            domcn++;
+            currLength = siblings.item(domcn).getNodeValue().length();
+            }
+        //charpos in current node.
+        if (charpos!=1)
+            System.err.println("charpos seems to be out");
+
+        parent.insertBefore(ins,siblings.item(domcn));
+        }
+
+    private void insertTextNode(NodeList siblings, Element parent, 
+            Document doc, int domcn, int charpos, String insValue)
+        {
+        //Note siblings(domcn) is node currently at the position we want
+        //to put the node, not the node itself.
+
+        Node ins = doc.createTextNode(insValue);
+        DiffXML.log.finer("dom_cn=" + domcn + " Inserting text: " + insValue);
+
+        if (domcn < siblings.getLength())
+            {
+            //Check if inserting into text
+            if (siblings.item(domcn).getNodeType() == Node.TEXT_NODE)
+                {
+                insertAtCharPos(charpos, siblings, domcn, ins, parent);
+                }
+            else
+                parent.insertBefore(ins,siblings.item(domcn));
+            }
+        else
+            parent.appendChild(ins);
+        }
+
+    private void insertElementNode(NodeList siblings, Element parent, String tag, Document doc,
+            int domcn, int charpos)
+        {
+
+        Element ins=doc.createElement(tag);
+        //Code we want
+        /*
+
+        if (domcn < siblings.getLength())
+            {
+            if (siblings.item(domcn).getNodeType() == Node.TEXT_NODE)
+                insertAtCharPos(charpos, siblings, domcn, ins, parent);
+            else 
+                parent.insertBefore(ins, siblings.item(domcn));
+            }
+        else
+            parent.appendChild(ins);
+            */
+        //Code that's working...
+        //Find differences between this and old text node code
+        boolean append = false;
+        if (domcn==siblings.getLength() && 
+                siblings.item(domcn-1).getNodeType()==Node.TEXT_NODE)
+            {
+            if (charpos<=1)	
+                {
+                //Assume we actually mean to append node
+                append=true;
+                }
+            else 
+                {
+                //Move back to the start of the text nodes
+                while (domcn>0 && siblings.item(domcn-1).getNodeType()==Node.TEXT_NODE) 
+                    domcn--;
+
+                //move to charpos
+                while ( charpos>siblings.item(domcn).getNodeValue().length())
+                    {
+                    charpos=charpos-siblings.item(domcn).getNodeValue().length();
+                    domcn++;
+                    if (domcn==siblings.getLength() || siblings.item(domcn).getNodeType()!=Node.TEXT_NODE)
+                        {
+                        //System.err.println("charpos beyond end of text");
+                        append=true;
+                        parent.appendChild(ins);
+                        break;
+                        }
+                    }	
+                }	
+            if (!append)
+                parent.insertBefore(ins,siblings.item(domcn));
+
+            }
+        else if (siblings.getLength()>(domcn))
+            {
+            //We have a node to insert before
+            //Do the charpos thingy.
+            if (siblings.item(domcn).getNodeType()==Node.TEXT_NODE)
+                {
+                //domcn is first text node
+                //move to charpos
+                while ( charpos>siblings.item(domcn).getNodeValue().length())
+                    {
+                    charpos=charpos-siblings.item(domcn).getNodeValue().length();
+                    domcn++;
+                    if ( domcn==siblings.getLength() || siblings.item(domcn).getNodeType()!=Node.TEXT_NODE)
+                        {
+                        //System.err.println("charpos beyond end of text");
+                        append=true;
+                        parent.appendChild(ins);
+                        break;
+                        }
+                    }
+                //charpos in current node.
+                //Won't consider splitting nodes at mo as unneccesary
+                }
+            if (!append)
+                parent.insertBefore(ins,siblings.item(domcn));
+            }
+        else
+            parent.appendChild(ins);	
+        }
+
     private void doInsert(Document doc, Node op)
         {
         DiffXML.log.fine("Applying insert");
         NamedNodeMap opAttrs = op.getAttributes();
 
         //For all NodeTypes, find parent
-        Node parent;
+        Node parent = getParentFromAttr(doc, opAttrs);
+        if (parent == null)
+            return;
+
         Node ins;
 
-        try {
-            parent=XPathAPI.selectSingleNode(
-                    doc.getDocumentElement(), opAttrs.getNamedItem("parent").getNodeValue());
+        DiffXML.log.finer("Insert as child of " + parent.getNodeName());
 
-            DiffXML.log.finer("Insert as child of " + parent.getNodeName());
+        //Different ops dependent on NodeType being inserted
+        int nodeType = getNodeTypeFromAttr(opAttrs);
 
-            //Different ops dependent on NodeType being inserted
+        //Note setting cn to 0 
+        int xpath_cn=0;
+        int dom_cn=0;
+        if (opAttrs.getNamedItem("childno") != null)
+            xpath_cn=new Integer( opAttrs.getNamedItem("childno").getNodeValue() ).intValue();
 
-            int type = new Integer( opAttrs.getNamedItem("nodetype").getNodeValue() ).intValue();
+        //Convert xpath childno to DOM childno
 
-            //Note setting cn to 0 
-            int xpath_cn=0;
-            int dom_cn=0;
-            if (opAttrs.getNamedItem("childno") != null)
-                xpath_cn=new Integer( opAttrs.getNamedItem("childno").getNodeValue() ).intValue();
+        //Need child nodes in all cases but attr
+        //dom_cn needs to store *first* node eqv to XPath
+        NodeList siblings = parent.getChildNodes();
 
-            //Convert xpath childno to DOM childno
+        if (nodeType!=Node.ATTRIBUTE_NODE)
+            dom_cn = getDOMChildNoFromXPath(siblings, xpath_cn);
 
-            //Need child nodes in all cases but attr
-            //dom_cn needs to store *first* node eqv to XPath
-            NodeList doc_kids = parent.getChildNodes();
-            if (type!=Node.ATTRIBUTE_NODE)
-                {
-                int index=0;
-                int j;
-                for (j=0;j<doc_kids.getLength();j++)
+        String insValue = getOpValue(op);
+
+        int charpos = getCharPos(opAttrs);
+
+        String tag=opAttrs.getNamedItem("name").getNodeValue();
+        boolean append=false;	
+        switch (nodeType)
+            {
+            case Node.TEXT_NODE:
+                insertTextNode(siblings, (Element) parent, doc, dom_cn, 
+                        charpos, insValue);
+                break;
+            case Node.ELEMENT_NODE:
+                insertElementNode(siblings, (Element) parent, tag, doc, dom_cn, charpos);
+                break;
+            case Node.COMMENT_NODE:
+                ins=doc.createComment(insValue);
+                if (dom_cn==siblings.getLength() &&
+                        siblings.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
                     {
-                    index++;		
-                    if (j>0 && doc_kids.item(j).getNodeType()==Node.TEXT_NODE 
-                            && doc_kids.item(j-1).getNodeType()==Node.TEXT_NODE)
-                        index--;
-                    if (index==xpath_cn)
-                        break;
+                    if (charpos<=1)
+                        {
+                        //Assume we actually mean to append node
+                        append=true;
+                        }
+                    else
+                        {
+                        //Move back to the start of the text nodes
+                        while (dom_cn>0 && siblings.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
+                            dom_cn--;
+
+                        //move to charpos
+                        while ( dom_cn==siblings.getLength() || charpos>siblings.item(dom_cn).getNodeValue().length())
+                            {
+                            charpos=charpos-siblings.item(dom_cn).getNodeValue().length();
+                            dom_cn++;
+                            if (siblings.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
+                                {
+                                //System.err.println("charpos beyond end of text");
+                                append=true;
+                                parent.appendChild(ins);
+                                break;
+                                }
+                            }
+                        }
+                    if (!append)
+                        parent.insertBefore(ins,siblings.item(dom_cn));
+
                     }
-                dom_cn=j;	
-
-                }
-
-            //Get value to insert if any
-            String value="";
-            NodeList op_kids = op.getChildNodes();
-
-            if (op_kids.getLength() > 1)
-                System.err.println("Unexpected kiddy winkles in insert operation");
-            else if ( (op_kids.getLength() == 1) && (op_kids.item(0).getNodeType()==Node.TEXT_NODE) )
-                value=op_kids.item(0).getNodeValue();
-
-            int charpos=1;
-            if (opAttrs.getNamedItem("charpos") != null)
-                charpos=new Integer( opAttrs.getNamedItem("charpos").getNodeValue() ).intValue();
-            boolean append=false;	
-            switch (type)
-                {
-                case Node.TEXT_NODE:
-                    ins=doc.createTextNode(value);
-                    DiffXML.log.finer("dom_cn=" + dom_cn + " Inserting text: " + value);
-                    //careful with cn 
-                    //problem when dom_cn = 0, fix suggested by Mauricio Aldazosa Mariaca.
-                    if (dom_cn > 0 && dom_cn==doc_kids.getLength() &&
-                            doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
+                else if (siblings.getLength()>(dom_cn) )
+                    {
+                    //We have a node to insert before
+                    //Do the charpos thingy.
+                    if (siblings.item(dom_cn).getNodeType()==Node.TEXT_NODE)
                         {
-                        if (charpos<=1)
+                        //dom_cn is first text node
+                        //move to charpos
+                        while ( charpos>siblings.item(dom_cn).getNodeValue().length())
                             {
-                            //Assume we actually mean to append node
-                            append=true;
-                            }
-                        else
-                            {
-                            //Move back to the start of the text nodes
-                            while (dom_cn>0 && doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
-                                dom_cn--;
-
-                            //move to charpos
-                            while ( charpos>doc_kids.item(dom_cn).getNodeValue().length())
+                            charpos=charpos-siblings.item(dom_cn).getNodeValue().length();
+                            dom_cn++;
+                            if (dom_cn==siblings.getLength() || siblings.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
                                 {
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if (dom_cn==doc_kids.getLength() || doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    //System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
+                                //System.err.println("charpos beyond end of text");
+                                append=true;
+                                parent.appendChild(ins);
+                                break;
                                 }
                             }
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-
+                        //charpos in current node.
+                        //Won't consider splitting nodes at mo as unneccesary
                         }
-                    else if (doc_kids.getLength()>(dom_cn) )
-                        {
-                        //We have a node to insert before
-                        //Do the charpos thingy.
-                        if (doc_kids.item(dom_cn).getNodeType()==Node.TEXT_NODE)
-                            {
-                            //dom_cn is first text node
-                            //move to charpos
-                            while ( charpos>doc_kids.item(dom_cn).getNodeValue().length())
-                                {	
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if (dom_cn==doc_kids.getLength() || doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
-                                }
-                            //charpos in current node.
-                            //Won't consider splitting nodes at mo as unneccesary
-                            }
-                        if ( charpos!=1)
-                            System.err.println("charpos seems to be out");
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-                        }
-                    else
-                        parent.appendChild(ins);
-                    break;
-                case Node.ELEMENT_NODE:
-                    String tag=opAttrs.getNamedItem("name").getNodeValue();
-
-                    ins=doc.createElement(tag);
-                    if (dom_cn==doc_kids.getLength() && 
-                            doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
-                        {
-                        if (charpos<=1)	
-                            {
-                            //Assume we actually mean to append node
-                            append=true;
-                            }
-                        else 
-                            {
-                            //Move back to the start of the text nodes
-                            while (dom_cn>0 && doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE) 
-                                dom_cn--;
-
-                            //move to charpos
-                            while ( charpos>doc_kids.item(dom_cn).getNodeValue().length())
-                                {
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if (dom_cn==doc_kids.getLength() || doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    //System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
-                                }	
-                            }	
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-
-                        }
-                    else if (doc_kids.getLength()>(dom_cn))
-                        {
-                        //We have a node to insert before
-                        //Do the charpos thingy.
-                        if (doc_kids.item(dom_cn).getNodeType()==Node.TEXT_NODE)
-                            {
-                            //dom_cn is first text node
-                            //move to charpos
-                            while ( charpos>doc_kids.item(dom_cn).getNodeValue().length())
-                                {
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if ( dom_cn==doc_kids.getLength() || doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    //System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
-                                }
-                            //charpos in current node.
-                            //Won't consider splitting nodes at mo as unneccesary
-                            }
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-                        }
-                    else
-                        parent.appendChild(ins);	
-                    break;
-                case Node.COMMENT_NODE:
-                    ins=doc.createComment(value);
-                    if (dom_cn==doc_kids.getLength() &&
-                            doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
-                        {
-                        if (charpos<=1)
-                            {
-                            //Assume we actually mean to append node
-                            append=true;
-                            }
-                        else
-                            {
-                            //Move back to the start of the text nodes
-                            while (dom_cn>0 && doc_kids.item(dom_cn-1).getNodeType()==Node.TEXT_NODE)
-                                dom_cn--;
-
-                            //move to charpos
-                            while ( dom_cn==doc_kids.getLength() || charpos>doc_kids.item(dom_cn).getNodeValue().length())
-                                {
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if (doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    //System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
-                                }
-                            }
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-
-                        }
-                    else if (doc_kids.getLength()>(dom_cn) )
-                        {
-                        //We have a node to insert before
-                        //Do the charpos thingy.
-                        if (doc_kids.item(dom_cn).getNodeType()==Node.TEXT_NODE)
-                            {
-                            //dom_cn is first text node
-                            //move to charpos
-                            while ( charpos>doc_kids.item(dom_cn).getNodeValue().length())
-                                {
-                                charpos=charpos-doc_kids.item(dom_cn).getNodeValue().length();
-                                dom_cn++;
-                                if (dom_cn==doc_kids.getLength() || doc_kids.item(dom_cn).getNodeType()!=Node.TEXT_NODE)
-                                    {
-                                    //System.err.println("charpos beyond end of text");
-                                    append=true;
-                                    parent.appendChild(ins);
-                                    break;
-                                    }
-                                }
-                            //charpos in current node.
-                            //Won't consider splitting nodes at mo as unneccesary
-                            }
-                        if (!append)
-                            parent.insertBefore(ins,doc_kids.item(dom_cn));
-                        }
-                    else
-                        parent.appendChild(ins);
-                    break;	
-                case Node.ATTRIBUTE_NODE:
-                    String name=opAttrs.getNamedItem("name").getNodeValue();
-                    ( (Element) parent).setAttribute(name, value);
-                    break;
-                default:
-                    System.err.println("Unknown NodeType " + type);
-                    return;
-                }	
-
-
-        } catch (TransformerException e) 
-            { System.err.println("Could not resolve XPath for parent for insert");}
-
+                    if (!append)
+                        parent.insertBefore(ins,siblings.item(dom_cn));
+                    }
+                else
+                    parent.appendChild(ins);
+                break;	
+            case Node.ATTRIBUTE_NODE:
+                String name=opAttrs.getNamedItem("name").getNodeValue();
+                ( (Element) parent).setAttribute(name, insValue);
+                break;
+            default:
+                System.err.println("Unknown NodeType " + nodeType);
+                return;
+            }	
         }
 
     private void doDelete(Document doc, Node op)
@@ -766,6 +821,31 @@ public class PatchXML
         return true;
         }
 
+    private static void outputDoc(Document doc, Document patch)
+        {
+        //Patch only needed for debug - remove later
+        try
+            {
+        Transformer serializer = TransformerFactory.newInstance().newTransformer();
+        if (dryrun)
+            serializer.transform(new DOMSource(doc), new StreamResult(System.out));
+        else
+            {
+            File f1=new File(_file1);
+            serializer.transform(new DOMSource(doc), new StreamResult(f1));
+            }
+        DiffXML.log.finer("PatchXML Doc");
+        if (OUTPUT_DEBUG)	
+            serializer.transform(new DOMSource(patch), new StreamResult(System.out));
+        System.out.println();
+            }
+        catch (javax.xml.transform.TransformerException te)
+            {
+            System.err.println("Failed to output new document");
+            System.exit(2);
+            }
+        }
+
     public static void main(String[] args)
         {
 
@@ -812,29 +892,6 @@ public class PatchXML
         PatchXML patcher = new PatchXML();
         patcher.apply(doc, patch);
 
-        //Write doc out to file again
-        try
-            {
-        Transformer serializer = TransformerFactory.newInstance().newTransformer();
-        if (dryrun)
-            serializer.transform(new DOMSource(doc), new StreamResult(System.out));
-        else
-            {
-            File f1=new File(_file1);
-            serializer.transform(new DOMSource(doc), new StreamResult(f1));
-            }
-        DiffXML.log.finer("PatchXML Doc");
-        if (OUTPUT_DEBUG)	
-            serializer.transform(new DOMSource(patch), new StreamResult(System.out));
-        System.out.println();
-            }
-        catch (javax.xml.transform.TransformerException te)
-            {
-            System.err.println("Failed to output new document");
-            System.exit(2);
-            }
-
+        outputDoc(doc, patch);
         }
-
-
 }
