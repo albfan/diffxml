@@ -68,13 +68,10 @@ public class Match
 
     private boolean equal(final Node a, final Node b)
         {
-        //Currently returns false but should throw exception
+        //Currently returns false but should throw exception?
 
         if (a.getNodeType() != b.getNodeType())
-            {
-            System.out.println("Types not equal");
             return false;
-            }
 
 
         //if Node is an element
@@ -105,7 +102,7 @@ public class Match
                     return false;
                     }
                 }
-            //Consider comparng positions of elements, or if kids matched etc
+            //Consider comparing positions of elements, or if kids matched etc
             return true;
             }
 
@@ -120,6 +117,7 @@ public class Match
                 {
                 //Ignore all whitespace
                 //Remove whitespace from nodes before comparison
+                //Check nextToken doesn't skip first
                 StringTokenizer st = new StringTokenizer(aString);
                 aString = "";
                 while (st.hasMoreTokens())
@@ -141,11 +139,7 @@ public class Match
             //Check case optn
 
             if (DiffFactory.IGNORE_CASE)
-                {
-                //Just make it all lower
-                aString.toLowerCase();
-                bString.toLowerCase();
-                }
+                return (aString.equalsIgnoreCase(bString));
 
             return (aString.equals(bString));
             }
@@ -157,7 +151,47 @@ public class Match
         }
 
     /**
+     * Adds user data to nodes to denote they have been matched.
+     *
+     * @param nodeA  The unmatched partner of nodeB
+     * @param nodeB  The unmatched partner of nodeA
+     */
+
+    private void markMatched(final NodeImpl nodeA, final NodeImpl nodeB)
+        {
+        nodeA.setUserData("matched", "true", null);
+        nodeB.setUserData("matched", "true", null);
+        }
+
+    /**
+     * Creates a NodeIterator with an appropriate filter.
+     *
+     * @param  nodeType determines the type of filter to be used
+     * @param  doc      the document to create the iterator on
+     * @return          the resultant NodeIterator
+     */
+
+    private NodeIterator makeIterator(String nodeType, Document doc)
+        {
+
+        //Should really be bottom up, but shouldn't make big diff
+        int filter;
+        if (nodeType.equals("#text"))
+            filter = NodeFilter.SHOW_TEXT;
+        else
+            filter = NodeFilter.SHOW_COMMENT;
+
+        DiffXML.log.finer("Matching text/comment nodes");
+        return ((DocumentTraversal) doc).createNodeIterator(
+                doc.getDocumentElement(),
+                filter, null, false);
+        }
+
+    /**
      * Performs fast match algorithm on given DOM documents.
+     *
+     * TODO: Possible searching wrong way could be causing bad matches,
+     *       especially of whitespace.
      *
      * @param doc1   The original document
      * @param doc2   The modified document
@@ -170,44 +204,40 @@ public class Match
 
         NodeSet matchSet = new NodeSet();
 
-        //Normalise documents
         doc1.getDocumentElement().normalize();
         doc2.getDocumentElement().normalize();
 
-        TreeSet td1 = markElements(doc1);
-        TreeSet td2 = markElements(doc2);
+        //Mark all nodes unmatched
+        markNodes(doc1);
+        markNodes(doc2);
 
-        String wanted = "";
-        NodeInfo tg;
+        //Proceed bottom up on Tree 1
+        TreeSet tree1 = sortNodes(doc1);
 
-        //Iterate for nodes in Tree1
-        Iterator it = td1.iterator();
-        while (it.hasNext())
+        Iterator treeIter = tree1.iterator();
+
+        String wantedName;
+        NodeInfo curr;
+
+        while (treeIter.hasNext())
             {
-            tg = (NodeInfo) it.next();
+            curr = (NodeInfo) treeIter.next();
 
-            wanted = tg.getTag();
+            wantedName = curr.getTag();
 
-            DiffXML.log.finer("Wanted Node: " + wanted);
-            //Get all nodes in both trees with this tag
-            if (wanted.equals("#text"))
+            DiffXML.log.finer("Wanted Node: " + wantedName);
+
+            //Get all nodes in both documents with this tag
+            if (wantedName.equals("#text") || wantedName.equals("#comment"))
                 {
-                //Use node iterator
-                //Should really be bottom up, but shouldn't make big diff
-                DiffXML.log.finer("Matching text nodes");
-                NodeIterator ni1 = ((DocumentTraversal) doc1).createNodeIterator(
-                        doc1.getDocumentElement(),
-                        NodeFilter.SHOW_TEXT, null, false);
-                NodeIterator ni2 = ((DocumentTraversal) doc2).createNodeIterator(
-                        doc2.getDocumentElement(),
-                        NodeFilter.SHOW_TEXT, null, false);
+                NodeIterator ni1 = makeIterator(wantedName, doc1);
+                NodeIterator ni2 = makeIterator(wantedName, doc2);
 
                 NodeImpl na = (NodeImpl) ni1.nextNode();
                 NodeImpl nb = (NodeImpl) ni2.nextNode();
 
                 while (na != null)
                     {
-                    //Should always be false but leave check in for mo
                     if (na.getUserData("matched").equals("false"))
                         {
                         while (nb != null)
@@ -217,72 +247,31 @@ public class Match
                                 {
                                 //Add nodes to matching set
                                 matchSet.add(na, nb);
-                                //Mark nodes matched
-                                na.setUserData("matched", "true", null);
-                                nb.setUserData("matched", "true", null);
+                                markMatched(na, nb);
 
                                 break;
                                 }
                             nb = (NodeImpl) ni2.nextNode();
                             }
                         }
-                    na = (NodeImpl) ni1.nextNode();
-
-                    ni2.detach();
-                    ni2 = ((DocumentTraversal) doc2).createNodeIterator(
-                            doc2.getDocumentElement(),
-                            NodeFilter.SHOW_TEXT, null, false);
-                    nb = (NodeImpl) ni2.nextNode();
-                    }
-
-
-                }
-            else if (wanted.equals("#comment"))
-                {
-                //Use node iterator
-                //Should really be bottom up, but shouldn't make big diff
-                DiffXML.log.finer("Matching comments");
-                NodeIterator ni1 = ((DocumentTraversal) doc1).createNodeIterator(
-                        doc1.getDocumentElement(),
-                        NodeFilter.SHOW_COMMENT, null, false);
-                NodeIterator ni2 = ((DocumentTraversal) doc2).createNodeIterator(
-                        doc2.getDocumentElement(),
-                        NodeFilter.SHOW_COMMENT, null, false);
-
-                NodeImpl na = (NodeImpl) ni1.nextNode();
-                NodeImpl nb = (NodeImpl) ni2.nextNode();
-
-                while (na != null)
-                    {
-                    //Should always be false but leave check in for mo
-                    if (na.getUserData("matched").equals("false"))
+                    else
                         {
-                        while (nb != null)
-                            {
-                            if (nb.getUserData("matched").equals("false")
-                                    && equal(na, nb))
-                                {
-                                matchSet.add(na, nb);
-                                na.setUserData("matched", "true", null);
-                                nb.setUserData("matched", "true", null);
-
-                                break;
-                                }
-                            nb = (NodeImpl) ni2.nextNode();
-                            }
+                        //Shouldn't be possible to get here
+                        DiffXML.log.warning("Node should NOT be matched");
                         }
+
                     na = (NodeImpl) ni1.nextNode();
+
                     ni2.detach();
-                    ni2 = ((DocumentTraversal) doc2).createNodeIterator(
-                            doc2.getDocumentElement(),
-                            NodeFilter.SHOW_TEXT, null, false);
+                    ni2 = makeIterator(wantedName, doc2);
                     nb = (NodeImpl) ni2.nextNode();
                     }
+
                 }
             else
                 {
-                NodeList tg1 = doc1.getElementsByTagName(wanted);
-                NodeList tg2 = doc2.getElementsByTagName(wanted);
+                NodeList tg1 = doc1.getElementsByTagName(wantedName);
+                NodeList tg2 = doc2.getElementsByTagName(wantedName);
 
                 //Cycle through tg1 looking for matches in tg2
 
@@ -302,9 +291,7 @@ public class Match
                                 //Add nodes to matching set
                                 matchSet.add(tg1.item(a), tg2.item(b));
 
-                                //mark nodes matched
-                                aNode.setUserData("matched", "true", null);
-                                bNode.setUserData("matched", "true", null);
+                                markMatched(aNode, bNode);
 
                                 //Don't think this statement did nowt
                                 //continue tg_tag;
@@ -318,118 +305,83 @@ public class Match
 
 
         if (OUTPUT_MATCHED_NODES)
-            matchSet.print_set();
+            matchSet.printSet();
 
         return matchSet;
 
     }
 
-    /*
-    private TreeSet markElements(final Document doc)
-        {
-
-        //Create tree walker to iterate through all nodes in docs.
-        //Maybe want to set to SHOW_ELEMENT and do other elements separately
-        TreeWalker walker = ((DocumentTraversal) doc).createTreeWalker(
-                doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
-
-        NodeImpl node;
-
-        TreeSet nodeInfoSet = new TreeSet(new NodeInfoComparator());
-
-        //Add root node (should change loop to include)
-        node = (NodeImpl) walker.getCurrentNode();
-        node.setUserData("matched", "false", null);
-        node.setUserData("inorder", "true", null);
-
-        NodeInfo rootInfo = new NodeInfo(node.getNodeName(), 0);
-        nodeInfoSet.add(rootInfo);
-        DiffXML.log.finer("Added "  + rootInfo.getTag() + " Depth " + 0);
-
-        while ((node = (NodeImpl) walker.nextNode()) != null)
-            {
-            node.setUserData("matched", "false", null);
-            //Let children default to be "out of order"
-            //Test with "inorder"
-            node.setUserData("inorder", "true", null);
-
-            NodeInfo ni = new NodeInfo(node.getNodeName(), 0);
-
-            //Get depth
-            int depth = 1;
-            NodeImpl parentNode = (NodeImpl) node.getParentNode();
-            while (parentNode != doc.getDocumentElement() && parentNode != null)
-                {
-                depth++;
-                parentNode = (NodeImpl) parentNode.getParentNode();
-                }
-
-            ni.setDepth(depth);
-            nodeInfoSet.add(ni);
-            DiffXML.log.finer("Added "  + ni.getTag()
-                    + " Depth " + ni.getDepth());
-            }
-        return nodeInfoSet;
-        }
-
-        */
     /**
-     * Returns a sorted set of all nodes and adds user-data to each node.
-     *
-     * TreeSet is sorted in reverse order of depth according to
-     * NodeInfoComparator.
+     * Sets default user data tags on each node in document.
      *
      * Marks each node with "matched" and "inorder" tags.
+     *
      * Tag "inorder" should default to true, and be changed by EditScript
      * if needed.
      * Tag "matched" is false until node is matched with a node in the
      * other document.
      *
-     * TODO: Check if should mark all nodes or just elements.
-     * TODO: Add root node to main loop if possible.
+     * TODO: ensure we should be marking all nodes.
+     *
+     * @param doc the document containg the nodes to be marked.
      */
 
-    private TreeSet markElements(final Document doc)
+    private void markNodes(final Document doc)
+        {
+        NodeIterator ni = ((DocumentTraversal) doc).createNodeIterator(
+                doc.getDocumentElement(),
+                NodeFilter.SHOW_ALL, null, false);
+
+        NodeImpl node;
+        while ( (node = (NodeImpl) ni.nextNode()) != null)
+            {
+            node.setUserData("matched", "false", null);
+            node.setUserData("inorder", "true", null);
+            }
+        }
+
+    /**
+     * Returns a sorted set of all nodes.
+     *
+     * TreeSet is sorted in reverse order of depth according to
+     * NodeInfoComparator.
+     *
+     * @param doc  The document to sort.
+     * @return     A set of all the documents nodes in reverse order of
+     *             depth.
+     */
+
+    private TreeSet sortNodes(final Document doc)
         {
         //Tree walker steps through all nodes in docs
         TreeWalker walker = ((DocumentTraversal) doc).createTreeWalker(
                 doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
 
         NodeImpl node;
-
         TreeSet nodeInfoSet = new TreeSet(new NodeInfoComparator());
 
         node = (NodeImpl) walker.getCurrentNode();
-        node.setUserData("matched", "false", null);
-        node.setUserData("inorder", "true", null);
 
-        NodeInfo rootInfo = new NodeInfo(node.getNodeName(), 0);
-        nodeInfoSet.add(rootInfo);
-
-        DiffXML.log.finer("Added "  + rootInfo.getTag() + " Depth " + 0);
-
-        while ((node = (NodeImpl) walker.nextNode()) != null)
+        while (node != null)
             {
-            node.setUserData("matched", "false", null);
-            node.setUserData("inorder", "true", null);
+            NodeImpl tmpNode = node;
+            int depth = 0;
 
-            NodeInfo ni = new NodeInfo(node.getNodeName(), 0);
-
-            //Get depth
-            int depth = 1;
-            NodeImpl parentNode = (NodeImpl) node.getParentNode();
-            while (parentNode != doc.getDocumentElement())
+            while (tmpNode != doc.getDocumentElement())
                 {
                 depth++;
-                parentNode = (NodeImpl) parentNode.getParentNode();
+                tmpNode = (NodeImpl) tmpNode.getParentNode();
                 }
 
-            ni.setDepth(depth);
+            NodeInfo ni = new NodeInfo(node.getNodeName(), depth);
             nodeInfoSet.add(ni);
 
             DiffXML.log.finer("Added "  + ni.getTag()
                     + " Depth " + ni.getDepth());
+
+            node = (NodeImpl) walker.nextNode();
             }
+
         return nodeInfoSet;
         }
 }
