@@ -112,4 +112,14 @@ public class NodeInfo
         {
         return _depth;
         }
+
+    public final boolean equals(final Object o)
+        {
+        return o.equals(this);
+        }
+
+    public final int hashCode()
+        {
+        return _tag.length() + _depth;
+        }
 }

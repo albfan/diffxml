@@ -27,7 +27,6 @@ import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.DiffXML;
 
 import java.util.TreeSet;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -89,7 +88,10 @@ public class Match
             NamedNodeMap aAttrs = a.getAttributes();
             NamedNodeMap bAttrs = b.getAttributes();
 
-            int numberAttrs = (aAttrs != null) ? aAttrs.getLength() : 0;
+            int numberAttrs = 0;
+            if (aAttrs != null)
+                numberAttrs = aAttrs.getLength();
+
             for (int i = 0; i < numberAttrs; i++)
                 {
                 //Check if attr exists in other tag
@@ -152,34 +154,6 @@ public class Match
 
         //System.out.println("Equal: elements equal");
         return (a.getNodeValue().equals(b.getNodeValue()));
-        }
-
-    class tdComp implements Comparator
-        {
-        //Remember we want things stored in reverse order of depth!
-        //We don't really care about order of strings but we need to
-        //differentiate for a set
-
-        public int compare(final Object o1, final Object o2)
-            {
-            NodeInfo td1 = (NodeInfo) o1;
-            NodeInfo td2 = (NodeInfo) o2;
-
-            if (td1.getDepth() == td2.getDepth())
-                {
-                return (td1.getTag().compareTo(td2.getTag()));
-                }
-            else
-                {
-                return (td2.getDepth() - td1.getDepth());
-                }
-            }
-
-        public final boolean equals(final Object o)
-            {
-            return o.equals(this);
-            }
-
         }
 
     /**
@@ -350,6 +324,7 @@ public class Match
 
     }
 
+    /*
     private TreeSet markElements(final Document doc)
         {
 
@@ -360,15 +335,15 @@ public class Match
 
         NodeImpl node;
 
-        TreeSet td = new TreeSet(new tdComp());
+        TreeSet nodeInfoSet = new TreeSet(new NodeInfoComparator());
 
         //Add root node (should change loop to include)
         node = (NodeImpl) walker.getCurrentNode();
         node.setUserData("matched", "false", null);
-        node.setUserData("inorder", "false", null);
+        node.setUserData("inorder", "true", null);
 
         NodeInfo rootInfo = new NodeInfo(node.getNodeName(), 0);
-        td.add(rootInfo);
+        nodeInfoSet.add(rootInfo);
         DiffXML.log.finer("Added "  + rootInfo.getTag() + " Depth " + 0);
 
         while ((node = (NodeImpl) walker.nextNode()) != null)
@@ -377,9 +352,6 @@ public class Match
             //Let children default to be "out of order"
             //Test with "inorder"
             node.setUserData("inorder", "true", null);
-
-            //Get iterator for TreeSet
-            Iterator it = td.iterator();
 
             NodeInfo ni = new NodeInfo(node.getNodeName(), 0);
 
@@ -393,12 +365,72 @@ public class Match
                 }
 
             ni.setDepth(depth);
-            td.add(ni);
+            nodeInfoSet.add(ni);
             DiffXML.log.finer("Added "  + ni.getTag()
                     + " Depth " + ni.getDepth());
             }
-        return td;
+        return nodeInfoSet;
         }
 
+        */
+    /**
+     * Returns a sorted set of all nodes and adds user-data to each node.
+     *
+     * TreeSet is sorted in reverse order of depth according to
+     * NodeInfoComparator.
+     *
+     * Marks each node with "matched" and "inorder" tags.
+     * Tag "inorder" should default to true, and be changed by EditScript
+     * if needed.
+     * Tag "matched" is false until node is matched with a node in the
+     * other document.
+     *
+     * TODO: Check if should mark all nodes or just elements.
+     * TODO: Add root node to main loop if possible.
+     */
+
+    private TreeSet markElements(final Document doc)
+        {
+        //Tree walker steps through all nodes in docs
+        TreeWalker walker = ((DocumentTraversal) doc).createTreeWalker(
+                doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
+
+        NodeImpl node;
+
+        TreeSet nodeInfoSet = new TreeSet(new NodeInfoComparator());
+
+        node = (NodeImpl) walker.getCurrentNode();
+        node.setUserData("matched", "false", null);
+        node.setUserData("inorder", "true", null);
+
+        NodeInfo rootInfo = new NodeInfo(node.getNodeName(), 0);
+        nodeInfoSet.add(rootInfo);
+
+        DiffXML.log.finer("Added "  + rootInfo.getTag() + " Depth " + 0);
+
+        while ((node = (NodeImpl) walker.nextNode()) != null)
+            {
+            node.setUserData("matched", "false", null);
+            node.setUserData("inorder", "true", null);
+
+            NodeInfo ni = new NodeInfo(node.getNodeName(), 0);
+
+            //Get depth
+            int depth = 1;
+            NodeImpl parentNode = (NodeImpl) node.getParentNode();
+            while (parentNode != doc.getDocumentElement())
+                {
+                depth++;
+                parentNode = (NodeImpl) parentNode.getParentNode();
+                }
+
+            ni.setDepth(depth);
+            nodeInfoSet.add(ni);
+
+            DiffXML.log.finer("Added "  + ni.getTag()
+                    + " Depth " + ni.getDepth());
+            }
+        return nodeInfoSet;
+        }
 }
 
