@@ -35,27 +35,31 @@ public class NodePos
 {
 
     //Function to return charpos only
-    //Is it possible that we may have *2* or more previous text nodes?
+    //Check starting at pos 1
     public static int getCharpos(Node n)
         {
 
-        NodeList kids=n.getParentNode().getChildNodes();
-        int charpos=1;
+        NodeList kids = n.getParentNode().getChildNodes();
+        int charpos = 1;
 
-        NodeImpl n3=(NodeImpl) n;
-        int i;
-        for (i=0;i<kids.getLength();i++)
+        NodeImpl ni = (NodeImpl) n;
+
+        //Find child number of node
+        int cn;
+        for (cn = 0; cn < kids.getLength(); cn++)
             {
-            if (n3.isSameNode(kids.item(i)))
+            if (ni.isSameNode(kids.item(cn)))
                 break;
             }
 
-        for (int y=(i-1); y>=0; y--)
+        //Add lengths of previous text nodes
+        for (int y = (cn - 1); y >= 0; y--)
             {
-            if (kids.item(y).getNodeType()==Node.TEXT_NODE)
+            if (kids.item(y).getNodeType() == Node.TEXT_NODE)
                 {
-                charpos=charpos+kids.item(y).getNodeValue().length();
-                DiffXML.log.finer(kids.item(y).getNodeValue()+ " charpos "+charpos);
+                charpos = charpos + kids.item(y).getNodeValue().length();
+                DiffXML.log.finer(kids.item(y).getNodeValue()
+                        + " charpos " + charpos);
                 }
             else
                 break;
@@ -77,7 +81,7 @@ public class NodePos
         //Keep boolean so we know if at top
         boolean top=true;
 
-        //Have to init to something so x can be used in final comp
+        //Have to init x to something so can be used in final comp
         NodeImpl x = (NodeImpl) n;
 
         NodeImpl root = (NodeImpl) n.getOwnerDocument().getDocumentElement();

@@ -116,48 +116,37 @@ public class EditScript
             }
         }
 
+    private void insertAsChild(int childNum, Node parent, Node insNode)
+        {
+        NodeList kids = parent.getChildNodes();
+        
+        if (kids.item(childNum) != null)
+            parent.insertBefore(insNode, kids.item(childNum));
+        else
+            parent.appendChild(insNode);
+        }
+
+    private void addAttrsToDelta(NamedNodeMap attrs, String path, 
+            Document editScript)
+        {
+
+        int numAttrs;
+        if (attrs == null)
+            numAttrs = 0;
+        else
+            numAttrs = attrs.getLength();
+
+        for (int i = 0; i < numAttrs; i++)
+            {
+            Delta.Insert(attrs.item(i), path, 0, -1, editScript);
+            }
+        }
+
     private Node doInsert(NodeImpl x, NodeImpl z, Document doc1, 
             Document editScript, NodeSet matchings)
         {
-        InsertPosition pos = new InsertPosition();
-        Pos ins_pos;
-        //Easier to mark as matched now than at end
-        x.setUserData("matched", "true", null);
-        x.setUserData("inorder", "true", null);
-
-        pos = FindPos(x, matchings);
-
-        //Get XPath for z
-        ins_pos = NodePos.get(z);
-
-        //Create XPath for node we are about to insert
-        //(Needed to insert attrs if any)
-        NamedNodeMap attrs = x.getAttributes();
-        int a_len = (attrs != null) ? attrs.getLength() : 0;
-        String path;
-
-        //XPath different if expanding tagnames
-        if (DiffFactory.TAGNAMES && (a_len != 0))
-            {
-            //Find in order index of element
-            NodeList k = x.getParentNode().getChildNodes();
-            String tag = x.getNodeName();
-            int in = 0;
-            for (int ii = 0; ii < k.getLength(); ii++)
-                {
-                NodeImpl tmp = (NodeImpl) k.item(ii);
-                if (tmp.getNodeName().equals(tag)
-                        && tmp.getUserData("inorder").equals("true"))
-                    in++;
-
-                if (tmp.isSameNode(x))
-                    break;
-                }
-            path = ins_pos.path + "/" + x.getNodeName()
-            + "[" + in + "]";
-            }
-        else
-            path = ins_pos.path + "/node()[" + pos.numXPath + "]";
+        InsertPosition pos = FindPos(x, matchings);
+        Pos zPath = NodePos.get(z);
 
         //Apply insert to doc1
         //The node we want to insert is the import of x with all
@@ -166,112 +155,55 @@ public class EditScript
 
         Node w = doc1.importNode(x, false);
         ((NodeImpl) w).setUserData("matched", "true", null);
-        //Not sure if inorder should be true or false
         ((NodeImpl) w).setUserData("inorder", "true", null);
 
         //Take match of parent (z), and insert
-        //get the kids
-        NodeList babes = z.getChildNodes();
-        //If Node exists we want to insert before it
-        //if (babes.item(index[DOM]) != null)
-        if (babes.item(pos.insertBefore) != null)
-            //z.insertBefore(w, babes.item(index[DOM]));
-            z.insertBefore(w, babes.item(pos.insertBefore));
-        else
-            {
-            //Last node
-            z.appendChild(w);
-            }
+        insertAsChild(pos.insertBefore, z, w);
 
         //Add to matching set
+        x.setUserData("matched", "true", null);
         matchings.add(w, x);
 
-        //Add to delta
-        //Delta.Insert(w, ins_pos.path, index[XPATH], index[CHAR], editScript);
-        Delta.Insert(w, ins_pos.path, pos.numXPath, pos.charPosition, editScript);
+        Delta.Insert(w, zPath.path, pos.numXPath, pos.charPosition, editScript);
 
-        //Add attributes to delta
-        for (int i = 0; i < a_len; i++)
-            {
-            Delta.Insert(attrs.item(i), path, 0, -1, editScript);
-            }
+        addAttrsToDelta(x.getAttributes(), NodePos.get(w).path, editScript);
 
         return w;
         }
 
-    private Node doMove(NodeImpl x, NodeImpl y, NodeImpl z, 
+    private Node doMove(NodeImpl x, NodeImpl z, 
             Document editScript, NodeSet matchings)
         {
         DiffXML.log.fine("In move");
 
-        //int index[] = new int[3];
         InsertPosition pos = new InsertPosition();
 
         Node w = matchings.getPartner(x);
-        Node v = w.getParentNode();
-        NodeImpl tmp1 = (NodeImpl) v;
+        NodeImpl v = (NodeImpl) w.getParentNode();
+        NodeImpl y = (NodeImpl) x.getParentNode();
+
+        //UPDATE would be here if implemented
+        
         //Apply move if parents not matched
-        NodeImpl tmp2 = (NodeImpl) matchings.getPartner(y);
-        if (!tmp1.isSameNode(tmp2))
+        NodeImpl partnerY = (NodeImpl) matchings.getPartner(y);
+        if (!v.isSameNode(partnerY))
             {
-            //index = FindPos(x, matchings);
             pos = FindPos(x, matchings);
-            //Element mov=es.createElement("move");
-            //db.p("In move line 236");
-            Pos w_pos = NodePos.get(w);
-            //mov.setAttribute("node",w_pos.path);
-            //  if (w_pos.charpos!=-1)
-            //  mov.setAttribute("old_charpos", (""+w_pos.charpos) );
+            Pos wPath = NodePos.get(w);
+            Pos zPath = NodePos.get(z);
 
-            // if (w_pos.length!=-1)
-            // mov.setAttribute("length", (""+w_pos.length) );
-
-            Pos z_pos = NodePos.get(z);
-            //mov.setAttribute("parent",z_pos.path);
-            // if ( index[CHAR]!=-1 )
-            //mov.setAttribute("new_charpos",(""+index[CHAR]));
-
-            //mov.setAttribute("childno", ( ""+index[XPATH] ) );
-
-            //db.p("MOVE" + w.getNodeName() + " " + w.getNodeValue()
-            //    + " , " + z.getNodeName() + " , " + index[XPATH]);
-            //root.appendChild(mov);
-
-            //Get domcn w is of v
-            NodeList k = v.getChildNodes();
-            int domcn = 0;
-            for (domcn = 0; domcn < k.getLength(); domcn++)
-                {
-                if (((NodeImpl) w).isSameNode(k.item(domcn)))
-                    break;
-                }
-
-
-            Element mark = editScript.createElement("mark");
+            Element context = editScript.createElement("mark");
             if (DiffFactory.CONTEXT)
                 {
-                mark.appendChild(editScript.importNode(w, true));
-                mark = Delta.addContext(w, mark);
+                context.appendChild(editScript.importNode(w, true));
+                context = Delta.addContext(w, context);
                 }
+
             //Apply move to T1
+            insertAsChild(pos.insertBefore, z, w);
 
-            //get the kids
-            NodeList babes2 = z.getChildNodes();
-            //If Node exists we want to insert before it
-            //if (babes2.item(index[DOM]) != null)
-            //    z.insertBefore(w, babes2.item(index[DOM]));
-            if (babes2.item(pos.insertBefore) != null)
-                z.insertBefore(w, babes2.item(pos.insertBefore));
-            else
-                {
-                //Last node
-                z.appendChild(w);
-                }
-
-            //Delta.Move(mark, w, w_pos.path, z_pos.path, index[XPATH],
-            //        w_pos.charpos, index[CHAR], w_pos.length, editScript);
-            Delta.Move(mark, w, w_pos.path, z_pos.path, pos.numXPath,
-                     w_pos.charpos, pos.charPosition, w_pos.length, editScript);
+            Delta.Move(context, w, wPath.path, zPath.path, pos.numXPath,
+                     wPath.charpos, pos.charPosition, wPath.length, editScript);
             }
         return w;
         }
@@ -293,13 +225,11 @@ public class EditScript
         {
         Document editScript = makeEmptyEditScript();
 
-
         if (!doc1.getDocumentElement().getNodeName()
                 .equals(doc2.getDocumentElement()))
             matchRoots(editScript, doc1, doc2);
 
         //Fifo used to do a breadth first traversal of doc2
-
         Fifo fifo = new Fifo();
         fifo.push(doc2.getDocumentElement());
 
@@ -308,43 +238,31 @@ public class EditScript
             DiffXML.log.fine("In breadth traversal");
 
             NodeImpl x = (NodeImpl) fifo.pop();
-
             addChildrenToFifo(x, fifo);
 
             //May need to do more with root
             if (x.isSameNode(doc2.getDocumentElement()))
                 {
-                //Mark "in order"
                 x.setUserData("inorder", "true", null);
                 continue;
                 }
 
-            //Set y to be parent of x
             Node y = x.getParentNode();
-
-            //Get z, y's partner
             Node z = matchings.getPartner(y);
 
             logNodes(x, y, z);
-
             Node w;
 
             if (x.getUserData("matched").equals("false"))
-                {
                 w = doInsert(x, (NodeImpl) z, doc1, editScript, matchings);
-                }
             else
-                {
-                w = doMove(x, (NodeImpl) y, (NodeImpl) z, editScript, matchings);
-                }
+                w = doMove(x, (NodeImpl) z, editScript, matchings);
 
-            //Call AlignChildren
             //May want to check value of w
-            AlignChildren(w, x, editScript, matchings);
-
+            alignChildren(w, x, editScript, matchings);
             }
 
-        DeletePhase(doc1.getDocumentElement(), editScript);
+        deletePhase(doc1.getDocumentElement(), editScript);
 
         //Post-Condition es is a minimum cost edit script,
         //Matchings is a total matching and
@@ -353,9 +271,8 @@ public class EditScript
         return editScript;
         }
 
-    private void DeletePhase(Node n, Document editScript)
+    private void deletePhase(Node n, Document editScript)
         {
-        //System.out.println("Entered Delete Phase");
         //Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
         if (kids != null)
@@ -367,39 +284,47 @@ public class EditScript
                 if (Fmes.isBanned(kids.item(i)))
                     continue;
 
-                DeletePhase(kids.item(i), editScript);
+                deletePhase(kids.item(i), editScript);
                 }
             }
 
         //If node isn't matched, delete it
         if (((NodeImpl) n).getUserData("matched").equals("false"))
             {
-            /*
-               ============
-               Apply Delete
-               ============
-               */
-
             Element par = (Element) n.getParentNode();
             Pos del_pos = NodePos.get(n);
 
-            //Add to es
             Delta.Delete(n, del_pos.path, del_pos.charpos, del_pos.length, editScript);
-            //Apply remove
             par.removeChild(n);
             }
 
-        //System.out.println("Exited Delete Phase");
         }
 
-    private void AlignChildren(Node w, Node x, Document editScript,
+    private void markChildrenOutOfOrder(Node n)
+        {
+        //Possibly should be ignoring banned nodes
+        //Be very careful as ignored nodes will mess up moves
+        NodeList kids = n.getChildNodes();
+
+        for (int i = 0; i < kids.getLength(); i++)
+            {
+            if (Fmes.isBanned(kids.item(i)))
+                continue;
+            ((NodeImpl) kids.item(i)).setUserData("inorder", "false", null);
+            DiffXML.log.fine("Node: " + kids.item(i).getNodeName()
+                    + " user data: " 
+                    + ((NodeImpl) kids.item(i)).getUserData("inorder"));
+            }
+        }
+
+    private void alignChildren(Node w, Node x, Document editScript,
             NodeSet matchings)
         {
         //Calls LCS algorithm
 
         //Order of w and x is important
-        //Mark all children of w and x "out of order"
-        //Immediate children only? Assume so.
+        //Mark children of w and x "out of order"
+
 
         NodeList w_kids = w.getChildNodes();
         NodeList x_kids = x.getChildNodes();
@@ -407,49 +332,17 @@ public class EditScript
         //Only have something to do if we have kids
         DiffXML.log.finer("no w_kids" + w_kids.getLength());
         DiffXML.log.finer("no x_kids" + x_kids.getLength());
+
+        //build will break if following statement not here!
+        //Find out why!!! May want to test x length as well
         if (w_kids.getLength() == 0)
             return;
 
-        for (int i = 0; i < w_kids.getLength(); i++)
-            {
-            //Ignored nodes should be left inorder?
-            //Ignored nodes are probably going to foul up moves etc.
-            //May need to changed to nodes are only ignored when
-            //outputting delta
-            if (Fmes.isBanned(w_kids.item(i)))
-                continue;
-            /*
-               if (Table.ign_ws_nodes
-                   && w_kids.item(i).getNodeType()==Node.TEXT_NODE)
-               {
-               StringTokenizer st =
-                   new StringTokenizer(w_kids.item(i).getNodeValue());
-               if (!st.hasMoreTokens())
-               continue;
-               }
-               */
-            ((NodeImpl) w_kids.item(i)).setUserData("inorder", "false", null);
-            }
-
-        for (int i = 0; i < x_kids.getLength(); i++)
-            {
-            //Ignored nodes should be left inorder
-            if (Fmes.isBanned(x_kids.item(i)))
-                continue;
-            /*
-               if (Table.ign_ws_nodes
-                   && x_kids.item(i).getNodeType()==Node.TEXT_NODE)
-               {
-               StringTokenizer st =
-                   new StringTokenizer(x_kids.item(i).getNodeValue());
-               if (!st.hasMoreTokens())
-               continue;
-               }
-               */
-            ((NodeImpl) x_kids.item(i)).setUserData("inorder", "false", null);
-            }
+        markChildrenOutOfOrder(w);
+        markChildrenOutOfOrder(x);
 
         Node[] seq = Lcs.find(w_kids, x_kids, matchings);
+
         //Step through array, marking in order
 
         for (int i = 0; i < seq.length; i++)
@@ -696,5 +589,4 @@ public class EditScript
         //return index;
         return pos;
         }
-
 }

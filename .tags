@@ -4,29 +4,37 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	4.0.3	//
-AlignChildren	./src/org/diffxml/diffxml/fmes/EditScript.java	/^public static void AlignChildren(Node w, Node x, Document es, NodeSet matchings)$/;"	m	class:EditScript
+AlignChildren	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void AlignChildren(Node w, Node x, Document editScript,$/;"	m	file:	class:EditScript
 BackwardLineReader	./src/org/diffxml/diffxml/xmdiff/BackwardLineReader.java	/^BackwardLineReader(RandomAccessFile _file) throws IOException$/;"	m	class:BackwardLineReader
 BackwardLineReader	./src/org/diffxml/diffxml/xmdiff/BackwardLineReader.java	/^public class BackwardLineReader$/;"	c
 Costs	./src/org/diffxml/diffxml/xmdiff/Costs.java	/^public class Costs$/;"	c
 Delete	./src/org/diffxml/diffxml/fmes/Delta.java	/^public static void Delete(Node n, String path, int charpos, int length, Document es)$/;"	m	class:Delta
-DeletePhase	./src/org/diffxml/diffxml/fmes/EditScript.java	/^public static void DeletePhase(Node n, Document es)$/;"	m	class:EditScript
+DeletePhase	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void DeletePhase(Node n, Document editScript)$/;"	m	file:	class:EditScript
 Delta	./src/org/diffxml/diffxml/fmes/Delta.java	/^public class Delta$/;"	c
 Depth	./src/org/diffxml/diffxml/xmdiff/Depth.java	/^public class Depth$/;"	c
 Diff	./src/org/diffxml/diffxml/Diff.java	/^public abstract class Diff$/;"	c	implementation:abstract
 DiffFactory	./src/org/diffxml/diffxml/DiffFactory.java	/^public class DiffFactory$/;"	c
 DiffXML	./src/org/diffxml/diffxml/DiffXML.java	/^public class DiffXML$/;"	c
 EditScript	./src/org/diffxml/diffxml/fmes/EditScript.java	/^public class EditScript$/;"	c
-FindPos	./src/org/diffxml/diffxml/fmes/EditScript.java	/^public static int[] FindPos(Node x, NodeSet matchings)$/;"	m	class:EditScript
+Fifo	./src/org/diffxml/diffxml/fmes/Fifo.java	/^    Fifo()$/;"	m	class:Fifo
+Fifo	./src/org/diffxml/diffxml/fmes/Fifo.java	/^public class Fifo$/;"	c
+FindPos	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private InsertPosition FindPos(final Node x, final NodeSet matchings)$/;"	m	file:	class:EditScript
 Fmes	./src/org/diffxml/diffxml/fmes/Fmes.java	/^public class Fmes extends Diff$/;"	c	inherits:Diff
 Insert	./src/org/diffxml/diffxml/fmes/Delta.java	/^public static void Insert(Node n, String parent, $/;"	m	class:Delta
+InsertPosition	./src/org/diffxml/diffxml/fmes/InsertPosition.java	/^class InsertPosition$/;"	c
 Lcs	./src/org/diffxml/diffxml/fmes/Lcs.java	/^public class Lcs$/;"	c
-LeafFilter	./src/org/diffxml/diffxml/fmes/Match.java	/^class LeafFilter implements NodeFilter $/;"	c	class:Match	inherits:NodeFilter
 Mark	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public class Mark$/;"	c
 Match	./src/org/diffxml/diffxml/fmes/Match.java	/^public class Match$/;"	c
 Move	./src/org/diffxml/diffxml/fmes/Delta.java	/^public static void Move(Element mark, Node n, String path, String parent, int childno, int ocharpos, int ncharpos, int length, Document es)$/;"	m	class:Delta
 Node	./src/org/diffxml/diffxml/xmdiff/Node.java	/^Node()$/;"	m	class:Node
 Node	./src/org/diffxml/diffxml/xmdiff/Node.java	/^Node(int t, String n, int d)$/;"	m	class:Node
 Node	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public class Node$/;"	c
+NodeInfo	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    NodeInfo(final String tag, final int depth)$/;"	m	class:NodeInfo
+NodeInfo	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^public class NodeInfo$/;"	c
+NodeInfoComparator	./src/org/diffxml/diffxml/fmes/NodeInfoComparator.java	/^class NodeInfoComparator implements Comparator$/;"	c	inherits:Comparator
+NodePair	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^        NodePair(Node x, Node y)$/;"	m	class:NodePairSet.NodePair
+NodePair	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    class NodePair$/;"	c	class:NodePairSet
+NodePairSet	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^public class NodePairSet$/;"	c
 NodePos	./src/org/diffxml/diffxml/fmes/NodePos.java	/^public class NodePos$/;"	c
 NodeSet	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^public class NodeSet$/;"	c
 PatchXML	./src/org/diffxml/patchxml/PatchXML.java	/^public class PatchXML$/;"	c
@@ -36,79 +44,90 @@ PrintXML	./src/org/diffxml/diffxml/fmes/PrintXML.java	/^public class PrintXML$/;
 Recover	./src/org/diffxml/diffxml/xmdiff/Recover.java	/^public Recover(int[][] D, RandomAccessFile fA, int M, RandomAccessFile fB, int N, String f1, String f2, File out) throws Exception$/;"	m	class:Recover
 Recover	./src/org/diffxml/diffxml/xmdiff/Recover.java	/^public class Recover$/;"	c
 Reverse	./src/org/diffxml/patchxml/Reverse.java	/^public class Reverse$/;"	c
-TagDepth	./src/org/diffxml/diffxml/fmes/TagDepth.java	/^public class TagDepth$/;"	c
-Writer	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public Writer() {$/;"	m	class:Writer
-Writer	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public Writer(boolean canonical) {$/;"	m	class:Writer
-Writer	./src/org/diffxml/diffxml/fmes/Writer.java	/^public class Writer {$/;"	c
 XmDiff	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^public class XmDiff extends Diff$/;"	c	inherits:Diff
-acceptNode	./src/org/diffxml/diffxml/fmes/Match.java	/^	public short acceptNode(Node n) $/;"	m	class:Match.LeafFilter
-add	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^public void add(Node x, Node y)$/;"	m	class:NodeSet
+add	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    public final void add(final Node x, final Node y)$/;"	m	class:NodePairSet
+add	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^    public final void add(final Node x, final Node y)$/;"	m	class:NodeSet
 addAttr	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public void addAttr(String n, String v)$/;"	m	class:Node
+addChildrenToFifo	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void addChildrenToFifo(Node x, Fifo fifo)$/;"	m	file:	class:EditScript
 addContext	./src/org/diffxml/diffxml/fmes/Delta.java	/^public static Element addContext(Node n, Element op)$/;"	m	class:Delta
 addRevContext	./src/org/diffxml/diffxml/fmes/Delta.java	/^public static Element addRevContext(Node n, Element op)$/;"	m	class:Delta
 allcosts	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public void allcosts(XmlPullParser doc1, String file1, int num_doc1, $/;"	m	class:XmDiff
 apply	./src/org/diffxml/patchxml/PatchXML.java	/^public void apply(Document doc, Document patch)$/;"	m	class:PatchXML
 atStart	./src/org/diffxml/diffxml/xmdiff/BackwardLineReader.java	/^public boolean atStart()$/;"	m	class:BackwardLineReader
-compare	./src/org/diffxml/diffxml/fmes/Match.java	/^public int compare(Object o1, Object o2)$/;"	m	class:Match.tdComp
+compare	./src/org/diffxml/diffxml/fmes/NodeInfoComparator.java	/^    public final int compare(final Object o1, final Object o2)$/;"	m	class:NodeInfoComparator
+compareElements	./src/org/diffxml/diffxml/fmes/Match.java	/^    private boolean compareElements(final Node a, final Node b)$/;"	m	file:	class:Match
+compareNodes	./src/org/diffxml/diffxml/fmes/Match.java	/^    private boolean compareNodes(final Node a, final Node b)$/;"	m	file:	class:Match
+compareTextNodes	./src/org/diffxml/diffxml/fmes/Match.java	/^    private boolean compareTextNodes(final Node a, final Node b)$/;"	m	file:	class:Match
 costDelete	./src/org/diffxml/diffxml/xmdiff/Costs.java	/^public static int costDelete()$/;"	m	class:Costs
 costInsert	./src/org/diffxml/diffxml/xmdiff/Costs.java	/^public static int costInsert()$/;"	m	class:Costs
-create	./src/org/diffxml/diffxml/fmes/EditScript.java	/^public static Document create(Document doc1, Document doc2, NodeSet matchings)$/;"	m	class:EditScript
+create	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    public Document create(Document doc1, Document doc2,$/;"	m	class:EditScript
 createDiff	./src/org/diffxml/diffxml/DiffFactory.java	/^    public static Diff createDiff()$/;"	m	class:DiffFactory
 del	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void del(Node n, Document es)$/;"	m	class:Mark
 delcosts	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public int delcosts(XmlPullParser doc1, int[][] D, RandomAccessFile fA)$/;"	m	class:XmDiff
-diff	./src/org/diffxml/diffxml/Diff.java	/^    public abstract boolean diff(File f1, File f2);$/;"	m	class:Diff	implementation:abstract
-diff	./src/org/diffxml/diffxml/Diff.java	/^    public abstract boolean diff(String f1, String f2);$/;"	m	class:Diff	implementation:abstract
-diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public Document diff(Document doc1, Document doc2)$/;"	m	class:Fmes
-diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public boolean diff(File file1, File file2)$/;"	m	class:Fmes
-diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public boolean diff(String file1, String file2)$/;"	m	class:Fmes
+diff	./src/org/diffxml/diffxml/Diff.java	/^    public abstract boolean diff(final File f1, final File f2);$/;"	m	class:Diff	implementation:abstract
+diff	./src/org/diffxml/diffxml/Diff.java	/^    public abstract boolean diff(final String f1, final String f2);$/;"	m	class:Diff	implementation:abstract
+diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public final Document diff(final Document doc1, final Document doc2)$/;"	m	class:Fmes
+diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public final boolean diff(final File file1, final File file2)$/;"	m	class:Fmes
+diff	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public final boolean diff(final String file1, final String file2)$/;"	m	class:Fmes
 diff	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public boolean diff(File f1, File f2)$/;"	m	class:XmDiff
 diff	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public boolean diff(String f1, String f2)$/;"	m	class:XmDiff
-equal	./src/org/diffxml/diffxml/fmes/Match.java	/^public boolean equal(Node a, Node b)$/;"	m	class:Match
-equals	./src/org/diffxml/diffxml/fmes/Match.java	/^public boolean equals(Object o)$/;"	m	class:Match.tdComp
-equals	./src/org/diffxml/diffxml/fmes/TagDepth.java	/^public boolean equals(TagDepth cmp)$/;"	m	class:TagDepth
+doInsert	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Node doInsert(NodeImpl x, NodeImpl z, Document doc1, $/;"	m	file:	class:EditScript
+doMove	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Node doMove(NodeImpl x, NodeImpl y, NodeImpl z, $/;"	m	file:	class:EditScript
+equals	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final boolean equals(final NodeInfo ni)$/;"	m	class:NodeInfo
+equals	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final boolean equals(final Object o)$/;"	m	class:NodeInfo
+fastMatch	./src/org/diffxml/diffxml/fmes/Match.java	/^    public final NodeSet fastMatch(final Document doc1, final Document doc2)$/;"	m	class:Match
 filesExist	./src/org/diffxml/diffxml/DiffXML.java	/^    private static boolean filesExist()$/;"	m	file:	class:DiffXML
 find	./src/org/diffxml/diffxml/fmes/Lcs.java	/^public static Node[] find(NodeList a, NodeList b, NodeSet matchings)$/;"	m	class:Lcs
-findLeaves	./src/org/diffxml/diffxml/fmes/Match.java	/^public int findLeaves(Document doc, String[] leaves)$/;"	m	class:Match
-get	./src/org/diffxml/diffxml/fmes/NodePos.java	/^public static Pos get(Node n)$/;"	m	class:NodePos
+get	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    public static Pos get(Node n)$/;"	m	class:NodePos
 getAttrName	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public String getAttrName(int i)$/;"	m	class:Node
 getAttrValue	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public String getAttrValue(int i)$/;"	m	class:Node
-getCharpos	./src/org/diffxml/diffxml/fmes/NodePos.java	/^public static int getCharpos(Node n)$/;"	m	class:NodePos
-getPartner	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^public Node getPartner(Node n)$/;"	m	class:NodeSet
+getCharpos	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    public static int getCharpos(Node n)$/;"	m	class:NodePos
+getDepth	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final int getDepth()$/;"	m	class:NodeInfo
+getPartner	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    public final Node getPartner(final Node n)$/;"	m	class:NodePairSet
+getPartner	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^    public final Node getPartner(final Node n)$/;"	m	class:NodeSet
+getTag	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final String getTag()$/;"	m	class:NodeInfo
 go	./src/org/diffxml/patchxml/Reverse.java	/^public static Document go(Document patch)$/;"	m	class:Reverse
+hashCode	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final int hashCode()$/;"	m	class:NodeInfo
 init	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void init(File xmf, String f1, String f2)$/;"	m	class:Mark
 initLog	./src/org/diffxml/diffxml/DiffXML.java	/^    private static void initLog() throws IOException$/;"	m	file:	class:DiffXML
 initParser	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    private static void initParser(final DOMParser parser)$/;"	m	file:	class:Fmes
 ins	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void ins(Node n, Document es)$/;"	m	class:Mark
 inscosts	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public int inscosts(XmlPullParser doc2, int[][] D, RandomAccessFile fB)$/;"	m	class:XmDiff
-isBanned	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public static boolean isBanned(Node n)$/;"	m	class:Fmes
+isBanned	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public static boolean isBanned(final Node n)$/;"	m	class:Fmes
+isEmpty	./src/org/diffxml/diffxml/fmes/Fifo.java	/^    public final boolean isEmpty()$/;"	m	class:Fifo
+logNodes	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void logNodes(Node x, Node y, Node z)$/;"	m	file:	class:EditScript
 main	./src/org/diffxml/diffxml/DiffXML.java	/^    public static void main(final String[] args)$/;"	m	class:DiffXML
 main	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void main(String[] args)$/;"	m	class:Mark
 main	./src/org/diffxml/patchxml/PatchXML.java	/^public static void main(String[] args)$/;"	m	class:PatchXML
+makeEmptyEditScript	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Document makeEmptyEditScript()$/;"	m	file:	class:EditScript
+makeIterator	./src/org/diffxml/diffxml/fmes/Match.java	/^    private NodeIterator makeIterator(final String nodeType, final Document doc)$/;"	m	file:	class:Match
 mark	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void mark(Document xm, Document doc1, Document doc2)$/;"	m	class:Mark
-markElements	./src/org/diffxml/diffxml/fmes/Match.java	/^public TreeSet markElements(Document doc)$/;"	m	class:Match
-normalizeAndPrint	./src/org/diffxml/diffxml/fmes/Writer.java	/^    protected void normalizeAndPrint(String s) {$/;"	m	class:Writer
-normalizeAndPrint	./src/org/diffxml/diffxml/fmes/Writer.java	/^    protected void normalizeAndPrint(char c) {$/;"	m	class:Writer
-outputXML	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    private static void outputXML(final Document doc)$/;"	m	file:	class:Fmes
+markMatched	./src/org/diffxml/diffxml/fmes/Match.java	/^    private void markMatched(final NodeImpl nodeA, final NodeImpl nodeB)$/;"	m	file:	class:Match
+markNodes	./src/org/diffxml/diffxml/fmes/Match.java	/^    private void markNodes(final Document doc)$/;"	m	file:	class:Match
+matchElements	./src/org/diffxml/diffxml/fmes/Match.java	/^    private void matchElements(final String elementName, final Document doc1,$/;"	m	file:	class:Match
+matchNode	./src/org/diffxml/diffxml/fmes/Match.java	/^    private boolean matchNode(final NodeImpl node, final NodeIterator ni,$/;"	m	file:	class:Match
+matchNodes	./src/org/diffxml/diffxml/fmes/Match.java	/^    private void matchNodes(final String nodeType, final Document doc1,$/;"	m	file:	class:Match
+matchRoots	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void matchRoots(Document editScript, Document doc1, Document doc2)$/;"	m	file:	class:EditScript
+outputXML	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public static void outputXML(final Document doc)$/;"	m	class:Fmes
 parseArgs	./src/org/diffxml/diffxml/DiffXML.java	/^    private static void parseArgs(final String[] args)$/;"	m	file:	class:DiffXML
 parseArgs	./src/org/diffxml/patchxml/PatchXML.java	/^public static void parseArgs(String[] args)$/;"	m	class:PatchXML
 parseLine	./src/org/diffxml/diffxml/xmdiff/Depth.java	/^public void parseLine(String line)$/;"	m	class:Depth
+pop	./src/org/diffxml/diffxml/fmes/Fifo.java	/^    public final Object pop()$/;"	m	class:Fifo
 print	./src/org/diffxml/diffxml/fmes/PrintXML.java	/^public static void print(Node n)$/;"	m	class:PrintXML
 printHelp	./src/org/diffxml/diffxml/DiffXML.java	/^    public static void printHelp()$/;"	m	class:DiffXML
 printHelp	./src/org/diffxml/patchxml/PatchXML.java	/^public static void printHelp()$/;"	m	class:PatchXML
+printSet	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    public final void printSet()$/;"	m	class:NodePairSet
+printSet	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^    public final void printSet()$/;"	m	class:NodeSet
 printUsage	./src/org/diffxml/diffxml/DiffXML.java	/^    public static void printUsage()$/;"	m	class:DiffXML
 printUsage	./src/org/diffxml/patchxml/PatchXML.java	/^public static void printUsage()$/;"	m	class:PatchXML
 printVersion	./src/org/diffxml/diffxml/DiffXML.java	/^    public static void printVersion()$/;"	m	class:DiffXML
 printVersion	./src/org/diffxml/patchxml/PatchXML.java	/^public static void printVersion()$/;"	m	class:PatchXML
-print_set	./src/org/diffxml/diffxml/fmes/NodeSet.java	/^public void print_set()$/;"	m	class:NodeSet
 printarray	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^public void printarray(int[][] D, int size1, int size2)$/;"	m	class:XmDiff
+push	./src/org/diffxml/diffxml/fmes/Fifo.java	/^    public final void push(final Object o)$/;"	m	class:Fifo
 readLine	./src/org/diffxml/diffxml/xmdiff/BackwardLineReader.java	/^public String readLine() throws IOException$/;"	m	class:BackwardLineReader
 removeAttrs	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public void removeAttrs()$/;"	m	class:Node
 set	./src/org/diffxml/diffxml/xmdiff/Node.java	/^public void set(int t, String v, int d)$/;"	m	class:Node
-setCanonical	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public void setCanonical(boolean canonical) {$/;"	m	class:Writer
-setOutput	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public void setOutput(OutputStream stream, String encoding)$/;"	m	class:Writer
-setOutput	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public void setOutput(java.io.Writer writer) {$/;"	m	class:Writer
-sortAttributes	./src/org/diffxml/diffxml/fmes/Writer.java	/^    protected Attr[] sortAttributes(NamedNodeMap attrs) {$/;"	m	class:Writer
-tdComp	./src/org/diffxml/diffxml/fmes/Match.java	/^class tdComp implements Comparator$/;"	c	class:Match	inherits:Comparator
-test	./src/org/diffxml/diffxml/fmes/Match.java	/^public NodeSet test(Document doc1, Document doc2) $/;"	m	class:Match
-write	./src/org/diffxml/diffxml/fmes/Writer.java	/^    public void write(Node node) {$/;"	m	class:Writer
+setDepth	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final void setDepth(final int depth)$/;"	m	class:NodeInfo
+setTag	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final void setTag(final String tag)$/;"	m	class:NodeInfo
+sortNodes	./src/org/diffxml/diffxml/fmes/Match.java	/^    private TreeSet sortNodes(final Document doc)$/;"	m	file:	class:Match
 xmdiff	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public void xmdiff(String f1, String f2)$/;"	m	class:XmDiff

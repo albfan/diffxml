@@ -25,7 +25,7 @@ package org.diffxml.diffxml.fmes;
 
 public class Pos
 {
-public String path;
-public int charpos;
-public int length;
+    public String path;
+    public int charpos;
+    public int length;
 }
