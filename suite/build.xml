@@ -127,6 +127,11 @@
           <param name="test2.file" value="suite/working/tst2.1.xml"/>
       </antcall>
 
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/redir1.xml"/>
+          <param name="test2.file" value="suite/working/redir2.xml"/>
+      </antcall>
+
       <delete file="${diffOut.file}"/>
       <delete file="${patchOut.file}"/>
 
