@@ -7,9 +7,10 @@ Install instructions for diffxml and patchxml
 Requirements:
 -------------
 
-Java >= 1.4 (for logging). 
+Java >= 1.4 (for logging). See http://java.sun.com/j2se/downloads.html
+
 Apache Ant >= 1.5.4 (to build diffxml). Other versions may work, but are
-untested.
+untested. See http://ant.apache.org/
 
 The lib directory should contain the following jars:
 

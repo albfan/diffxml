@@ -81,9 +81,62 @@
           depends="jarDiffXML"
           description="creates binary distribution">
 
-          <mkdir dir="${build.dir}/diffxml"/>
+          <copy todir="${build.dir}/diffxml">
+              <fileset dir="../diffxml">
+                  <exclude name="build/"/>
+                  <exclude name="test/"/>
+                  <exclude name="suite/"/>
+                  <exclude name="src/"/>
+                  <exclude name="INSTALL*"/>
+                  <exclude name="build.xml"/>
+                  <exclude name="diffxml_checks.xml"/>
+                  <exclude name=".*"/>
+              </fileset>
+          </copy>
+
+          <copy file="INSTALL.bin" 
+              tofile="${build.dir}/diffxml/INSTALL"/>
+
+          <copy file="${build.dir}/org.diffxml.jar"
+              todir="${build.dir}/diffxml/"/>
+
+          <tar tarfile="${build.dir}/diffxml.tar">
+              <tarfileset mode="755" dir="${build.dir}/diffxml"
+                  prefix="diffxml">
+                  <include name="*sh"/>
+              </tarfileset>
+              <tarfileset dir="${build.dir}/diffxml"
+                  prefix="diffxml/">
+                  <exclude name="*sh"/>
+              </tarfileset>
+          </tar>
+
+          <gzip zipfile="${build.dir}/diffxml.tar.gz" 
+              src="${build.dir}/diffxml.tar"/>
+          <!-- bzip2 zipfile="${build.dir}/diffxml.tar.bz2"
+              src="${build.dir}/diffxml.tar"/-->
+
+          <delete file="${build.dir}/diffxml.tar"/>  
+  </target>
+
+  <target name="srcDist"
+          depends="jarDiffXML"
+          description="creates source distribution">
+
+          <copy todir="${build.dir}/diffxml">
+              <fileset dir="../diffxml">
+                  <exclude name="build/"/>
+                  <exclude name="test/"/>
+                  <exclude name="INSTALL*"/>
+                  <exclude name="diffxml_checks.xml"/>
+              </fileset>
+          </copy>
+
+          <copy file="INSTALL.src" 
+              tofile="${build.dir}/diffxml/INSTALL"/>
 
   </target>
+
 <!-- Test targets -->
 
   <target name="quickTest" 
@@ -150,6 +203,7 @@
 	   <arg line="-f .tags ."/>
        </exec>
    </target>
+
   <!-- Clean targets -->
 
   <target name="cleanClasses" description="deletes compiled classes">

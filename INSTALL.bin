@@ -7,7 +7,7 @@ Install instructions for diffxml and patchxml
 Requirements:
 -------------
 
-Java >= 1.4 (for logging). 
+Java >= 1.4 (for logging). See http://java.sun.com/j2se/downloads.html
 
 The lib directory should contain the following jars:
 
