@@ -1,7 +1,7 @@
 /*
 Program to difference two XML files
    
-Copyright (C) 2003  Adrian Mouat
+Copyright (C) 2002-2004 Adrian Mouat
    
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -53,6 +53,8 @@ public class DiffFactory
      * This may change in the future, especially concerning the
      * methods handling ints.
      *
+     * TODO: Make state fixed for each diff instance. Currently 
+     * changes to options affect in-process diffs.
      */
     
 
