@@ -34,7 +34,7 @@ import org.apache.xerces.dom.NodeImpl;
  * Methods in this class should be general usefulness.
  */
 
-final class NodeOps
+final public class NodeOps
 {
     /**
      * Do not allow instantiation.

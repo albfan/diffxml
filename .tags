@@ -34,7 +34,7 @@ NodeInfo	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    NodeInfo(final Strin
 NodeInfo	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^public class NodeInfo$/;"	c
 NodeInfoComparator	./src/org/diffxml/diffxml/fmes/NodeInfoComparator.java	/^class NodeInfoComparator implements Comparator$/;"	c	inherits:Comparator
 NodeOps	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^    private NodeOps() { }$/;"	m	file:	class:NodeOps
-NodeOps	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^final class NodeOps$/;"	c
+NodeOps	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^final public class NodeOps$/;"	c
 NodePair	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^        NodePair(Node x, Node y)$/;"	m	class:NodePairSet.NodePair
 NodePair	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    class NodePair$/;"	c	class:NodePairSet
 NodePairSet	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^public class NodePairSet$/;"	c
@@ -101,14 +101,21 @@ getCharpos	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    public static int g
 getCharpos	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    public static int getCharpos(final NodeList siblings, final int childNum)$/;"	m	class:NodePos
 getContextBeforeMove	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Element getContextBeforeMove(final Document editScript, final Node a)$/;"	m	file:	class:EditScript
 getDOM	./src/org/diffxml/diffxml/fmes/ChildNumber.java	/^    public int getDOM()$/;"	m	class:ChildNumber
+getDOMChildNo	./src/org/diffxml/patchxml/PatchXML.java	/^    private int getDOMChildNo(NamedNodeMap opAttrs, int nodeType, NodeList siblings)$/;"	m	file:	class:PatchXML
 getDOMChildNoFromXPath	./src/org/diffxml/patchxml/PatchXML.java	/^    private int getDOMChildNoFromXPath(NodeList siblings, int xpathcn)$/;"	m	file:	class:PatchXML
 getDOMChildNumber	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    private static int getDOMChildNumber(final Node n)$/;"	m	file:	class:NodePos
 getDOMChildNumber	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    private static int getDOMChildNumber(final Node n, final NodeList siblings)$/;"	m	file:	class:NodePos
+getDelTextNode	./src/org/diffxml/patchxml/PatchXML.java	/^    private Node getDelTextNode(Node delNode, int charpos)$/;"	m	file:	class:PatchXML
 getDepth	./src/org/diffxml/diffxml/fmes/NodeInfo.java	/^    public final int getDepth()$/;"	m	class:NodeInfo
 getInOrderIndex	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Index getInOrderIndex(final Node n)$/;"	m	file:	class:EditScript
 getInOrderLeftSibling	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private Node getInOrderLeftSibling(final Node n)$/;"	m	file:	class:EditScript
 getLength	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    public int getLength()$/;"	m	class:NodePos
+getNamedNode	./src/org/diffxml/patchxml/PatchXML.java	/^    private Node getNamedNode(Document doc, NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
+getNamedParent	./src/org/diffxml/patchxml/PatchXML.java	/^    private Node getNamedParent(Document doc, NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
+getNewCharPos	./src/org/diffxml/patchxml/PatchXML.java	/^    private int getNewCharPos(NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
+getNodeFromXPath	./src/org/diffxml/patchxml/PatchXML.java	/^    private Node getNodeFromXPath(Document doc, String xPath)$/;"	m	file:	class:PatchXML
 getNodeTypeFromAttr	./src/org/diffxml/patchxml/PatchXML.java	/^    private int getNodeTypeFromAttr(NamedNodeMap attrs)$/;"	m	file:	class:PatchXML
+getOldCharPos	./src/org/diffxml/patchxml/PatchXML.java	/^    private int getOldCharPos(NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
 getOpValue	./src/org/diffxml/patchxml/PatchXML.java	/^    private String getOpValue(Node op)$/;"	m	file:	class:PatchXML
 getParentFromAttr	./src/org/diffxml/patchxml/PatchXML.java	/^    private Node getParentFromAttr(Document doc, NamedNodeMap attrs)$/;"	m	file:	class:PatchXML
 getPartner	./src/org/diffxml/diffxml/fmes/NodePairSet.java	/^    public final Node getPartner(final Node n)$/;"	m	class:NodePairSet
@@ -127,14 +134,16 @@ initParser	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public static void ini
 ins	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void ins(Node n, Document es)$/;"	m	class:Mark
 inscosts	./src/org/diffxml/diffxml/xmdiff/XmDiff.java	/^    public int inscosts(XmlPullParser doc2, int[][] D, RandomAccessFile fB)$/;"	m	class:XmDiff
 insertAsChild	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^    public static void insertAsChild(final int childNum, final Node parent,$/;"	m	class:NodeOps
-insertAtCharPos	./src/org/diffxml/patchxml/PatchXML.java	/^    private void insertAtCharPos(int charpos, NodeList siblings, $/;"	m	file:	class:PatchXML
-insertTextNode	./src/org/diffxml/patchxml/PatchXML.java	/^    private void insertTextNode(NodeList siblings, Element parent, $/;"	m	file:	class:PatchXML
+insertAtCharPos	./src/org/diffxml/patchxml/PatchXML.java	/^    private void insertAtCharPos(int charpos, NodeList siblings,$/;"	m	file:	class:PatchXML
+insertNode	./src/org/diffxml/patchxml/PatchXML.java	/^    private void insertNode(NodeList siblings, Element parent, int domcn, int charpos, $/;"	m	file:	class:PatchXML
 isBanned	./src/org/diffxml/diffxml/fmes/Fmes.java	/^    public static boolean isBanned(final Node n)$/;"	m	class:Fmes
 isEmpty	./src/org/diffxml/diffxml/fmes/Fifo.java	/^    public final boolean isEmpty()$/;"	m	class:Fifo
 isInOrder	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^    public static boolean isInOrder(final Node n)$/;"	m	class:NodeOps
 isMatched	./src/org/diffxml/diffxml/fmes/NodeOps.java	/^    public static boolean isMatched(final Node n)$/;"	m	class:NodeOps
 isNextNodeTextNode	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    private static boolean isNextNodeTextNode(final NodeList siblings,$/;"	m	file:	class:NodePos
 isPrevNodeTextNode	./src/org/diffxml/diffxml/fmes/NodePos.java	/^    private static boolean isPrevNodeTextNode(final NodeList siblings,$/;"	m	file:	class:NodePos
+logDeleteVariables	./src/org/diffxml/patchxml/PatchXML.java	/^    private void logDeleteVariables(Node delNode, NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
+logMoveVars	./src/org/diffxml/patchxml/PatchXML.java	/^    private void logMoveVars(NamedNodeMap opAttrs)$/;"	m	file:	class:PatchXML
 logNodes	./src/org/diffxml/diffxml/fmes/EditScript.java	/^    private void logNodes(final Node x, final Node y, final Node z)$/;"	m	file:	class:EditScript
 main	./src/org/diffxml/diffxml/DiffXML.java	/^    public static void main(final String[] args)$/;"	m	class:DiffXML
 main	./src/org/diffxml/diffxml/xmdiff/Mark.java	/^public static void main(String[] args)$/;"	m	class:Mark

@@ -1,5 +1,5 @@
-diffxml Version 0.92 ALPHA
-patchxml Version 0.92 ALPHA
+diffxml Version 0.93 ALPHA
+patchxml Version 0.93 ALPHA
  
 README file for diffxml and patchxml
 ====================================
@@ -21,11 +21,21 @@ Send any bug reports / problems to amouat@postmaster.co.uk
 
 Adrian Mouat.
 
-18 January 2004.
+13 March 2005.
 
 ===================================
  
 Changelog
+
+Version 0.93 ALPHA
+------------------
+
+This release focused on getting the code into a reasonable
+shape, before starting major bugfixing and adding features.
+
+- Large refactorings
+- Javadoc for most classes
+- Some bugfixes
 
 Version 0.92 ALPHA
 ------------------

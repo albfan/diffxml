@@ -26,7 +26,7 @@
   <property name="lib.dir" value="lib"/>
 
   <property name="package" value="org.diffxml"/>
-  <property name="version" value="0.92A" />
+  <property name="version" value="0.93A" />
   <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
   <property name="patch.class" value="${package}/patchxml/PatchXML"/>
   <property name="test1.file" value="test1.xml"/>
@@ -160,7 +160,7 @@
 
 
   <target name="testDiffXML">
-    <echo message="Executing: DiffXML ${test1.file} ${test2.file}"/>
+    <echo message="Executing: diffxml ${test1.file} ${test2.file}"/>
     <java classname="${diffxml.class}" 
           dir="${build.dir}" 
           fork="yes"
@@ -173,7 +173,7 @@
 
 
   <target name="testPatch">
-    <echo message="Executing: PatchXML ${test1.file} ${diffOut.file}"/>
+    <echo message="Executing: patchxml ${test1.file} ${diffOut.file}"/>
     <java classname="${patch.class}" 
           dir="${build.dir}" 
           fork="yes"

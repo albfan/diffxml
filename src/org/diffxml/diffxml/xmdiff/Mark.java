@@ -26,7 +26,9 @@ package org.diffxml.diffxml.xmdiff;
 import org.diffxml.diffxml.*;
 import org.diffxml.diffxml.fmes.NodePos;
 import org.diffxml.diffxml.fmes.Delta;
-import org.diffxml.diffxml.fmes.Pos;
+//import org.diffxml.diffxml.fmes.Pos;
+import org.diffxml.diffxml.fmes.NodePos;
+
 import org.diffxml.diffxml.fmes.Fmes;
 
 import org.w3c.dom.Document;
@@ -127,8 +129,9 @@ if (kids!=null)
 if (((NodeImpl)n).getUserData("delete")!=null)
 	{
 	//Output delete
-	Pos del_pos=NodePos.get(n);
-	Delta.Delete(n, del_pos.path, del_pos.charpos, del_pos.length, es);
+	//Pos del_pos=NodePos.get(n);
+        NodePos delPos = new NodePos(n);
+	Delta.Delete(n, delPos.getXPath(), delPos.getCharPos(), delPos.getLength(), es);
 	}	
 }
 
@@ -146,7 +149,8 @@ if (((NodeImpl)n).getUserData("insert")!=null)
 	
 	//Get parent path
 	Node par=n.getParentNode();
-        Pos par_pos=NodePos.get(par);
+        //Pos par_pos=NodePos.get(par);
+        NodePos parentPos = new NodePos(par);
 
 	//Get XPath childno
 
@@ -165,7 +169,7 @@ if (((NodeImpl)n).getUserData("insert")!=null)
  
                 }
 
-        Delta.Insert(n, par_pos.path, index, charpos, es);
+        Delta.Insert(n, parentPos.getXPath(), index, charpos, es);
 
 	//Insert any attributes
 	NamedNodeMap attrs=n.getAttributes();
@@ -174,10 +178,10 @@ if (((NodeImpl)n).getUserData("insert")!=null)
 		if (attrs.getLength()>0)
 			{
 			//Get path
-			Pos n_pos=NodePos.get(n);
+			NodePos nPos= new NodePos(n);
 			for (int j=0; j<attrs.getLength(); j++)
 				{
-				Delta.Insert(attrs.item(j), n_pos.path, 0, -1, es);
+				Delta.Insert(attrs.item(j), nPos.getXPath(), 0, -1, es);
 				}
 			}
 		}
