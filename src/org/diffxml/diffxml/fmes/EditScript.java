@@ -145,7 +145,7 @@ public class EditScript
     private Node doInsert(NodeImpl x, NodeImpl z, Document doc1, 
             Document editScript, NodeSet matchings)
         {
-        InsertPosition pos = FindPos(x, matchings);
+        InsertPosition pos = findPos(x, matchings);
         Pos zPath = NodePos.get(z);
 
         //Apply insert to doc1
@@ -188,9 +188,13 @@ public class EditScript
         NodeImpl partnerY = (NodeImpl) matchings.getPartner(y);
         if (!v.isSameNode(partnerY))
             {
-            pos = FindPos(x, matchings);
+            pos = findPos(x, matchings);
             Pos wPath = NodePos.get(w);
             Pos zPath = NodePos.get(z);
+
+            //Following two statements may be unnecessary
+            ((NodeImpl) w).setUserData("inorder", "true", null);
+            ((NodeImpl) x).setUserData("inorder", "true", null);
 
             Element context = editScript.createElement("mark");
             if (DiffFactory.CONTEXT)
@@ -317,34 +321,8 @@ public class EditScript
             }
         }
 
-    private void alignChildren(Node w, Node x, Document editScript,
-            NodeSet matchings)
+    private void setInOrderNodes(Node[] seq)
         {
-        //Calls LCS algorithm
-
-        //Order of w and x is important
-        //Mark children of w and x "out of order"
-
-
-        NodeList w_kids = w.getChildNodes();
-        NodeList x_kids = x.getChildNodes();
-
-        //Only have something to do if we have kids
-        DiffXML.log.finer("no w_kids" + w_kids.getLength());
-        DiffXML.log.finer("no x_kids" + x_kids.getLength());
-
-        //build will break if following statement not here!
-        //Find out why!!! May want to test x length as well
-        if (w_kids.getLength() == 0)
-            return;
-
-        markChildrenOutOfOrder(w);
-        markChildrenOutOfOrder(x);
-
-        Node[] seq = Lcs.find(w_kids, x_kids, matchings);
-
-        //Step through array, marking in order
-
         for (int i = 0; i < seq.length; i++)
             {
             if (seq[i] != null)
@@ -354,120 +332,145 @@ public class EditScript
                 ((NodeImpl) seq[i]).setUserData("inorder", "true", null);
                 }
             }
+        }
 
-        //Go through children of w.
-        //If not inorder but matched, move
-        //Need to be careful if want x_kids or w_kids
-        //Check
-        for (int i = 0; i < x_kids.getLength(); i++)
+    private Node[] getSequence(NodeList set1, NodeList set2, 
+            NodeSet matchings)
+        {
+        //Faster ways to do this
+        //May be a problem with returned length
+        
+        Node[] resultSet = new Node[set1.getLength()];
+
+        int index = 0;
+        for (int i = 0; i < set1.getLength(); i++)
             {
-            DiffXML.log.finer("x item i" + x_kids.item(i).getNodeName());
-            DiffXML.log.finer("inorder"
-                    + ((NodeImpl) x_kids.item(i)).getUserData("inorder"));
-            DiffXML.log.finer("matched"
-                    + ((NodeImpl) x_kids.item(i)).getUserData("matched"));
-            if (((NodeImpl) x_kids.item(i)).getUserData("inorder")
-                        .equals("false")
-                    && ((NodeImpl) x_kids.item(i)).getUserData("matched")
-                        .equals("true"))
-                {
-                /*
-                   ==========
-                   Apply Move
-                   ==========
-                   */
+            NodeImpl wanted = (NodeImpl) matchings.getPartner(set1.item(i));
 
+            for (int j = 0; j < set2.getLength(); j++)
+                {
+                if (wanted.isSameNode(set2.item(j)))
+                    {
+                    resultSet[index++] = wanted;
+                    break;
+                    }
+                }
+            }
+        return resultSet;
+        }
+
+    private void moveMisalignedNodes(NodeList xKids, Node w, 
+            Document editScript, NodeSet matchings)
+        {
+        for (int i = 0; i < xKids.getLength(); i++)
+            {
+            if (((NodeImpl) xKids.item(i)).getUserData("inorder")
+                    .equals("false")
+                    && ((NodeImpl) xKids.item(i)).getUserData("matched")
+                    .equals("true"))
+                {
                 //Get childno for move
                 InsertPosition pos = new InsertPosition();
-                //int index[] = FindPos(x_kids.item(i), matchings);
-                pos = FindPos(x_kids.item(i), matchings);
+                pos = findPos(xKids.item(i), matchings);
+
                 //Get partner
-                Node a = matchings.getPartner(x_kids.item(i));
-                //Element mov=es.createElement("move");
-                Pos a_pos = NodePos.get(a);
+                Node a = matchings.getPartner(xKids.item(i));
+                Pos aPos = NodePos.get(a);
 
                 //Get a's explicit DOM position
-                Node a_par = a.getParentNode();
-                NodeList k = a_par.getChildNodes();
+                Node aParent = a.getParentNode();
+                NodeList aSiblings = aParent.getChildNodes();
 
-                int domcn = 0;
-                for (domcn = 0; domcn < k.getLength(); domcn++)
+                int childNum = 0;
+                for (childNum = 0; childNum < aSiblings.getLength(); childNum++)
                     {
-                    if (((NodeImpl) k.item(domcn)).isSameNode(a))
+                    if (((NodeImpl) aSiblings.item(childNum)).isSameNode(a))
                         break;
                     }
 
-                /*mov.setAttribute("node",a_pos.path);
-                  if (a_pos.charpos!=-1)
-                  mov.setAttribute("old_charpos", (""+a_pos.charpos) );
-
-                  if (a_pos.length!=-1)
-                  mov.setAttribute("length", (""+a_pos.length) );
-                  */
-                Pos w_pos = NodePos.get(w);
-                //mov.setAttribute("parent",w_pos.path);
-                //if ( index[CHAR]!=-1 )
-                //    mov.setAttribute("new_charpos",(""+index[CHAR]));
-
-                //mov.setAttribute("childno", ( ""+index[XPATH] ) );
-
-                //es.getDocumentElement().appendChild(mov);
-
+                Pos wPos = NodePos.get(w);
                 //For programming ease we actually want to get any old
                 //context now
 
-                Element mark = editScript.createElement("mark");
+                Element context = editScript.createElement("mark");
                 if (DiffFactory.CONTEXT)
                     {
-                    mark.appendChild(editScript.importNode(a, true));
-                    mark = Delta.addContext(a, mark);
+                    context.appendChild(editScript.importNode(a, true));
+                    context = Delta.addContext(a, context);
                     }
 
-                //get the kids
-                NodeList babes = w.getChildNodes();
-                //If Node exists we want to insert before it
-                //if (babes.item(index[DOM]) != null)
-                //    w.insertBefore(a, babes.item(index[DOM]));
-                if (babes.item(pos.insertBefore) != null)
-                    w.insertBefore(a, babes.item(pos.insertBefore));
-                else
-                    {
-                    //Last node
-                    w.appendChild(a);
-                    }
-
+                insertAsChild(pos.insertBefore, w, a);
 
                 //Mark inorder
-                ((NodeImpl) x_kids.item(i)).setUserData(
-                        "inorder", "true", null);
+                ((NodeImpl) xKids.item(i)).setUserData(
+                                                       "inorder", "true", null);
                 ((NodeImpl) a).setUserData("inorder", "true", null);
 
                 //Note that now a is now at new position
-                Delta.Move(mark, a, a_pos.path, w_pos.path, pos.numXPath,
-                        a_pos.charpos, pos.charPosition, a_pos.length, editScript);
+                Delta.Move(context, a, aPos.path, wPos.path, pos.numXPath,
+                        aPos.charpos, pos.charPosition, aPos.length, editScript);
                 }
             }
+        }
+
+    private void alignChildren(Node w, Node x, Document editScript,
+            NodeSet matchings)
+        {
+        //How does alg deal with out of order nodes not matched with
+        //children of partner?
+        //Calls LCS algorithm
+
+        //Order of w and x is important
+        //Mark children of w and x "out of order"
+        NodeList wKids = w.getChildNodes();
+        NodeList xKids = x.getChildNodes();
+
+        DiffXML.log.finer("no wKids" + wKids.getLength());
+        DiffXML.log.finer("no xKids" + xKids.getLength());
+
+        //build will break if following statement not here!
+        //PROBABLY SHOULDN'T BE NEEDED - INDICATIVE OF BUG
+        //Theory - single text node children are being matched,
+        //Need to be moved, but aren't.
+        if ((wKids.getLength() == 0) || (xKids.getLength()==0))
+            return;
+
+        markChildrenOutOfOrder(w);
+        markChildrenOutOfOrder(x);
+
+        Node[] wSeq = getSequence(wKids, xKids, matchings);
+        Node[] xSeq = getSequence(xKids, wKids, matchings);
+
+        Node[] seq = Lcs.find(wSeq, xSeq, matchings);
+        setInOrderNodes(seq);
+
+        //Go through children of w.
+        //If not inorder but matched, move
+        //Need to be careful if want xKids or wKids
+        //Check
+        
+        moveMisalignedNodes(xKids, w, editScript, matchings);
         }
 
     //Findpos returns childnumber of node to insert BEFORE
     //Change to return XPath childnum as well
     //Change to return charpos as well
-    private InsertPosition FindPos(final Node x, final NodeSet matchings)
+    private InsertPosition findPos(final Node x, final NodeSet matchings)
         {
-        DiffXML.log.fine("Entered FindPos");
-        Node x_par = x.getParentNode();
-        NodeList kids = x_par.getChildNodes();
+        DiffXML.log.fine("Entered findPos");
+        Node xParent = x.getParentNode();
+        NodeList xSiblings = xParent.getChildNodes();
 
-        //int index[] = new int[3];
         InsertPosition pos = new InsertPosition();
+
         //Loop through childnodes
         //get rightmost left sibling of x marked "inorder"
 
         //Default v to x
         NodeImpl v = (NodeImpl) x;
-        for (int i = 0; i < kids.getLength(); i++)
+        for (int i = 0; i < xSiblings.getLength(); i++)
             {
-            NodeImpl test = (NodeImpl) kids.item(i);
+            NodeImpl test = (NodeImpl) xSiblings.item(i);
 
             if (test.isSameNode(x))
                 break;
@@ -478,16 +481,11 @@ public class EditScript
 
         if (v.isSameNode(x))
             {
-            DiffXML.log.fine("Exiting FindPos normally1");
-            //Return DOM childno of 0, XPath childno of 1
+            DiffXML.log.fine("Exiting findPos normally1");
             //SHOULD CHAR be 1 or -1? depends on next node. Safest at 1?
-            //index[DOM] = 0;
             pos.insertBefore = 0;
-            //index[XPATH] = 1;
             pos.numXPath = 1;
-            //index[CHAR] = 1;
             pos.charPosition = 1;
-            //return index;
             return pos;
             }
 
@@ -506,13 +504,6 @@ public class EditScript
             if (u.isSameNode(children.item(i)))
                 break;
 
-
-            /*db.on=true;
-              db.p(test.getNodeName() + test.getUserData("matched"));
-              if (test.getUserData("inorder")==null)
-              db.p("WTF?");
-              db.on=false;
-              */
             if (test.getUserData("inorder").equals("true"))
                 {
                 dom_index++;
@@ -533,11 +524,7 @@ public class EditScript
                 }
             }
         //Need i+1 child
-        //childno[0]=++dom_index;
-        //index[DOM] = ++dom_index;
         pos.insertBefore = ++dom_index;
-        //childno[1]=++xpath_index;
-        //childno[XPATH]=++xpath_index;
 
         //If this is a text node, and last node was a text node,
         //don't increment xpath
@@ -580,13 +567,10 @@ public class EditScript
                         == Node.TEXT_NODE)))
             xpath_index++;
 
-        //index[XPATH] = xpath_index;
         pos.numXPath = xpath_index;
-        //index[CHAR] = charpos;
         pos.charPosition = charpos;
 
-        DiffXML.log.fine("Exiting FindPos normally");
-        //return index;
+        DiffXML.log.fine("Exiting findPos normally");
         return pos;
         }
 }

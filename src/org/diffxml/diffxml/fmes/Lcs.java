@@ -109,5 +109,82 @@ public class Lcs
         //But it doesn't matter for our needs
         return L;
         }
+    public static Node[] find(Node[] a, Node[] b, NodeSet matchings)
+        {
+        //If either list is empty, so is LCS
+
+        int a_len = a.length;
+        int b_len = b.length;
+
+        if (a_len == 0 || b_len == 0)
+            {
+            Node L[] = new Node[1];
+            L[0] = null;
+            return L;
+            }
+
+        int i = 0, j = 0;
+        int M[][] = new int[a_len + 1][b_len + 1];
+        M[0][0] = 0;
+
+        for (i = 1; i <= a_len; i++)
+            {
+            for (j = 1; j <= b_len; j++)
+                {
+                //if (( (Node3) a.item(i-1)).isEqualNode(b.item(j-1),false))
+                if (((NodeImpl) matchings.getPartner(a[i - 1]))
+                        .isSameNode(b[j - 1]))
+                    {
+                    M[i][j] = M[i - 1][j - 1] + 1;
+                    }
+                else
+                    {
+                    if (M[i - 1][j] > M[i][j - 1])
+                        M[i][j] = M[i - 1][j];
+                    else
+                        M[i][j] = M[i][j - 1];
+                    }
+                }
+            }
+
+        //reconstruction
+        i = (a_len - 1);
+        j = (b_len - 1);
+
+        int r = 0;
+        DiffXML.log.finer("i=" + i + " j=" + j);
+        int seq_ln = M[i][j];
+
+        DiffXML.log.finer("seq_ln=" + seq_ln);
+        //Store pairs of sequence
+        Node L[] = new Node[(2 * seq_ln) + 2];
+        while (i >= 0 && j >= 0)
+            {
+            if (((NodeImpl) matchings.getPartner(a[i]))
+                    .isSameNode(b[j]))
+                {
+                L[r] = a[i];
+                L[r + 1] = b[j];
+                r = r + 2;
+                i--;
+                j--;
+                }
+            else
+                {
+                //Not sure about cases with zero
+                if (j == 0)
+                    i--;
+                else if (i == 0)
+                    j--;
+                else if (M[i - 1][j] > M[i][j - 1])
+                    i--;
+                else
+                    j--;
+                }
+            }
+        //Should now reverse list
+        //But it doesn't matter for our needs
+        return L;
+        }
 }
 
