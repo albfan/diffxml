@@ -91,6 +91,7 @@
                   <exclude name="INSTALL*"/>
                   <exclude name="build.xml"/>
                   <exclude name="diffxml_checks.xml"/>
+                  <exclude name="*gz"/>
                   <exclude name=".*"/>
               </fileset>
           </copy>
@@ -135,6 +136,7 @@
                   <exclude name="test/"/>
                   <exclude name="INSTALL*"/>
                   <exclude name="diffxml_checks.xml"/>
+                  <exclude name="*gz"/>
                   <exclude name=".*"/>
               </fileset>
           </copy>
