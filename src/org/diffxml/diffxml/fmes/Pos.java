@@ -23,6 +23,8 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+//TODO: Either inline, remove or move functionality here.
+
 public class Pos
 {
     public String path;

@@ -153,6 +153,7 @@ final class NodeOps
      *
      * Does not test if data equivalent, but if same node in same doc.
      * TODO: Test this method!
+     * TODO: Handle null cases.
      *
      * @param x first node to check
      * @param y second node to check

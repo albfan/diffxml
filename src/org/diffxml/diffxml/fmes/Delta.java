@@ -35,6 +35,7 @@ import org.w3c.dom.NodeList;
 //Class to handle adding operations to output delta
 //Should handle everything to do with es,
 //But this is a late hack
+//TODO: Complete Rewrite!
 
 public class Delta
 {
@@ -63,8 +64,7 @@ public class Delta
             }
         }
 
-    //TODO: Check meaning of "rev"
-    public static Element addRevContext(Node n, Element op)
+    public static Element addReverseContext(Node n, Element op)
         {
         Document es=op.getOwnerDocument();
 
@@ -98,6 +98,8 @@ public class Delta
         Node par = n;
         int p = 0, itmp = 0;
         int left = 0, right = 0;
+        //TODO: This isn't even a stack, as need to go back down.
+        //Change to list or something
         int stack[]=new int[20]; //Just leave this as a static array for speed and ease
 
         Node root= n.getOwnerDocument().getDocumentElement();
@@ -336,7 +338,7 @@ public class Delta
                 del.setAttribute("length", (""+length) );
 
             if (DiffFactory.REVERSE_PATCH)
-                del=addRevContext(n, del);
+                del=addReverseContext(n, del);
             else if (DiffFactory.CONTEXT)
                 del=addContext(n,  del);
 
@@ -374,7 +376,7 @@ public class Delta
         mov.setAttribute("childno", ( ""+childno));
 
         if (DiffFactory.REVERSE_PATCH)
-            addRevContext(n,mov);
+            addReverseContext(n,mov);
         else if (DiffFactory.CONTEXT)
             {
             Element con=es.createElement("context");

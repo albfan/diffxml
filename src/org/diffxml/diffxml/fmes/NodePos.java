@@ -31,41 +31,63 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.apache.xerces.dom.NodeImpl;
 
+/**
+ * Class to deal with finding positions of nodes within document.
+ */
+
 public class NodePos
 {
 
-    //Function to return charpos only
-    //Check starting at pos 1
-    public static int getCharpos(Node n)
+    private static int getDOMChildNumber(Node n)
         {
+        return getDOMChildNumber(n, n.getChildNodes());
+        }
 
-        NodeList kids = n.getParentNode().getChildNodes();
-        int charpos = 1;
-
-        NodeImpl ni = (NodeImpl) n;
-
-        //Find child number of node
+    private static int getDOMChildNumber(Node n, NodeList kids)
+        {
         int cn;
+
         for (cn = 0; cn < kids.getLength(); cn++)
             {
-            if (ni.isSameNode(kids.item(cn)))
+            if (NodeOps.checkIfSameNode(n, kids.item(cn)))
                 break;
             }
+        return cn;
+        }
 
-        //Add lengths of previous text nodes
-        for (int y = (cn - 1); y >= 0; y--)
+    public static int getCharpos(NodeList kids, int DOMChildNumber)
+        {
+        int charpos = 1;
+        for (int y = (DOMChildNumber - 1); y >= 0; y--)
             {
             if (kids.item(y).getNodeType() == Node.TEXT_NODE)
                 {
                 charpos = charpos + kids.item(y).getNodeValue().length();
+
                 DiffXML.log.finer(kids.item(y).getNodeValue()
                         + " charpos " + charpos);
                 }
             else
                 break;
             }
-
         return charpos;
+        }
+
+    /**
+     * Get the character position of a node.
+     *
+     * Finds the character offset at which a node starts.
+     *
+     * @param n the node to find the position of
+     * @return int the character offset of the node, starting at 1
+     */
+
+    public static int getCharpos(Node n)
+        {
+        NodeList kids = n.getParentNode().getChildNodes();
+        int cn = getDOMChildNumber(n, kids);
+
+        return getCharpos(kids, cn);
         }	
 
     //Returns XPath of given node in form needed for DUL, 

@@ -98,7 +98,7 @@ public class Match
                 return false;
                 }
             }
-        //Consider comparing positions of elements, or if kids matched etc
+        //TODO: Consider comparing positions of elements, or if kids matched etc
         return true;
         }
 
@@ -121,7 +121,7 @@ public class Match
         if (DiffFactory.IGNORE_ALL_WHITESPACE)
             {
             //Remove whitespace from nodes before comparison
-            //Check nextToken doesn't skip first
+            //TODO: Check nextToken doesn't skip first
             StringTokenizer st = new StringTokenizer(aString);
             aString = "";
             while (st.hasMoreTokens())

@@ -23,71 +23,89 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
-//Very Simple & ineffecient LCS implementation
-//Want to make equal func that can passed in
-
 import org.diffxml.diffxml.DiffXML;
 import org.w3c.dom.Node;
-import org.apache.xerces.dom.NodeImpl;
-import org.w3c.dom.NodeList;
 
-public class Lcs
+/**
+ * Implements simple Longest Common Substring (LCS) algorithm.
+ *
+ * Very simple and inefficient.
+ * TODO: Use better algorithm.
+ * TODO: Create equals method.
+ * TODO: Refactor into smaller functions.
+ */
+
+public final class Lcs
 {
-    public static Node[] find(NodeList a, NodeList b, NodeSet matchings)
+
+    /**
+     * Do not allow instantiation.
+     */
+
+    private Lcs() { }
+
+    /**
+     * Finds the longest common subsequence of two Node[].
+     *
+     * @param a First array of nodes
+     * @param b Second array of nodes
+     * @param matchings Set of matchings used to determine equality
+     * @return Node[] The longest subsequence common to both a and b
+     */
+
+    public static Node[] find(final Node[] a, final Node[] b,
+            final NodeSet matchings)
         {
         //If either list is empty, so is LCS
 
-        int a_len = a.getLength();
-        int b_len = b.getLength();
+        int i, j;
 
-        if (a_len == 0 || b_len == 0)
+        if (a.length == 0 || b.length == 0)
             {
-            Node L[] = new Node[1];
-            return L;
+            Node[] tmp = new Node[1];
+            return tmp;
             }
 
-        int i = 0, j = 0;
-        int M[][] = new int[a_len + 1][b_len + 1];
-        M[0][0] = 0;
+        int[][] matrix = new int[a.length + 1][b.length + 1];
+        matrix[0][0] = 0;
 
-        for (i = 1; i <= a_len; i++)
+        for (i = 1; i <= a.length; i++)
             {
-            for (j = 1; j <= b_len; j++)
+            for (j = 1; j <= b.length; j++)
                 {
-                //if (( (Node3) a.item(i-1)).isEqualNode(b.item(j-1),false))
-                if (((NodeImpl) matchings.getPartner(a.item(i - 1)))
-                        .isSameNode(b.item(j - 1)))
+                //TODO: Find out why null nodes occur here
+                if (NodeOps.checkIfSameNode(matchings.getPartner(a[i - 1]),
+                       b[j - 1]))
                     {
-                    M[i][j] = M[i - 1][j - 1] + 1;
+                    matrix[i][j] = matrix[i - 1][j - 1] + 1;
                     }
                 else
                     {
-                    if (M[i - 1][j] > M[i][j - 1])
-                        M[i][j] = M[i - 1][j];
+                    if (matrix[i - 1][j] > matrix[i][j - 1])
+                        matrix[i][j] = matrix[i - 1][j];
                     else
-                        M[i][j] = M[i][j - 1];
+                        matrix[i][j] = matrix[i][j - 1];
                     }
                 }
             }
 
         //reconstruction
-        i = (a_len - 1);
-        j = (b_len - 1);
+        i = (a.length - 1);
+        j = (b.length - 1);
 
         int r = 0;
         DiffXML.log.finer("i=" + i + " j=" + j);
-        int seq_ln = M[i][j];
+        int seqLength = matrix[i][j];
 
-        DiffXML.log.finer("seq_ln=" + seq_ln);
+        DiffXML.log.finer("seqLength=" + seqLength);
         //Store pairs of sequence
-        Node L[] = new Node[(2 * seq_ln) + 2];
+        Node[] lcs = new Node[(2 * seqLength) + 2];
         while (i >= 0 && j >= 0)
             {
-            if (((NodeImpl) matchings.getPartner(a.item(i)))
-                    .isSameNode(b.item(j)))
+            if (NodeOps.checkIfSameNode(matchings.getPartner(a[i]), b[j]))
                 {
-                L[r] = a.item(i);
-                L[r + 1] = b.item(j);
+                lcs[r] = a[i];
+                lcs[r + 1] = b[j];
                 r = r + 2;
                 i--;
                 j--;
@@ -99,7 +117,7 @@ public class Lcs
                     i--;
                 else if (i == 0)
                     j--;
-                else if (M[i - 1][j] > M[i][j - 1])
+                else if (matrix[i - 1][j] > matrix[i][j - 1])
                     i--;
                 else
                     j--;
@@ -107,84 +125,7 @@ public class Lcs
             }
         //Should now reverse list
         //But it doesn't matter for our needs
-        return L;
-        }
-    public static Node[] find(Node[] a, Node[] b, NodeSet matchings)
-        {
-        //If either list is empty, so is LCS
-
-        int a_len = a.length;
-        int b_len = b.length;
-
-        if (a_len == 0 || b_len == 0)
-            {
-            Node L[] = new Node[1];
-            L[0] = null;
-            return L;
-            }
-
-        int i = 0, j = 0;
-        int M[][] = new int[a_len + 1][b_len + 1];
-        M[0][0] = 0;
-
-        for (i = 1; i <= a_len; i++)
-            {
-            for (j = 1; j <= b_len; j++)
-                {
-                //if (( (Node3) a.item(i-1)).isEqualNode(b.item(j-1),false))
-                if (((NodeImpl) matchings.getPartner(a[i - 1]))
-                        .isSameNode(b[j - 1]))
-                    {
-                    M[i][j] = M[i - 1][j - 1] + 1;
-                    }
-                else
-                    {
-                    if (M[i - 1][j] > M[i][j - 1])
-                        M[i][j] = M[i - 1][j];
-                    else
-                        M[i][j] = M[i][j - 1];
-                    }
-                }
-            }
-
-        //reconstruction
-        i = (a_len - 1);
-        j = (b_len - 1);
-
-        int r = 0;
-        DiffXML.log.finer("i=" + i + " j=" + j);
-        int seq_ln = M[i][j];
-
-        DiffXML.log.finer("seq_ln=" + seq_ln);
-        //Store pairs of sequence
-        Node L[] = new Node[(2 * seq_ln) + 2];
-        while (i >= 0 && j >= 0)
-            {
-            if (((NodeImpl) matchings.getPartner(a[i]))
-                    .isSameNode(b[j]))
-                {
-                L[r] = a[i];
-                L[r + 1] = b[j];
-                r = r + 2;
-                i--;
-                j--;
-                }
-            else
-                {
-                //Not sure about cases with zero
-                if (j == 0)
-                    i--;
-                else if (i == 0)
-                    j--;
-                else if (M[i - 1][j] > M[i][j - 1])
-                    i--;
-                else
-                    j--;
-                }
-            }
-        //Should now reverse list
-        //But it doesn't matter for our needs
-        return L;
+        return lcs;
         }
 }
 
