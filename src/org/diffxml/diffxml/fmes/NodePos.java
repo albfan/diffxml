@@ -27,44 +27,123 @@ import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.DiffFactory;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.apache.xerces.dom.NodeImpl;
 
 /**
  * Class to deal with finding positions of nodes within document.
  */
 
-public class NodePos
+public final class NodePos
 {
 
-    private static int getDOMChildNumber(Node n)
+    /** XPath of associated node. */
+    private String _path;
+
+    /** Character position of associated node.*/
+    private int _charpos;
+
+    /** Character length of associated node.*/
+    private int _length;
+
+    /**
+     * Default constructor.
+     */
+
+    private NodePos()
+        {
+        //TODO: Find out why these init values!
+
+        _path = "null";
+        _charpos = -1;
+        _length = -1;
+        }
+
+    /**
+     * Returns the XPath of the associated node.
+     *
+     * @return String XPath to the associated node
+     */
+
+    public String getXPath()
+        {
+        return _path;
+        }
+
+    /**
+     * Returns the integer character position of the associated node.
+     *
+     * @return int character position of associated node.
+     */
+
+    public int getCharPos()
+        {
+        return _charpos;
+        }
+
+
+    /**
+     * Returns the length of the associated node.
+     *
+     * @return int character length of the node.
+     */
+
+    public int getLength()
+        {
+        return _length;
+        }
+
+    /**
+     * Finds the DOM child number of a node.
+     *
+     * @param n node to find the position of
+     * @return the DOM child number of the node
+     */
+
+    private static int getDOMChildNumber(final Node n)
         {
         return getDOMChildNumber(n, n.getChildNodes());
         }
 
-    private static int getDOMChildNumber(Node n, NodeList kids)
+    /**
+     * Finds the DOM child number of a node.
+     *
+     * @param n        the node to find the position of
+     * @param siblings the siblings of n
+     * @return         the DOM child number of the node
+     */
+
+    private static int getDOMChildNumber(final Node n, final NodeList siblings)
         {
         int cn;
 
-        for (cn = 0; cn < kids.getLength(); cn++)
+        for (cn = 0; cn < siblings.getLength(); cn++)
             {
-            if (NodeOps.checkIfSameNode(n, kids.item(cn)))
+            if (NodeOps.checkIfSameNode(n, siblings.item(cn)))
                 break;
             }
         return cn;
         }
 
-    public static int getCharpos(NodeList kids, int DOMChildNumber)
+    /**
+     * Get the character position of a node.
+     *
+     * Finds the character offset at which a node starts.
+     *
+     * @param  siblings NodeList containing the given node and its siblings
+     * @param  childNum The DOM position of the node within the list
+     * @return          the character position of the node
+     */
+
+    public static int getCharpos(final NodeList siblings, final int childNum)
         {
         int charpos = 1;
-        for (int y = (DOMChildNumber - 1); y >= 0; y--)
+        for (int y = (childNum - 1); y >= 0; y--)
             {
-            if (kids.item(y).getNodeType() == Node.TEXT_NODE)
+            if (siblings.item(y).getNodeType() == Node.TEXT_NODE)
                 {
-                charpos = charpos + kids.item(y).getNodeValue().length();
+                charpos = charpos + siblings.item(y).getNodeValue().length();
 
-                DiffXML.log.finer(kids.item(y).getNodeValue()
+                DiffXML.log.finer(siblings.item(y).getNodeValue()
                         + " charpos " + charpos);
                 }
             else
@@ -82,133 +161,214 @@ public class NodePos
      * @return int the character offset of the node, starting at 1
      */
 
-    public static int getCharpos(Node n)
+    public static int getCharpos(final Node n)
         {
-        NodeList kids = n.getParentNode().getChildNodes();
-        int cn = getDOMChildNumber(n, kids);
+        NodeList siblings = n.getParentNode().getChildNodes();
+        int cn = getDOMChildNumber(n, siblings);
 
-        return getCharpos(kids, cn);
-        }	
+        return getCharpos(siblings, cn);
+        }
 
-    //Returns XPath of given node in form needed for DUL, 
-    //also gives charpos and length if needed
-    public static Pos get(Node n)
+    /**
+     * Determines whether XPath index should be incremented.
+     *
+     * Handles differences between DOM index and XPath index
+     *
+     * @param tag      the tag of the node we are looking for
+     * @param siblings the siblings of the node we are looking for
+     * @param i        the current position in siblings
+     * @return         true if index should be incremented
+     */
+
+    private static boolean incIndex(final String tag,
+            final NodeList siblings, final int i)
         {
-        Pos n_pos=new Pos(); 
-        n_pos.path="null";
-        n_pos.charpos=-1;
-        n_pos.length=-1;
-        String xpath="";
+        //TODO: Handle comments if needed.
 
-        //Keep boolean so we know if at top
-        boolean top=true;
+        Node currSib = siblings.item(i);
 
-        //Have to init x to something so can be used in final comp
-        NodeImpl x = (NodeImpl) n;
+        boolean inc = true;
+        if (DiffFactory.TAGNAMES)
+            {
+            if (!tag.equals(currSib.getNodeName()))
+                inc = false;
+            }
 
-        NodeImpl root = (NodeImpl) n.getOwnerDocument().getDocumentElement();
+        //Handle non-coalescing of text nodes
+        if (i > 0)
+            {
+            if (currSib.getNodeType() == Node.TEXT_NODE
+                    && siblings.item(i - 1).getNodeType() == Node.TEXT_NODE)
+                inc = false;
+            }
 
+        return inc;
+        }
+
+    /**
+     * Calculates the piece of XPath for the current position.
+     *
+     * @param n     the current node
+     * @param index the XPath position of the node
+     * @param top   true if we are at the top of the XPath
+     * @return      the current piece of XPath
+     */
+
+    private static String getXPath(final Node n, final int index,
+            final boolean top)
+        {
+        String xpath = "[" + index + "]";
+        if (DiffFactory.TAGNAMES)
+            {
+            //special case for top node
+            if (top)
+                {
+                switch (n.getNodeType())
+                    {
+                    case Node.TEXT_NODE:
+                        xpath = "/text()" + xpath;
+                        break;
+                    case Node.COMMENT_NODE:
+                        xpath = "/comment()" + xpath;
+                        break;
+                    default:
+                        xpath = "/" + n.getNodeName() + xpath;
+                    }
+                }
+            else
+                xpath = "/" + n.getNodeName() + xpath;
+            }
+        else
+            xpath = "/node()" + xpath;
+
+        return xpath;
+        }
+
+    /**
+     * Determines if the previous node is a text node.
+     *
+     * @param  siblings the siblings of the node
+     * @param  i        the DOM position of the node within siblings
+     * @return          true if previous node is a text node, otherwise false
+     */
+
+    private static boolean isPrevNodeTextNode(final NodeList siblings,
+            final int i)
+        {
+        return ((i > 0)
+                && siblings.item(i - 1).getNodeType() == Node.TEXT_NODE);
+        }
+
+    /**
+     * Determines if the next node is a text node.
+     *
+     * @param  siblings the siblings of the node
+     * @param  i        the DOM position of the node within siblings
+     * @return          true if next node is a text node, otherwise false
+     */
+
+    private static boolean isNextNodeTextNode(final NodeList siblings,
+            final int i)
+        {
+        return (((i + 1) < siblings.getLength())
+                && (siblings.item(i + 1).getNodeType() == Node.TEXT_NODE));
+        }
+
+    /**
+     * Sets the character position and length values of the node.
+     *
+     * @param i        the position of node within siblings
+     * @param siblings the siblings of the node
+     * @param nPos     the NodePos object to set the values on
+     */
+
+    private static void setCharPos(final int i, final NodeList siblings,
+            final NodePos nPos)
+        {
+        Node currSib = siblings.item(i);
+        DiffXML.log.finer("In top i=" + i
+                + " currSib.nodevalue=" + currSib.getNodeValue());
+
+        if (isPrevNodeTextNode(siblings, i) || isNextNodeTextNode(siblings, i))
+            {
+            //Loop backwards through nodes getting lengths if text
+            //TODO: check charpos correct for XPath
+            nPos._charpos = 1;
+            for (int y = (i - 1); y >= 0; y--)
+                {
+                if (siblings.item(y).getNodeType() == Node.TEXT_NODE)
+                    {
+                    DiffXML.log.finer("Extra Text value: "
+                            + siblings.item(y).getNodeValue() + "END");
+                    nPos._charpos = nPos._charpos
+                            + siblings.item(y).getNodeValue().length();
+                    DiffXML.log.finer(siblings.item(y).getNodeValue()
+                            + " charpos " + nPos._charpos);
+                    }
+                else
+                    break;
+                }
+            //Need length if currSib node text node
+            if (currSib.getNodeType() == Node.TEXT_NODE)
+                nPos._length = currSib.getNodeValue().length();
+
+            }
+        }
+
+    /**
+     * Calculates the XPath, length and character position of a node.
+     *
+     * @param n the node to find attributes of
+     * @return object containing attributes of n
+     */
+
+    public static NodePos set(Node n)
+        {
+        NodePos nPos = new NodePos();
+        String xpath = "";
+        boolean top = true;
+        Node currSib = n;
+        Node root = n.getOwnerDocument().getDocumentElement();
+
+        //TODO: Handle nulls better - throw exception?
         if (n == null)
-            return n_pos;
+            return nPos;
 
-        do 
+        do
             {
             DiffXML.log.fine("Entered XPath");
             DiffXML.log.finer(n.getNodeName());
-            Node t=n.getParentNode();
 
-            int index=0;	
-            NodeList kids = t.getChildNodes();
-            for(int i=0;i<kids.getLength();i++)
+            int index = 0;
+            NodeList siblings = n.getParentNode().getChildNodes();
+
+            int i;
+            for (i = 0; i < siblings.getLength(); i++)
                 {
-                String tag=n.getNodeName();
-                x = (NodeImpl) kids.item(i);
-                //Increment index, unless text node following text node
-
-                if (DiffFactory.TAGNAMES)
-                    {
-                    if (tag.equals(x.getNodeName()))
-                        index++;
-
-                    //Exception to rule if text node
-                    //What about comments???
-                    if (x.getNodeType()==Node.TEXT_NODE && i>0
-                            && kids.item(i-1).getNodeType()==Node.TEXT_NODE)
-                        index--;
-                    }
-                else
-                    {
+                if (incIndex(n.getNodeName(), siblings, i))
                     index++;
-                    if (x.getNodeType()==Node.TEXT_NODE && i>0 
-                            && kids.item(i-1).getNodeType()==Node.TEXT_NODE)
-                        index--;
-                    }
 
-                if (x.isSameNode(n))
-                    {
-                    xpath="[" + index + "]" + xpath;
-                    if (DiffFactory.TAGNAMES)
-                        {
-                        //special case for top node
-                        if (top)
-                            {
-                            switch (x.getNodeType())
-                                {
-                                case Node.TEXT_NODE:
-                                    xpath="/text()"+xpath;
-                                    break;
-                                case Node.COMMENT_NODE:
-                                    xpath="/comment()"+xpath;
-                                    break;
-                                default:
-                                    xpath="/" + x.getNodeName()+xpath;
-                                }
-                            }
-                        else
-                            xpath="/" + x.getNodeName() + xpath;
-                        }
-                    else 
-                        xpath = "/node()" + xpath;
-
-                    //Continue with next level
-                    if (top)
-                        {
-                        top=false;
-
-                        //Add charpos if prev or next node text
-                        DiffXML.log.finer("In top i=" + i + " x.nodevalue=" + x.getNodeValue());
-                        DiffXML.log.finer("Path=" + xpath);
-
-                        if ((i>0 && kids.item(i-1).getNodeType()==Node.TEXT_NODE) || ( (i+1) < kids.getLength() && kids.item(i+1).getNodeType()==Node.TEXT_NODE))
-                            {
-                            //Loop backwards through nodes getting lengths if text
-                            //Not sure if charpos will be 1 out..... (by XPath standard)
-                            n_pos.charpos=1;
-                            for (int y=(i-1); y>=0; y--)
-                                {
-                                if (kids.item(y).getNodeType()==Node.TEXT_NODE)
-                                    {
-                                    DiffXML.log.finer("Extra Text value: " + kids.item(y).getNodeValue() + "END");
-                                    n_pos.charpos=n_pos.charpos+kids.item(y).getNodeValue().length();
-                                    DiffXML.log.finer(kids.item(y).getNodeValue()+ " charpos "+n_pos.charpos);	
-                                    }
-                                else
-                                    break;
-                                }
-                            //Need length if current node text node
-                            if (n.getNodeType()==Node.TEXT_NODE)
-                                n_pos.length=n.getNodeValue().length();
-
-                            }
-                        }
+                if (NodeOps.checkIfSameNode(siblings.item(i), n))
                     break;
-                    }	
                 }
-            n=n.getParentNode();
+
+            currSib = siblings.item(i);
+            if (NodeOps.checkIfSameNode(currSib, n))
+                {
+                xpath = getXPath(currSib, index, top) + xpath;
+
+                if (top)
+                    {
+                    top = false;
+                    setCharPos(i, siblings, nPos);
+                    }
+                }
+            n = n.getParentNode();
             }
-        while (!root.isSameNode(x));
-        n_pos.path=xpath;			
-        return n_pos;
+        while (!NodeOps.checkIfSameNode(root, currSib));
+
+        nPos._path = xpath;
+        return nPos;
         }
 }
 

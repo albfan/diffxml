@@ -83,11 +83,12 @@ public class Fmes extends Diff
      * Sets various features on the DOM Parser.
      *
      * Sets features relevant to entities, DTD and entity-ref nodes
+     * TODO: Consider moving to helper class.
      *
      * @param parser  The parser to be set
      */
 
-    private static void initParser(final DOMParser parser)
+    public static void initParser(final DOMParser parser)
         {
         try
             {
