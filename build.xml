@@ -26,6 +26,7 @@
   <property name="lib.dir" value="lib"/>
 
   <property name="package" value="org.diffxml"/>
+  <property name="version" value="0.92A" />
   <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
   <property name="patch.class" value="${package}/patchxml/PatchXML"/>
   <property name="test1.file" value="test1.xml"/>
@@ -69,7 +70,7 @@
           depends="compileDiffXML"
           description="packages all classes into a jar">
 
-    <jar jarfile="${build.dir}/${package}.jar" basedir="${build.dir}"/>
+          <jar jarfile="${build.dir}/${package}.jar" basedir="${build.dir}/org"/>
     <antcall target="cleanClasses"/>
 
   </target>
@@ -100,6 +101,18 @@
           <copy file="${build.dir}/org.diffxml.jar"
               todir="${build.dir}/diffxml/"/>
 
+
+          <antcall target="tarDiffXML"/>
+
+          <gzip zipfile="${build.dir}/diffxml-${version}.tar.gz" 
+              src="${build.dir}/diffxml.tar"/>
+          <!-- bzip2 zipfile="${build.dir}/diffxml.tar.bz2"
+              src="${build.dir}/diffxml.tar"/-->
+
+          <delete file="${build.dir}/diffxml.tar"/>  
+  </target>
+
+  <target name="tarDiffXML">
           <tar tarfile="${build.dir}/diffxml.tar">
               <tarfileset mode="755" dir="${build.dir}/diffxml"
                   prefix="diffxml">
@@ -110,13 +123,6 @@
                   <exclude name="*sh"/>
               </tarfileset>
           </tar>
-
-          <gzip zipfile="${build.dir}/diffxml.tar.gz" 
-              src="${build.dir}/diffxml.tar"/>
-          <!-- bzip2 zipfile="${build.dir}/diffxml.tar.bz2"
-              src="${build.dir}/diffxml.tar"/-->
-
-          <delete file="${build.dir}/diffxml.tar"/>  
   </target>
 
   <target name="srcDist"
@@ -129,12 +135,19 @@
                   <exclude name="test/"/>
                   <exclude name="INSTALL*"/>
                   <exclude name="diffxml_checks.xml"/>
+                  <exclude name=".*"/>
               </fileset>
           </copy>
 
           <copy file="INSTALL.src" 
               tofile="${build.dir}/diffxml/INSTALL"/>
 
+          <antcall target="tarDiffXML"/>
+
+          <gzip zipfile="${build.dir}/diffxml-src-${version}.tar.gz"
+                src="${build.dir}/diffxml.tar"/>
+
+          <delete file="${build.dir}/diffxml.tar"/>
   </target>
 
 <!-- Test targets -->

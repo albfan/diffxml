@@ -9,3 +9,4 @@ export DIFFXML_BUILD=$DIFFXML_HOME/build
 export CLASSPATH=$DIFFXML_LIB/dom3-xercesImpl.jar:$DIFFXML_LIB/dom3-xml-apis.jar:$DIFFXML_LIB/xpp3_1_0_8a.jar:$DIFFXML_BUILD:$DIFFXML_BUILD/diffxml.jar
  
 java org.diffxml.patchxml.PatchXML "$@"
+

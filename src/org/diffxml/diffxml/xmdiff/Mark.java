@@ -27,7 +27,7 @@ import org.diffxml.diffxml.*;
 import org.diffxml.diffxml.fmes.NodePos;
 import org.diffxml.diffxml.fmes.Delta;
 import org.diffxml.diffxml.fmes.Pos;
-import org.diffxml.diffxml.fmes.Writer;
+import org.diffxml.diffxml.fmes.Fmes;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -224,6 +224,7 @@ try
  
         //Transformer serializer = TransformerFactory.newInstance().newTransformer();
         //serializer.transform(new DOMSource(es), new StreamResult(System.out));
+        /*
         Writer writer = new Writer();
                 try {
                     writer.setOutput(System.out, "UTF8");
@@ -234,6 +235,8 @@ try
                 }
          writer.setCanonical(false);
                 writer.write(es);
+                */
+        Fmes.outputXML(es);
         }
 catch (Exception e)
         {e.printStackTrace();}
@@ -266,6 +269,7 @@ try
 
 	//Transformer serializer = TransformerFactory.newInstance().newTransformer();
         //serializer.transform(new DOMSource(es), new StreamResult(System.out));
+        /*
 	Writer writer = new Writer();
                 try {
                     writer.setOutput(System.out, "UTF8");
@@ -276,6 +280,8 @@ try
                 }
          writer.setCanonical(false);
                 writer.write(es);
+                */
+        Fmes.outputXML(es);
 	}
 catch (Exception e)
 	{e.printStackTrace();}	

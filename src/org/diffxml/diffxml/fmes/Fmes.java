@@ -24,8 +24,10 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Document;
+import org.apache.xml.serialize.XMLSerializer;
+import org.apache.xml.serialize.OutputFormat;
 import org.diffxml.diffxml.Diff;
-import org.diffxml.diffxml.fmes.Writer;
+//import org.diffxml.diffxml.fmes.Writer;
 import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.fmes.NodeSet;
 import org.diffxml.diffxml.fmes.Match;
@@ -268,23 +270,28 @@ public class Fmes extends Diff
     /**
      * Writes given XML document to standard out.
      *
-     * Uses UTF8 encoding.
+     * Uses UTF8 encoding, no identation, preserves spaces.
+     * Made public due to general utility.
      *
      * @param doc
      */
  
-    private static void outputXML(final Document doc)
+    public static void outputXML(final Document doc)
         {
-        Writer writer = new Writer();
-        try {
-            writer.setOutput(System.out, "UTF8");
-        }
-        catch (UnsupportedEncodingException e) {
-            System.err.println("Unable to set output. Exiting.");
-            System.exit(1);
-        }
-        writer.setCanonical(false);
-        writer.write(doc);
+
+        //Could create object once and store ref.
+        
+        XMLSerializer xs = new XMLSerializer();
+        xs.setOutputByteStream(System.out);
+        OutputFormat of = new OutputFormat(doc, "UTF-8", false);
+        of.setPreserveSpace(true);
+        xs.setOutputFormat(of);
+        try { xs.serialize(doc); }
+        catch (java.io.IOException e)
+            {
+            System.err.println("Failed to serialize document " + e);
+            }
+            
         }
 
     /**
