@@ -1,0 +1,53 @@
+diffxml Version 0.92 ALPHA
+patchxml Version 0.92 ALPHA
+ 
+Install instructions for diffxml and patchxml
+=============================================
+
+Requirements:
+-------------
+
+Java >= 1.4 (for logging). 
+
+The lib directory should contain the following jars:
+
+   dom3-xercesImpl.jar
+   dom3-xml-apis.jar
+   xpp3_1_0_8a.jar
+
+These files relate to Apache Xerces ( http://xml.apache.org/ ) and XPP3 
+( http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html ). 
+
+Running diffxml:
+----------------
+
+The easiest way of running the utilities is to use the diffxml.sh and 
+patchxml.sh scripts. 
+
+First edit the files so that $DIFFXML_HOME points to the directory where
+diffxml was installed. 
+Next, verify the scripts work by running:
+ 
+   $ diffxml.sh test1.xml test2.xml > out.xml
+   $ patchxml.sh test1.xml out.xml > result
+   $ diffxml.sh -q result test2.xml
+ 
+There should be no output, confirming the files are equivalent.
+ 
+You can then rename the scripts and add them to a public dir e.g:
+ 
+   $ cp diffxml.sh /usr/local/bin/diffxml
+   $ cp patchxml.sh /usr/local/bin/patchxml
+ 
+Finally...
+----------
+
+Please note that this is an unstable alpha release.
+diffxml and patchxml are released under the GNU GPL Version 2.
+ 
+Send any bug reports / problems to amouat@postmaster.co.uk
+
+Adrian Mouat.
+
+23 December 2003.
+

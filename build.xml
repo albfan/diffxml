@@ -8,7 +8,10 @@
      Usage: ant <target>
      Main targets: compileDiffXML - compiles the classes
                    jarDiffXML     - packages classes as a jar
+                   binDist        - creates binary distribution
+                   srcDist        - creates source distribution
                    quickTest      - verifies that the build is working
+                   fullTest       - performs further testing
                    clean          - deletes the build
      Default target: compileDiffXML
   -->
@@ -72,6 +75,15 @@
   </target>
 
 
+<!-- Build Distibutions -->
+
+  <target name="binDist"
+          depends="jarDiffXML"
+          description="creates binary distribution">
+
+          <mkdir dir="${build.dir}/diffxml"/>
+
+  </target>
 <!-- Test targets -->
 
   <target name="quickTest" 

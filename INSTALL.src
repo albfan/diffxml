@@ -4,14 +4,12 @@ patchxml Version 0.92 ALPHA
 Install instructions for diffxml and patchxml
 =============================================
 
-If you are reading this file, you should have downloaded and unzipped the 
-source code for diffxml.
-
 Requirements:
 -------------
 
 Java >= 1.4 (for logging). 
-Ant >= 1.5.4 (untested with older versions).
+Apache Ant >= 1.5.4 (to build diffxml). Other versions may work, but are
+untested.
 
 The lib directory should contain the following jars:
 
@@ -22,8 +20,10 @@ The lib directory should contain the following jars:
 These files relate to Apache Xerces ( http://xml.apache.org/ ) and XPP3 
 ( http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html ). 
 
-Building diffxml:
------------------
+Follow the following steps to build and run diffxml.
+
+1. Building diffxml:
+--------------------
 
 To just compile the classes run:
 
@@ -33,8 +33,9 @@ To build a jar file run:
 
    $ant jarDiffXML
 
-Testing diffxml:
-----------------
+
+2. Testing diffxml:
+-------------------
 
 To do a small test to ensure correct compilation run:
 
@@ -45,8 +46,8 @@ For a fuller test:
    $ ant fullTest
 
 
-Running diffxml:
-----------------
+3. Running diffxml:
+-------------------
 
 The easiest way of running the utilities is to use the diffxml.sh and 
 patchxml.sh scripts. 
@@ -66,19 +67,17 @@ You can then rename the scripts and add them to a public dir e.g:
    $ cp diffxml.sh /usr/local/bin/diffxml
    $ cp patchxml.sh /usr/local/bin/patchxml
  
-Finally...
-----------
+4. Finally...
+-------------
 
 Please note that this is an unstable alpha release.
 diffxml and patchxml are released under the GNU GPL Version 2.
  
 Send any bug reports / problems to amouat@postmaster.co.uk
 
-Good Luck.
-
 Adrian Mouat.
 
-22 December 2003.
+23 December 2003.
 
 ===================================
  
