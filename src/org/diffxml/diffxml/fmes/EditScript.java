@@ -144,28 +144,6 @@ public class EditScript
             }
         }
 
-    /**
-     * Inserts a given node as numbered child of a parent node.
-     *
-     * If childnum doesn't exist the node is simply appended.
-     *
-     * Due to general applicability should be moved to helper class.
-     *
-     * @param childNum  the position to add the node to
-     * @param parent    the node that is to be the parent
-     * @param insNode   the node to be inserted
-     */
-
-    private void insertAsChild(final int childNum, final Node parent,
-           final Node insNode)
-        {
-        NodeList kids = parent.getChildNodes();
-
-        if (kids.item(childNum) != null)
-            parent.insertBefore(insNode, kids.item(childNum));
-        else
-            parent.appendChild(insNode);
-        }
 
     /**
      * Adds inserts for attributes of a node to an EditScript .
@@ -218,14 +196,14 @@ public class EditScript
         //TODO: Ensure attributes properly added
 
         Node w = doc1.importNode(x, false);
-        ((NodeImpl) w).setUserData("matched", "true", null);
-        ((NodeImpl) w).setUserData("inorder", "true", null);
+        NodeOps.setMatched(w);
+        NodeOps.setInOrder(w);
 
         //Take match of parent (z), and insert
-        insertAsChild(pos.insertBefore, z, w);
+        NodeOps.insertAsChild(pos.insertBefore, z, w);
 
         //Add to matching set
-        x.setUserData("matched", "true", null);
+        NodeOps.setMatched(x);
         matchings.add(w, x);
 
         Delta.Insert(w, zPath.path, pos.numXPath, pos.charPosition, editScript);
@@ -268,10 +246,11 @@ public class EditScript
             Pos zPath = NodePos.get(z);
 
             //Following two statements may be unnecessary
-            ((NodeImpl) w).setUserData("inorder", "true", null);
-            ((NodeImpl) x).setUserData("inorder", "true", null);
+            NodeOps.setInOrder(w);
+            NodeOps.setInOrder(x);
 
             //TODO: Make function for following
+            //Check not already one!
             Element context = editScript.createElement("mark");
             if (DiffFactory.CONTEXT)
                 {
@@ -280,7 +259,7 @@ public class EditScript
                 }
 
             //Apply move to T1
-            insertAsChild(pos.insertBefore, z, w);
+            NodeOps.insertAsChild(pos.insertBefore, z, w);
 
             Delta.Move(context, w, wPath.path, zPath.path, pos.numXPath,
                      wPath.charpos, pos.charPosition, wPath.length, editScript);
@@ -348,7 +327,7 @@ public class EditScript
             //May need to do more with root
             if (x.isSameNode(doc2.getDocumentElement()))
                 {
-                x.setUserData("inorder", "true", null);
+                NodeOps.setInOrder(x);
                 continue;
                 }
 
@@ -358,7 +337,7 @@ public class EditScript
             logNodes(x, y, z);
             Node w;
 
-            if (x.getUserData("matched").equals("false"))
+            if (!NodeOps.isMatched(x))
                 w = doInsert(x, (NodeImpl) z, doc1, editScript, matchings);
             else
                 w = doMove(x, (NodeImpl) z, editScript, matchings);
@@ -402,7 +381,7 @@ public class EditScript
 
         //If node isn't matched, delete it
         //TODO: Make function for following.
-        if (((NodeImpl) n).getUserData("matched").equals("false"))
+        if (!NodeOps.isMatched(n))
             {
             Element par = (Element) n.getParentNode();
             Pos delPos = NodePos.get(n);
@@ -433,7 +412,7 @@ public class EditScript
             if (Fmes.isBanned(kids.item(i)))
                 continue;
 
-            ((NodeImpl) kids.item(i)).setUserData("inorder", "false", null);
+            NodeOps.setOutOfOrder(kids.item(i));
 
             DiffXML.log.fine("Node: " + kids.item(i).getNodeName()
                     + " user data: "
@@ -457,7 +436,8 @@ public class EditScript
                 {
                 DiffXML.log.finer("seq" + seq[i].getNodeName()
                         + " " + seq[i].getNodeValue());
-                ((NodeImpl) seq[i]).setUserData("inorder", "true", null);
+
+                NodeOps.setInOrder(seq[i]);
                 }
             }
         }
@@ -465,7 +445,7 @@ public class EditScript
     /**
      * Gets the nodes in set1 which have matches in set2.
      *
-     * This is done in way that is definitely sub-optimal.
+     * This is done in a way that is definitely sub-optimal.
      * May need to shrink array size at end.
      *
      * Move to helper class?
@@ -500,10 +480,23 @@ public class EditScript
         return resultSet;
         }
 
+    private Element getContextBeforeMove(final Document editScript, Node a)
+        {
+
+        Element context = editScript.createElement("mark");
+        if (DiffFactory.CONTEXT)
+            {
+            context.appendChild(editScript.importNode(a, true));
+            context = Delta.addContext(a, context);
+            }
+
+        return context;
+        }
+
     /**
      * Moves nodes that are not in order to correct position.
      *
-     * TODO: Refactor!
+     * TODO: Check logic.
      *
      * @param xKids
      * @param w
@@ -514,49 +507,29 @@ public class EditScript
     private void moveMisalignedNodes(final NodeList xKids, final Node w,
             final Document editScript, final NodeSet matchings)
         {
+        //Select nodes matched but not in order
         for (int i = 0; i < xKids.getLength(); i++)
             {
-            if (((NodeImpl) xKids.item(i)).getUserData("inorder")
-                    .equals("false")
-                    && ((NodeImpl) xKids.item(i)).getUserData("matched")
-                    .equals("true"))
+            if ( (!NodeOps.isInOrder(xKids.item(i))) 
+                    && NodeOps.isMatched(xKids.item(i)) )
                 {
                 //Get childno for move
                 InsertPosition pos = new InsertPosition();
                 pos = findPos(xKids.item(i), matchings);
 
-                //Get partner
+                //Get partner and position
                 Node a = matchings.getPartner(xKids.item(i));
                 Pos aPos = NodePos.get(a);
 
-                //Get a's explicit DOM position
-                Node aParent = a.getParentNode();
-                NodeList aSiblings = aParent.getChildNodes();
-
-                int childNum = 0;
-                for (childNum = 0; childNum < aSiblings.getLength(); childNum++)
-                    {
-                    if (((NodeImpl) aSiblings.item(childNum)).isSameNode(a))
-                        break;
-                    }
-
                 Pos wPos = NodePos.get(w);
-                //For programming ease we actually want to get any old
-                //context now
 
-                Element context = editScript.createElement("mark");
-                if (DiffFactory.CONTEXT)
-                    {
-                    context.appendChild(editScript.importNode(a, true));
-                    context = Delta.addContext(a, context);
-                    }
+                //Easiest to get context now
+                Element context = getContextBeforeMove(editScript, a);
 
-                insertAsChild(pos.insertBefore, w, a);
+                NodeOps.insertAsChild(pos.insertBefore, w, a);
 
-                //Mark inorder
-                ((NodeImpl) xKids.item(i)).setUserData(
-                                                       "inorder", "true", null);
-                ((NodeImpl) a).setUserData("inorder", "true", null);
+                NodeOps.setInOrder(xKids.item(i));
+                NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
                 Delta.Move(context, a, aPos.path, wPos.path, pos.numXPath,
@@ -568,6 +541,8 @@ public class EditScript
 
     /**
      * Aligns children of current node that are not in order.
+     *
+     * TODO: Check logic.
      *
      * @param w  the match of the current node.
      * @param x  the current node
@@ -646,7 +621,7 @@ public class EditScript
             if (test.isSameNode(x))
                 break;
 
-            if (test.getUserData("inorder").equals("true"))
+            if (NodeOps.isInOrder(test)) 
                 v = test;
             }
 
@@ -675,7 +650,7 @@ public class EditScript
             if (u.isSameNode(children.item(i)))
                 break;
 
-            if (test.getUserData("inorder").equals("true"))
+            if (NodeOps.isInOrder(test))
                 {
                 domIndex++;
                 //Want to increment XPath index if not
@@ -711,7 +686,7 @@ public class EditScript
         int charpos = 1;
         NodeImpl test = (NodeImpl) children.item(domIndex - 1);
         if (children.item(domIndex - 1).getNodeType() != Node.TEXT_NODE
-                && test.getUserData("inorder").equals("true"))
+                && NodeOps.isInOrder(test))
             charpos = -1;
         else
             {
@@ -719,7 +694,7 @@ public class EditScript
                 {
                 test = (NodeImpl) children.item(j);
                 if (children.item(j).getNodeType() == Node.TEXT_NODE
-                        && test.getUserData("inorder").equals("true"))
+                        && NodeOps.isInOrder(test))
                     {
                     charpos = charpos
                             + children.item(j).getNodeValue().length();

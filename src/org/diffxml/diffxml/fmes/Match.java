@@ -30,8 +30,6 @@ import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import org.apache.xerces.dom.NodeImpl;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -179,18 +177,6 @@ public class Match
 
         }
 
-    /**
-     * Adds user data to nodes to denote they have been matched.
-     *
-     * @param nodeA  The unmatched partner of nodeB
-     * @param nodeB  The unmatched partner of nodeA
-     */
-
-    private void markMatched(final NodeImpl nodeA, final NodeImpl nodeB)
-        {
-        nodeA.setUserData("matched", "true", null);
-        nodeB.setUserData("matched", "true", null);
-        }
 
     /**
      * Creates a NodeIterator with an appropriate filter.
@@ -228,27 +214,26 @@ public class Match
      * @return true if a match is found, false if not
      */
 
-    private boolean matchNode(final NodeImpl node, final NodeIterator ni,
+    private boolean matchNode(final Node node, final NodeIterator ni,
             final NodeSet matchSet)
         {
-        if (node.getUserData("matched").equals("true"))
+        if (NodeOps.isMatched(node))
             {
             return false;
             }
 
-        NodeImpl currNode = (NodeImpl) ni.nextNode();
+        Node currNode = ni.nextNode();
 
         while (currNode != null)
             {
-            if (currNode.getUserData("matched").equals("false")
-                    && compareNodes(node, currNode))
+            if (!NodeOps.isMatched(currNode) && compareNodes(node, currNode))
                 {
                 matchSet.add(node, currNode);
-                markMatched(node, currNode);
+                NodeOps.setMatched(node, currNode);
 
                 return true;
                 }
-            currNode = (NodeImpl) ni.nextNode();
+            currNode =  ni.nextNode();
             }
 
         return false;
@@ -270,22 +255,21 @@ public class Match
         NodeList listA = doc1.getElementsByTagName(elementName);
         NodeList listB = doc2.getElementsByTagName(elementName);
 
-
         for (int a = 0; a < listA.getLength(); a++)
             {
-            NodeImpl nodeA = (NodeImpl) listA.item(a);
+            Node nodeA = listA.item(a);
 
-            if (nodeA.getUserData("matched").equals("false"))
+            if (!NodeOps.isMatched(nodeA))
                 {
                 for (int b = 0; b < listB.getLength(); b++)
                     {
-                    NodeImpl nodeB = (NodeImpl) listB.item(b);
+                    Node nodeB =  listB.item(b);
 
-                    if (nodeB.getUserData("matched").equals("false")
+                    if (!NodeOps.isMatched(nodeB)
                             && compareNodes(nodeA, nodeB))
                         {
                         matchSet.add(nodeA, nodeB);
-                        markMatched(nodeA, nodeB);
+                        NodeOps.setMatched(nodeA, nodeB);
 
                         break;
                         }
@@ -311,12 +295,12 @@ public class Match
         NodeIterator ni1 = makeIterator(nodeType, doc1);
         NodeIterator ni2 = makeIterator(nodeType, doc2);
 
-        NodeImpl nodeA = (NodeImpl) ni1.nextNode();
+        Node nodeA = ni1.nextNode();
 
         while (nodeA != null)
             {
             matchNode(nodeA, ni2, matchSet);
-            nodeA = (NodeImpl) ni1.nextNode();
+            nodeA =  ni1.nextNode();
 
             ni2.detach();
             ni2 = makeIterator(nodeType, doc2);
@@ -382,11 +366,11 @@ public class Match
     /**
      * Sets default user data tags on each node in document.
      *
-     * Marks each node with "matched" and "inorder" tags.
+     * Marks each node matched and inorder.
      *
-     * Tag "inorder" should default to true, and be changed by EditScript
+     * Nodes should be "inorder" by default, and be changed by EditScript
      * if needed.
-     * Tag "matched" is false until node is matched with a node in the
+     * Nodes should not be "matched" until node is matched with a node in the
      * other document.
      *
      * TODO: ensure we should be marking all nodes.
@@ -400,11 +384,11 @@ public class Match
                 doc.getDocumentElement(),
                 NodeFilter.SHOW_ALL, null, false);
 
-        NodeImpl node;
-        while ((node = (NodeImpl) ni.nextNode()) != null)
+        Node n;
+        while ((n = ni.nextNode()) != null)
             {
-            node.setUserData("matched", "false", null);
-            node.setUserData("inorder", "true", null);
+            NodeOps.setInOrder(n);
+            NodeOps.setNotMatched(n);
             }
         }
 
@@ -425,20 +409,20 @@ public class Match
         TreeWalker walker = ((DocumentTraversal) doc).createTreeWalker(
                 doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
 
-        NodeImpl node;
+        Node node;
         TreeSet nodeInfoSet = new TreeSet(new NodeInfoComparator());
 
-        node = (NodeImpl) walker.getCurrentNode();
+        node =  walker.getCurrentNode();
 
         while (node != null)
             {
-            NodeImpl tmpNode = node;
+            Node tmpNode = node;
             int depth = 0;
 
             while (tmpNode != doc.getDocumentElement())
                 {
                 depth++;
-                tmpNode = (NodeImpl) tmpNode.getParentNode();
+                tmpNode = tmpNode.getParentNode();
                 }
 
             NodeInfo ni = new NodeInfo(node.getNodeName(), depth);
@@ -447,7 +431,7 @@ public class Match
             DiffXML.log.finer("Added "  + ni.getTag()
                     + " Depth " + ni.getDepth());
 
-            node = (NodeImpl) walker.nextNode();
+            node =  walker.nextNode();
             }
 
         return nodeInfoSet;
