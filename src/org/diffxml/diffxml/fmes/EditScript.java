@@ -1,13 +1,13 @@
 /*
 Program to difference two XML files
- 
+
 Copyright (C) 2002-2004  Adrian Mouat
- 
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
- 
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- 
+
 Author: Adrian Mouat
 email: amouat@postmaster.co.uk
 */
@@ -25,8 +25,6 @@ package org.diffxml.diffxml.fmes;
 
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.DiffFactory;
-
-import java.util.ArrayList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -39,6 +37,14 @@ import org.apache.xerces.dom.NodeImpl;
 
 public class EditScript
 {
+    /** Prepares an empty Edit Script document.
+     *
+     * Makes root element, appends any neccessary attributes
+     * and context information
+     *
+     * @return a properly formatted, empty edit script
+     */
+
     private Document makeEmptyEditScript()
         {
         Document editScript = new DocumentImpl();
@@ -73,7 +79,18 @@ public class EditScript
         return editScript;
         }
 
-    private void matchRoots(Document editScript, Document doc1, Document doc2)
+    /**
+     * Handles non-matching root nodes.
+     *
+     * TODO: Write! Commented out code may give hint.
+     *
+     * @param editScript  the Edit Script to write changes to
+     * @param doc1        the original document
+     * @param doc2        the modified document
+     */
+
+    private void matchRoots(final Document editScript, final Document doc1,
+            final Document doc2)
         {
 
         //We need to match roots if not already matched
@@ -100,7 +117,14 @@ public class EditScript
         */
         }
 
-    private void addChildrenToFifo(Node x, Fifo fifo)
+    /**
+     * Adds the children of a node to a fifo stack.
+     *
+     * @param x    the node whose children are to be added
+     * @param fifo the fifo to add the children to.
+     */
+
+    private void addChildrenToFifo(final Node x, final Fifo fifo)
         {
         NodeList kids = x.getChildNodes();
 
@@ -110,24 +134,43 @@ public class EditScript
                 {
                 if (Fmes.isBanned(kids.item(i)))
                     continue;
-                    
+
                 fifo.push(kids.item(i));
                 }
             }
         }
 
-    private void insertAsChild(int childNum, Node parent, Node insNode)
+    /**
+     * Inserts a given node as numbered child of a parent node.
+     *
+     * If childnum doesn't exist the node is simply appended.
+     *
+     * @param childNum  the position to add the node to
+     * @param parent    the node that is to be the parent
+     * @param insNode   the node to be inserted
+     */
+
+    private void insertAsChild(final int childNum, final Node parent,
+           final Node insNode)
         {
         NodeList kids = parent.getChildNodes();
-        
+
         if (kids.item(childNum) != null)
             parent.insertBefore(insNode, kids.item(childNum));
         else
             parent.appendChild(insNode);
         }
 
-    private void addAttrsToDelta(NamedNodeMap attrs, String path, 
-            Document editScript)
+    /**
+     * Adds inserts for attributes of a node to an EditScript .
+     *
+     * @param attrs       the attributes to be added
+     * @param path        the path to the node they are to be added to
+     * @param editScript  the Edit Script to add the inserts to
+     */
+
+    private void addAttrsToDelta(final NamedNodeMap attrs, final String path,
+            final Document editScript)
         {
 
         int numAttrs;
@@ -142,8 +185,21 @@ public class EditScript
             }
         }
 
-    private Node doInsert(NodeImpl x, NodeImpl z, Document doc1, 
-            Document editScript, NodeSet matchings)
+    /**
+     * Inserts a node according to the algorithm and updates
+     * the Edit Script.
+     *
+     * @param x          current node
+     * @param z          partner of x's parent
+     * @param doc1       the original document
+     * @param editScript the Edit Script to append operations to
+     * @param matchings  the set of matching nodes
+     * @return           the inserted node
+     */
+
+    private Node doInsert(final NodeImpl x, final NodeImpl z,
+            final Document doc1, final Document editScript,
+            final NodeSet matchings)
         {
         InsertPosition pos = findPos(x, matchings);
         Pos zPath = NodePos.get(z);
@@ -171,8 +227,19 @@ public class EditScript
         return w;
         }
 
-    private Node doMove(NodeImpl x, NodeImpl z, 
-            Document editScript, NodeSet matchings)
+    /**
+     * Performs a move operation according to the algorithm and updates
+     * the EditScript.
+     *
+     * @param x          current node
+     * @param z          the partner of x's parent
+     * @param editScript the Edit Script to append operations to
+     * @param matchings  the set of matching nodes
+     * @return           the moved node
+     */
+
+    private Node doMove(final NodeImpl x, final NodeImpl z,
+            final Document editScript, final NodeSet matchings)
         {
         DiffXML.log.fine("In move");
 
@@ -183,7 +250,7 @@ public class EditScript
         NodeImpl y = (NodeImpl) x.getParentNode();
 
         //UPDATE would be here if implemented
-        
+
         //Apply move if parents not matched
         NodeImpl partnerY = (NodeImpl) matchings.getPartner(y);
         if (!v.isSameNode(partnerY))
@@ -212,7 +279,18 @@ public class EditScript
         return w;
         }
 
-    private void logNodes(Node x, Node y, Node z)
+    /**
+     * Logs the names and values of 3 nodes.
+     *
+     * Debug thang.
+     * Note we stupidly do the same thing 3 times and lose generality.
+     *
+     * @param x  first node
+     * @param y  second node
+     * @param z  third node
+     */
+
+    private void logNodes(final Node x, final Node y, final Node z)
         {
         DiffXML.log.finer("x=" + x.getNodeName() + " " + x.getNodeValue());
         DiffXML.log.finer("y=" + y.getNodeName() + " " + y.getNodeValue());
@@ -224,8 +302,21 @@ public class EditScript
         }
 
 
-    public Document create(Document doc1, Document doc2,
-            NodeSet matchings)
+    /**
+     * Creates an Edit Script conforming to matchings that transforms
+     * doc1 into doc2.
+     *
+     * Uses algorithm in "Chnage Detection in Hierarchically Structured
+     * Information".
+     *
+     * @param doc1      the original document
+     * @param doc2      the modified document
+     * @param matchings the set of matching nodes
+     * @return          the resultant Edit Script
+     */
+
+    public final Document create(final Document doc1, final Document doc2,
+            final NodeSet matchings)
         {
         Document editScript = makeEmptyEditScript();
 
@@ -275,7 +366,14 @@ public class EditScript
         return editScript;
         }
 
-    private void deletePhase(Node n, Document editScript)
+    /**
+     * Performs the deletePhase of the algorithm.
+     *
+     * @param n          the current node
+     * @param editScript the Edit Script to append operations to
+     */
+
+    private void deletePhase(final Node n, final Document editScript)
         {
         //Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
@@ -296,32 +394,48 @@ public class EditScript
         if (((NodeImpl) n).getUserData("matched").equals("false"))
             {
             Element par = (Element) n.getParentNode();
-            Pos del_pos = NodePos.get(n);
+            Pos delPos = NodePos.get(n);
 
-            Delta.Delete(n, del_pos.path, del_pos.charpos, del_pos.length, editScript);
+            Delta.Delete(n, delPos.path, delPos.charpos,
+                    delPos.length, editScript);
             par.removeChild(n);
             }
 
         }
 
-    private void markChildrenOutOfOrder(Node n)
+    /**
+     * Mark the children of a node out of order.
+     *
+     * Not sure about the ignoring of banned nodes.
+     * May very well f up move.
+     *
+     * @param n the parent of the nodes to mark out of order
+     */
+
+    private void markChildrenOutOfOrder(final Node n)
         {
-        //Possibly should be ignoring banned nodes
-        //Be very careful as ignored nodes will mess up moves
         NodeList kids = n.getChildNodes();
 
         for (int i = 0; i < kids.getLength(); i++)
             {
             if (Fmes.isBanned(kids.item(i)))
                 continue;
+
             ((NodeImpl) kids.item(i)).setUserData("inorder", "false", null);
+
             DiffXML.log.fine("Node: " + kids.item(i).getNodeName()
-                    + " user data: " 
+                    + " user data: "
                     + ((NodeImpl) kids.item(i)).getUserData("inorder"));
             }
         }
 
-    private void setInOrderNodes(Node[] seq)
+    /**
+     * Marks the nodes in the given array "inorder".
+     *
+     * @param seq  the nodes to mark "inorder"
+     */
+
+    private void setInOrderNodes(final Node[] seq)
         {
         for (int i = 0; i < seq.length; i++)
             {
@@ -334,12 +448,22 @@ public class EditScript
             }
         }
 
-    private Node[] getSequence(NodeList set1, NodeList set2, 
-            NodeSet matchings)
+    /**
+     * Gets the nodes in set1 which have matches in set2.
+     *
+     * This is done in way that is definitely sub-optimal.
+     * May need to shrink array size at end.
+     *
+     * @param set1      the first set of nodes
+     * @param set2      the set of nodes to match against
+     * @param matchings the set of matching nodes
+     *
+     * @return      the nodes in set1 which have matches in set2
+     */
+
+    private Node[] getSequence(final NodeList set1, final NodeList set2,
+            final NodeSet matchings)
         {
-        //Faster ways to do this
-        //May be a problem with returned length
-        
         Node[] resultSet = new Node[set1.getLength()];
 
         int index = 0;
@@ -351,7 +475,7 @@ public class EditScript
                 {
                 if (wanted.isSameNode(set2.item(j)))
                     {
-                    resultSet[index++] = wanted;
+                    resultSet[index++] = set1.item(i);
                     break;
                     }
                 }
@@ -359,8 +483,17 @@ public class EditScript
         return resultSet;
         }
 
-    private void moveMisalignedNodes(NodeList xKids, Node w, 
-            Document editScript, NodeSet matchings)
+    /**
+     * Moves nodes that are not in order to correct position.
+     *
+     * @param xKids
+     * @param w
+     * @param editScript
+     * @param matchings
+     */
+
+    private void moveMisalignedNodes(final NodeList xKids, final Node w,
+            final Document editScript, final NodeSet matchings)
         {
         for (int i = 0; i < xKids.getLength(); i++)
             {
@@ -408,13 +541,23 @@ public class EditScript
 
                 //Note that now a is now at new position
                 Delta.Move(context, a, aPos.path, wPos.path, pos.numXPath,
-                        aPos.charpos, pos.charPosition, aPos.length, editScript);
+                        aPos.charpos, pos.charPosition,
+                        aPos.length, editScript);
                 }
             }
         }
 
-    private void alignChildren(Node w, Node x, Document editScript,
-            NodeSet matchings)
+    /**
+     * Aligns children of current node that are not in order.
+     *
+     * @param w  the match of the current node.
+     * @param x  the current node
+     * @param editScript the Edit Script to append the operation to
+     * @param matchings  the set of matchings
+     */
+
+    private void alignChildren(final Node w, final Node x,
+            final Document editScript, final NodeSet matchings)
         {
         //How does alg deal with out of order nodes not matched with
         //children of partner?
@@ -432,7 +575,7 @@ public class EditScript
         //PROBABLY SHOULDN'T BE NEEDED - INDICATIVE OF BUG
         //Theory - single text node children are being matched,
         //Need to be moved, but aren't.
-        if ((wKids.getLength() == 0) || (xKids.getLength()==0))
+        if ((wKids.getLength() == 0) || (xKids.getLength() == 0))
             return;
 
         markChildrenOutOfOrder(w);
@@ -448,13 +591,22 @@ public class EditScript
         //If not inorder but matched, move
         //Need to be careful if want xKids or wKids
         //Check
-        
+
         moveMisalignedNodes(xKids, w, editScript, matchings);
         }
 
-    //Findpos returns childnumber of node to insert BEFORE
-    //Change to return XPath childnum as well
-    //Change to return charpos as well
+    /**
+     * Finds the childnumber to insert a node as.
+     *
+     * (Equivalent to the current childnumber of the node to insert
+     * before)
+     *
+     * @param x         the node to find the position of? *check*
+     * @param matchings the set of matching nodes
+     *
+     * @return          the position to insert the node at
+     */
+
     private InsertPosition findPos(final Node x, final NodeSet matchings)
         {
         DiffXML.log.fine("Entered findPos");
@@ -491,13 +643,13 @@ public class EditScript
 
         //Get partner of v
         NodeImpl u = (NodeImpl) matchings.getPartner((Node) v);
-        Node par_u = u.getParentNode();
+        Node uParent = u.getParentNode();
 
         //Find "in order" index of u
-        int dom_index = 0;
-        int xpath_index = 1;
-        int last_node = -1;
-        NodeList children = par_u.getChildNodes();
+        int domIndex = 0;
+        int xpathIndex = 1;
+        int lastNode = -1;
+        NodeList children = uParent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++)
             {
             NodeImpl test = (NodeImpl) children.item(i);
@@ -506,45 +658,45 @@ public class EditScript
 
             if (test.getUserData("inorder").equals("true"))
                 {
-                dom_index++;
+                domIndex++;
                 //Want to increment XPath index if not
                 //both this (inorder) node and last (inorder) node text nodes
-                if ((test.getNodeType() == Node.TEXT_NODE) && (last_node != -1)
-                        && (children.item(last_node).getNodeType()
+                if ((test.getNodeType() == Node.TEXT_NODE) && (lastNode != -1)
+                        && (children.item(lastNode).getNodeType()
                             == Node.TEXT_NODE))
                     {
-                    xpath_index--;
+                    xpathIndex--;
                     }
 
-                xpath_index++;
-                last_node = i;
+                xpathIndex++;
+                lastNode = i;
 
                 //Want to increment XPath index if not both this
                 //(inorder) node and last node text nodes
                 }
             }
         //Need i+1 child
-        pos.insertBefore = ++dom_index;
+        pos.insertBefore = ++domIndex;
 
         //If this is a text node, and last node was a text node,
         //don't increment xpath
 
         //Get charpos
         //Can't use NodePos func as node may not exist
-        int tmp_index = dom_index;
-        int last_ind = children.getLength() - 1;
+        int tmpIndex = domIndex;
+        int lastIndex = children.getLength() - 1;
 
-        if (dom_index > last_ind)
-            tmp_index = last_ind;
+        if (domIndex > lastIndex)
+            tmpIndex = lastIndex;
 
         int charpos = 1;
-        NodeImpl test = (NodeImpl) children.item(dom_index - 1);
-        if (children.item(dom_index - 1).getNodeType() != Node.TEXT_NODE
+        NodeImpl test = (NodeImpl) children.item(domIndex - 1);
+        if (children.item(domIndex - 1).getNodeType() != Node.TEXT_NODE
                 && test.getUserData("inorder").equals("true"))
             charpos = -1;
         else
             {
-            for (int j = (dom_index - 1); j >= 0; j--)
+            for (int j = (domIndex - 1); j >= 0; j--)
                 {
                 test = (NodeImpl) children.item(j);
                 if (children.item(j).getNodeType() == Node.TEXT_NODE
@@ -563,11 +715,11 @@ public class EditScript
         //If this is a text node, and last node was a text node,
         //don't increment xpath
         if (!(x.getNodeType() == Node.TEXT_NODE
-                    && (children.item(dom_index - 1).getNodeType()
+                    && (children.item(domIndex - 1).getNodeType()
                         == Node.TEXT_NODE)))
-            xpath_index++;
+            xpathIndex++;
 
-        pos.numXPath = xpath_index;
+        pos.numXPath = xpathIndex;
         pos.charPosition = charpos;
 
         DiffXML.log.fine("Exiting findPos normally");
