@@ -16,7 +16,7 @@
      Default target: compileDiffXML
   -->
 
-<project default="compileDiffXML" basedir=".">
+  <project default="compileDiffXML" basedir=".">
 
 
 <!-- Global properties -->
@@ -54,6 +54,13 @@
   </target>
 
 
+  <target name="compileDiffXMLWithSource"
+          depends="compileDiffXML">
+
+          <antcall target="copySource"/>
+
+  </target>
+
   <target name="compileDiffXML"
           depends="buildDirStructure"
           description="compiles classes">
@@ -70,7 +77,7 @@
           depends="compileDiffXML"
           description="packages all classes into a jar">
 
-          <jar jarfile="${build.dir}/${package}.jar" basedir="${build.dir}/org"/>
+          <jar jarfile="${build.dir}/diffxml.jar" basedir="${build.dir}/"/>
     <antcall target="cleanClasses"/>
 
   </target>
@@ -91,6 +98,7 @@
                   <exclude name="INSTALL*"/>
                   <exclude name="build.xml"/>
                   <exclude name="diffxml_checks.xml"/>
+                  <exclude name="check.sh"/>
                   <exclude name="*gz"/>
                   <exclude name=".*"/>
               </fileset>
@@ -99,8 +107,8 @@
           <copy file="INSTALL.bin" 
               tofile="${build.dir}/diffxml/INSTALL"/>
 
-          <copy file="${build.dir}/org.diffxml.jar"
-              todir="${build.dir}/diffxml/"/>
+          <copy file="${build.dir}/diffxml.jar"
+              todir="${build.dir}/diffxml/lib/"/>
 
 
           <antcall target="tarDiffXML"/>
@@ -130,16 +138,8 @@
           depends="jarDiffXML"
           description="creates source distribution">
 
-          <copy todir="${build.dir}/diffxml">
-              <fileset dir="../diffxml">
-                  <exclude name="build/"/>
-                  <exclude name="test/"/>
-                  <exclude name="INSTALL*"/>
-                  <exclude name="diffxml_checks.xml"/>
-                  <exclude name="*gz"/>
-                  <exclude name=".*"/>
-              </fileset>
-          </copy>
+          <antcall target="copySource"/>
+
 
           <copy file="INSTALL.src" 
               tofile="${build.dir}/diffxml/INSTALL"/>
@@ -150,6 +150,21 @@
                 src="${build.dir}/diffxml.tar"/>
 
           <delete file="${build.dir}/diffxml.tar"/>
+  </target>
+
+  <target name="copySource"
+          description="Copy source files to build">
+
+          <copy todir="${build.dir}/diffxml">
+              <fileset dir="../diffxml">
+                  <exclude name="build/"/>
+                  <exclude name="test/"/>
+                  <exclude name="INSTALL*"/>
+                  <exclude name="diffxml_checks.xml"/>
+                  <exclude name="*gz"/>
+                  <exclude name=".*"/>
+              </fileset>
+          </copy>
   </target>
 
 <!-- Test targets -->

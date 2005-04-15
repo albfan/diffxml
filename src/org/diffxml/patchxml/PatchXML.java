@@ -834,7 +834,7 @@ public class PatchXML
     * @return True only if both files are found.
     */
 
-    private static boolean filesExist()
+    protected static boolean filesExist()
         {
 
         File test = new File(_docFile);
