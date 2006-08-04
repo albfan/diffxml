@@ -24,6 +24,7 @@
   <property name="src.dir" value="src"/>
   <property name="build.dir" value="build"/>
   <property name="lib.dir" value="lib"/>
+  <property name="build.compiler" value="modern"/>
 
   <property name="package" value="org.diffxml"/>
   <property name="version" value="0.93A" />
@@ -67,7 +68,7 @@
 
     <javac srcdir="${src.dir}" 
            destdir="${build.dir}"
-	   debug="true" debuglevel="lines, vars, and source"
+	   debug="on" debuglevel="lines,vars,source"
            classpathref="classpath"/>
 
   </target>
@@ -173,7 +174,6 @@
           depends="testDiffXML, testPatch, testEquivalence"
           description="tests the build"/>
 
-
   <target name="testDiffXML">
     <echo message="Executing: diffxml ${test1.file} ${test2.file}"/>
     <java classname="${diffxml.class}" 
@@ -185,15 +185,14 @@
        <arg value="../${test2.file}"/>  
      </java>
   </target>
-
-
+  	
   <target name="testPatch">
     <echo message="Executing: patchxml ${test1.file} ${diffOut.file}"/>
     <java classname="${patch.class}" 
           dir="${build.dir}" 
           fork="yes"
           classpathref="classpath"
-	  failonerror="true"
+          failonerror="true"
           output="${patchOut.file}">
        <arg value="../${test1.file}"/>
        <arg value="../${diffOut.file}"/>
