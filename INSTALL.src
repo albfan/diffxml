@@ -13,12 +13,14 @@ Apache Ant >= 1.5.4 (to build diffxml). Other versions may work, but are
 untested. See http://ant.apache.org/
 
 The lib directory should contain the following jars:
-
+ 
+   junit.jar  
    dom3-xercesImpl.jar
    dom3-xml-apis.jar
-   xpp3_1_0_8a.jar
+   xpp3-1.1.3.4.C.jar
 
-These files relate to Apache Xerces ( http://xml.apache.org/ ) and XPP3 
+These files relate to JUnit (http://www.junit.org) Apache Xerces 
+( http://xml.apache.org/ ) and XPP3 
 ( http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html ). 
 
 Follow the following steps to build and run diffxml.
@@ -78,6 +80,6 @@ Send any bug reports / problems to amouat@postmaster.co.uk
 
 Adrian Mouat.
 
-13 March 2005.
+28 June 2005.
 
 ===================================
