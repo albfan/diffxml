@@ -97,9 +97,13 @@ public final class ChildNumber
             if (!tag.equals(currSib.getNodeName()))
                 inc = false;
             }
+        if (currSib.getNodeType() == Node.DOCUMENT_TYPE_NODE)
+        {
+            inc = false;
+        }
 
         //Handle non-coalescing of text nodes
-        if (i > 0)
+        if ((i > 0) && (inc == true))
             {
             if (currSib.getNodeType() == Node.TEXT_NODE
                     && siblings.item(i - 1).getNodeType() == Node.TEXT_NODE)
@@ -117,23 +121,7 @@ public final class ChildNumber
 
     public void setChildNumber(final Node n)
         {
-        /*
-        NodeList siblings = n.getParentNode().getChildNodes();
-        int i;
-        _xpathcn = 1;
-
-        for (i = 0; i < siblings.getLength(); i++)
-            {
-            System.err.println(siblings.item(i).getNodeName() + " val: " + siblings.item(i).getNodeValue() + " i: " + i + " xnum: " +_xpathcn);
-            if (NodeOps.checkIfSameNode(siblings.item(i), n))
-                break;
-
-            if (incIndex(n.getNodeName(), siblings, i))
-                _xpathcn++;
-            System.err.println(siblings.item(i).getNodeName() + " val: " + siblings.item(i).getNodeValue() + " i: " + i + " xnum: " +_xpathcn);
-            }
-        _domcn = i;
-        */
+  
         _xpathcn = getXPathChildNumber(n);
         _domcn= getDomChildNumber(n);
         }
