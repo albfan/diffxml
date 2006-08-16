@@ -227,6 +227,7 @@ public class Fmes extends Diff
             {
             System.err.println("Failed to serialize document " + e);
             }
+        System.out.println();
 
         }
 
