@@ -1,6 +1,7 @@
 package org.diffxml.diffxml.fmes;
 
-import org.apache.xerces.dom.DocumentImpl;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -17,7 +18,9 @@ public class EditScriptTest extends TestCase {
     {
         super.setUp();
         
-        testDoc = new DocumentImpl();
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        testDoc = fac.newDocumentBuilder().newDocument();
+
         parent = testDoc.createElement("parent");
         testDoc.appendChild(parent);
         es = new EditScript();

@@ -23,9 +23,7 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.patchxml;
 
-
-import org.apache.xpath.XPathAPI;
-import org.apache.xerces.parsers.DOMParser;
+import com.sun.org.apache.xpath.internal.XPathAPI;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,7 +33,11 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
@@ -43,9 +45,13 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
 
 import java.io.File;
+import java.io.IOException;
+
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.NodeOps;
+import org.diffxml.diffxml.fmes.ParserInitialisationException;
+import org.diffxml.diffxml.fmes.PrintXML;
 
 /**
  * Applies a DUL patch to an XML document.
@@ -56,7 +62,7 @@ public class PatchXML
     /** 
      * If true, extra debug data is output.
      */
-    private static final boolean OUTPUT_DEBUG = false;
+    private static final boolean OUTPUT_DEBUG = true;
 
     /**
      * If true, attempt to reverse the sense of the patch.
@@ -126,6 +132,7 @@ public class PatchXML
                             break;
                         case 'h':
                             printHelp();
+                            break;
                         case 'd':
                             dryrun = true;
                         case 'R':
@@ -773,6 +780,11 @@ public class PatchXML
         logMoveVars(opAttrs);
 
         Node moveNode = getNamedNode(doc, opAttrs);
+        if (moveNode == null) {
+            System.err.println("Error applying patch.\n" +
+            		"Node to move doesn't exist.");
+            System.exit(1);
+        }
         DiffXML.log.fine("moveNode: " + moveNode.getNodeName());
 
         int oldCharPos = getOldCharPos(opAttrs);
@@ -855,6 +867,9 @@ public class PatchXML
             if (OUTPUT_DEBUG)
                 {
                 try {
+                    System.out.println("Applying: ");
+                    PrintXML.print(op);
+                    System.out.println();
                     Transformer serializer = TransformerFactory.newInstance(
                             ).newTransformer();
                     serializer.transform(new DOMSource(doc),
@@ -922,9 +937,11 @@ public class PatchXML
             serializer.transform(new DOMSource(doc), new StreamResult(f1));
             }
         DiffXML.log.finer("PatchXML Doc");
-        if (OUTPUT_DEBUG)
+        if (OUTPUT_DEBUG) 
+            {
             serializer.transform(new DOMSource(patch),
                     new StreamResult(System.out));
+            }
         System.out.println();
             }
         catch (javax.xml.transform.TransformerException te)
@@ -947,47 +964,76 @@ public class PatchXML
 
         //Check files exist
         if (!filesExist())
+            {
             System.exit(2);
+            }
 
-        DOMParser parser = new DOMParser();
-        Fmes.initParser(parser);
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        try {
+            Fmes.initParser(fac);
+        } catch (ParserInitialisationException e) {
+            System.err.println("Failed to initialise parser: "
+                    + e.getMessage());
+            System.exit(2);
+        }
+        
+        DocumentBuilder parser = null;
+        try {
+            parser = fac.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            System.err.println("Failed to configure parser: "
+                    + e.getMessage());
+            System.exit(2);
+        }
+        Document doc = null;
 
         try
             {
-            parser.parse(_docFile);
+            doc = parser.parse(_docFile);
             }
-        catch (Exception e)
+        catch (SAXException e)
             {
-            System.err.println("Failed to parse document: " + e);
+            System.err.println("Failed to parse document: " + e.getMessage());
+            System.exit(2);
+            }
+        catch (IOException e)
+            {
+            System.err.println("Failed to parse document: " + e.getMessage());
             System.exit(2);
             }
 
-        Document doc = parser.getDocument();
-
+        Document patch = null;
+        
         try
             {
-            parser.parse(_patchFile);
+            patch = parser.parse(_patchFile);
             }
-        catch (Exception e)
+        catch (SAXException e)
             {
-            System.err.println("Failed to parse document: " + e);
+            System.err.println("Failed to parse document: " + e.getMessage());
+            System.exit(2);
+            }
+        catch (IOException e)
+            {
+            System.err.println("Failed to parse document: " + e.getMessage());
             System.exit(2);
             }
 
-        Document patch = parser.getDocument();
 
         doc.normalize();
         patch.normalize();
 
         if (reverse)
+            {
             patch = Reverse.go(patch);
+            }
 
 
         try 
             {
             DiffXML.initLog();
             } 
-        catch (Exception e) 
+        catch (IOException e) 
             {
             System.err.println("Failed to init Logging: " + e);
             }

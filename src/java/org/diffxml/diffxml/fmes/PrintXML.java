@@ -35,20 +35,20 @@ public static void print(Node n)
 switch (n.getNodeType())
 	{
 	case Node.TEXT_NODE :
-		System.out.println(n.getNodeValue());
+		System.out.print(n.getNodeValue());
 		break;
 
 	case Node.ATTRIBUTE_NODE :
-		System.out.println(n.getNodeName() + " " + n.getNodeValue());
+		System.out.print(" " + n.getNodeName() + "='" + n.getNodeValue() +"'");
 		break;
 
 	case Node.ELEMENT_NODE :
-		System.out.println(n.getNodeName());
+		System.out.print(n.getNodeName());
 		//Print out any attributes
 		NamedNodeMap att=n.getAttributes();		
 		if (att!=null)
 			{
-			System.out.println("Attributes:");
+			//System.out.println("Attributes:");
 			for(int i=0; i<att.getLength(); i++)
 				print(att.item(i));
 			}

@@ -1,10 +1,11 @@
 package org.diffxml.diffxml.fmes;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import junit.framework.TestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.apache.xerces.dom.DocumentImpl;
 
 public class ChildNumberTest extends TestCase 
 {
@@ -16,7 +17,8 @@ public class ChildNumberTest extends TestCase
     {
         super.setUp();
         
-        testDoc = new DocumentImpl();
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        testDoc = fac.newDocumentBuilder().newDocument();
         parent = testDoc.createElement("parent");
         testDoc.appendChild(parent);
         

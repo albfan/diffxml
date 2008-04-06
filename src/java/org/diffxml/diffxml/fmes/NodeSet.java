@@ -24,7 +24,6 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Node;
-import org.apache.xerces.dom.NodeImpl;
 import java.util.ArrayList;
 
 /**
@@ -51,8 +50,8 @@ public class NodeSet
 
     public final void add(final Node x, final Node y)
         {
-        _set.add((NodeImpl) x);
-        _set.add((NodeImpl) y);
+        _set.add(x);
+        _set.add(y);
         }
 
     /**

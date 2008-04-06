@@ -24,23 +24,28 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Document;
-import org.apache.xml.serialize.XMLSerializer;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import org.diffxml.diffxml.Diff;
 import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.DiffXML;
+
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+
 import java.util.StringTokenizer;
 import java.io.File;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Fmes finds the differences between two DOM documents.
  *
  * Uses the Fast Match Edit Script algorithm (fmes).
- * Output is a DOM document representing the differeneces in
+ * Output is a DOM document representing the differences in
  * DUL format.
  *
  * @author     Adrian Mouat
@@ -87,39 +92,42 @@ public class Fmes extends Diff
      * TODO: Consider moving to helper class.
      *
      * @param parser  The parser to be set
+     * @throws ParserInitialisationException 
      */
 
-    public static void initParser(final DOMParser parser)
+    public static void initParser(final DocumentBuilderFactory parserFactory) 
+    throws ParserInitialisationException
         {
         try
             {
             //These features affect whether entities are reolved or not
             if (!DiffFactory.ENTITIES)
                 {
-                parser.setFeature(
+                parserFactory.setFeature(
                         "http://xml.org/sax/features/external-general-entities",
                         false);
-                parser.setFeature(
+                parserFactory.setFeature(
                         "http://xml.org/sax/features/external-parameter-entities",
                         false);
                 }
 
             //Turn off DTD stuff - if DTD support changes recondsider
-            parser.setFeature(
+            parserFactory.setFeature(
                     "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
                     false);
-            parser.setFeature(
+            parserFactory.setFeature(
                     "http://apache.org/xml/features/nonvalidating/load-external-dtd",
                     false);
 
             //We don't want entity-ref-nodes, either text or no text
-            parser.setFeature(
+            parserFactory.setFeature(
                     "http://apache.org/xml/features/dom/create-entity-ref-nodes",
                     false);
             }
-        catch (SAXException e)
+        catch (ParserConfigurationException e)
             {
-            System.err.println("Could not set parser feature" + e);
+            throw new ParserInitialisationException(
+                    "Could not set parser feature", e);
             }
         }
 
@@ -148,33 +156,36 @@ public class Fmes extends Diff
      **/
     public final boolean diff(final String file1, final String file2)
         {
-        DOMParser parser = new DOMParser();
-        initParser(parser);
-        Document doc1, doc2;
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        try {
+            initParser(fac);
+        } catch (ParserInitialisationException e) {
+            System.err.println("Failed to initialise parser: " 
+                    + e.getMessage());
+            System.exit(2);
+        }
+        Document doc1 = null;
+        Document doc2 = null;
 
         try
             {
-            parser.parse(file1);
+            doc1 = fac.newDocumentBuilder().parse(file1);
             }
         catch (Exception e)
             {
-            System.err.println("Failed to parse document: " + e);
+            System.err.println("Failed to parse document: " + e.getMessage());
             System.exit(2);
             }
-
-        doc1 = parser.getDocument();
 
         try
             {
-            parser.parse(file2);
+            doc2 = fac.newDocumentBuilder().parse(file2);
             }
         catch (Exception e)
             {
-            System.err.println("Failed to parse document: " + e);
+            System.err.println("Failed to parse document: " + e.getMessage());
             System.exit(2);
             }
-
-        doc2 = parser.getDocument();
 
         Document delta = (new Fmes()).diff(doc1, doc2);
         //Determine if documents differ
@@ -206,8 +217,9 @@ public class Fmes extends Diff
     /**
      * Writes given XML document to standard out.
      *
+     * TODO: Think there is now a more standard way to do this
+     * TODO: Move to utility class
      * Uses UTF8 encoding, no indentation, preserves spaces.
-     * Made public due to general utility - consider moving.
      *
      * @param doc DOM document to output
      */
@@ -250,13 +262,20 @@ public class Fmes extends Diff
         //Match Nodes
         Match match = new Match();
 
-        NodeSet matchings = new NodeSet();
-        matchings = match.fastMatch(doc1, doc2);
+        NodeSet matchings = match.fastMatch(doc1, doc2);
 
         //Create Edit Script
         EditScript es = new EditScript();
         DiffXML.log.entering("diff", "EditScript.create");
-        Document delta = es.create(doc1, doc2, matchings);
+        Document delta = null;
+        try {
+            delta = es.create(doc1, doc2, matchings);
+        } catch (DocumentCreationException e) {
+            DiffXML.log.severe("Failed to create Edit Script: " 
+                    + e.getMessage());
+            System.err.println("Internal error when creating Edit Script");
+            System.exit(2);
+        }
         DiffXML.log.exiting("diff", "EditScript.create");
 
         return delta;

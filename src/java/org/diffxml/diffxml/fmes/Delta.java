@@ -61,7 +61,7 @@ public class Delta
 
         for (int i = 0; i < numAttrs; i++)
             {
-            Delta.Insert(attrs.item(i), path, 0, -1, editScript);
+            Delta.insert(attrs.item(i), path, 0, -1, editScript);
             }
         }
 
@@ -254,7 +254,7 @@ public class Delta
         return (Element)con;
         }
     //Appends an insert operation to es given inserted node, xpath to parent, charpos & childno
-    public static void Insert(Node n, String parent, 
+    public static void insert(Node n, String parent, 
             int childno, int charpos, Document es)
         {
         if (DiffFactory.DUL)
@@ -325,7 +325,7 @@ public class Delta
             }
         }
 
-    public static void Delete(Node n, String path, int charpos, int length, Document es)
+    public static void delete(Node n, String path, int charpos, int length, Document es)
         {
         if (DiffFactory.DUL)
             {
@@ -359,7 +359,7 @@ public class Delta
     //With context info we need old parent and DOM cn
     //CHANGED
     //now only need mark element
-    public static void Move(Element mark, Node n, String path, String parent, int childno, int ocharpos, int ncharpos, int length, Document es)
+    public static void move(Element mark, Node n, String path, String parent, int childno, int ocharpos, int ncharpos, int length, Document es)
         {
         Element mov=es.createElement("move");
         mov.setAttribute("node",path);

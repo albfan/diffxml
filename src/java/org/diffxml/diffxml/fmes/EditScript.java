@@ -23,6 +23,10 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.DiffXML;
 
@@ -32,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.xerces.dom.DocumentImpl;
 
 /**
  * Creates the edit script for the fmes algorithm.
@@ -56,15 +59,22 @@ public class EditScript
      * @param doc2      the modified document
      * @param matchings the set of matching nodes
      * @return          the resultant Edit Script
+     * @throws DocumentCreationException 
      */
 
     public final Document create(final Document doc1, final Document doc2,
-            final NodeSet matchings)
+            final NodeSet matchings) throws DocumentCreationException
         {
-        Document editScript = makeEmptyEditScript();
+        Document editScript;
+        try {
+            editScript = makeEmptyEditScript();
+        } catch (ParserConfigurationException e) {
+            throw new DocumentCreationException(
+                    "Failed to create edit script", e);
+        }
 
         if (!doc1.getDocumentElement().getNodeName()
-                .equals(doc2.getDocumentElement()))
+                .equals(doc2.getDocumentElement().getNodeName()))
             matchRoots(editScript, doc1, doc2);
 
         //Fifo used to do a breadth first traversal of doc2
@@ -121,11 +131,14 @@ public class EditScript
      * Move to delta.java?
      *
      * @return a properly formatted, empty edit script
+     * @throws ParserConfigurationException If a new document can't be created
      */
 
-    private Document makeEmptyEditScript()
+    private Document makeEmptyEditScript() throws ParserConfigurationException
         {
-        Document editScript = new DocumentImpl();
+        DocumentBuilder builder = 
+            DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document editScript = builder.newDocument();
 
         Element root = editScript.createElement("delta");
 
@@ -234,7 +247,7 @@ public class EditScript
         matchings.add(w, x);
 
         //System.err.println("insert: " + pos.numXPath + " " + pos.insertBefore + " " +w.getNodeValue());
-        Delta.Insert(w, zPath.getXPath(), pos.numXPath, pos.charPosition, editScript);
+        Delta.insert(w, zPath.getXPath(), pos.numXPath, pos.charPosition, editScript);
 
         Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), editScript);
 
@@ -255,7 +268,7 @@ public class EditScript
     private Node doMove(final Node x, final Node z,
             final Document editScript, final NodeSet matchings)
         {
-        InsertPosition pos = new InsertPosition();
+        InsertPosition pos;
 
         Node w = matchings.getPartner(x);
 
@@ -289,7 +302,7 @@ public class EditScript
             //Apply move to T1
             NodeOps.insertAsChild(pos.insertBefore, z, w);
 
-            Delta.Move(context, w, wPath.getXPath(), zPath.getXPath(), pos.numXPath,
+            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.numXPath,
                      wPath.getCharPos(), pos.charPosition, wPath.getLength(), editScript);
             }
         return w;
@@ -350,7 +363,7 @@ public class EditScript
             Element par = (Element) n.getParentNode();
             NodePos delPos = new NodePos(n);
 
-            Delta.Delete(n, delPos.getXPath(), delPos.getCharPos(),
+            Delta.delete(n, delPos.getXPath(), delPos.getCharPos(),
                     delPos.getLength(), editScript);
             par.removeChild(n);
             }
@@ -481,8 +494,7 @@ public class EditScript
                     && NodeOps.isMatched(xKids.item(i)))
                 {
                 //Get childno for move
-                InsertPosition pos = new InsertPosition();
-                pos = findPos(xKids.item(i), matchings);
+                InsertPosition pos = findPos(xKids.item(i), matchings);
 
                 //Get partner and position
                 Node a = matchings.getPartner(xKids.item(i));
@@ -499,7 +511,7 @@ public class EditScript
                 NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
-                Delta.Move(context, a, aPos.getXPath(), wPos.getXPath(), pos.numXPath,
+                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.numXPath,
                         aPos.getCharPos(), pos.charPosition,
                         aPos.getLength(), editScript);
                 }

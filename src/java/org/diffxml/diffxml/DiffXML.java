@@ -49,7 +49,7 @@ public class DiffXML
     private static String _file2;
 
     //Logger
-    public static Logger log = Logger.getLogger("diffxml");
+    public final static Logger log = Logger.getLogger("diffxml");
 
     /**
      * Checks and interprets the command line arguments.

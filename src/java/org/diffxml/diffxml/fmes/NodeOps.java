@@ -26,7 +26,6 @@ package org.diffxml.diffxml.fmes;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.apache.xerces.dom.NodeImpl;
 
 /**
  * Class to handle general diffxml operations on Nodes.
@@ -73,7 +72,7 @@ final public class NodeOps
 
     public static void setInOrder(final Node n)
         {
-        ((NodeImpl) n).setUserData("inorder", "true", null);
+        n.setUserData("inorder", "true", null);
         }
 
     /**
@@ -84,7 +83,7 @@ final public class NodeOps
 
     public static void setOutOfOrder(final Node n)
         {
-        ((NodeImpl) n).setUserData("inorder", "false", null);
+        n.setUserData("inorder", "false", null);
         }
 
     /**
@@ -95,7 +94,7 @@ final public class NodeOps
 
     public static void setMatched(final Node n)
         {
-        ((NodeImpl) n).setUserData("matched", "true", null);
+        n.setUserData("matched", "true", null);
         }
 
     /**
@@ -106,7 +105,7 @@ final public class NodeOps
 
     public static void setNotMatched(final Node n)
         {
-        ((NodeImpl) n).setUserData("matched", "false", null);
+        n.setUserData("matched", "false", null);
         }
 
     /**
@@ -133,7 +132,7 @@ final public class NodeOps
 
     public static boolean isInOrder(final Node n)
         {
-        return ((NodeImpl) n).getUserData("inorder").equals("true");
+        return n.getUserData("inorder").equals("true");
         }
 
     /**
@@ -145,7 +144,7 @@ final public class NodeOps
 
     public static boolean isMatched(final Node n)
         {
-        return ((NodeImpl) n).getUserData("matched").equals("true");
+        return n.getUserData("matched").equals("true");
         }
 
     /**
@@ -162,6 +161,6 @@ final public class NodeOps
 
     public static boolean checkIfSameNode(final Node x, final Node y)
         {
-        return (((NodeImpl) x).isSameNode(((NodeImpl) y)));
+        return x.isSameNode(y);
         }
 }
