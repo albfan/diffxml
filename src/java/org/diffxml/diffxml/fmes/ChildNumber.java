@@ -35,10 +35,10 @@ import org.w3c.dom.NodeList;
 public final class ChildNumber
 {
     /** DOM child number. */
-    private int _domcn;
+    private int mDOMChildNumber;
 
     /** XPath child number. */
-    private int _xpathcn;
+    private int mXPathChildNumber;
 
     /**
      * Default constructor.
@@ -48,6 +48,7 @@ public final class ChildNumber
 
     public ChildNumber(final Node n)
         {
+        assert(n != null);
         setChildNumber(n);
         }
 
@@ -59,7 +60,7 @@ public final class ChildNumber
 
     public int getDOM()
         {
-        return _domcn;
+        return mDOMChildNumber;
         }
 
     /**
@@ -70,7 +71,7 @@ public final class ChildNumber
 
     public int getXPath()
         {
-        return _xpathcn;
+        return mXPathChildNumber;
         }
 
     /**
@@ -92,7 +93,7 @@ public final class ChildNumber
         Node currSib = siblings.item(i);
 
         boolean inc = true;
-        if (DiffFactory.TAGNAMES)
+        if (DiffFactory.isUseTagnames())
             {
             if (!tag.equals(currSib.getNodeName()))
                 inc = false;
@@ -122,8 +123,8 @@ public final class ChildNumber
     public void setChildNumber(final Node n)
         {
   
-        _xpathcn = getXPathChildNumber(n);
-        _domcn= getDomChildNumber(n);
+        mXPathChildNumber = getXPathChildNumber(n);
+        mDOMChildNumber= getDomChildNumber(n);
         }
     
     public static int getDomChildNumber(final Node n)
@@ -163,6 +164,8 @@ public final class ChildNumber
     
     public static int getXPathChildNumber(final Node n)
     {
+        assert(n != null);
+
         NodeList siblings = n.getParentNode().getChildNodes();
         int childNo = 0;
         

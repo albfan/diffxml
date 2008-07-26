@@ -117,7 +117,7 @@ while ( i>0 && j>0)
 		}
 	else
 		{//Nodes must be equal
-		DiffXML.log.finer("Equal");
+		DiffXML.LOG.finer("Equal");
 		old_A=A;
 		if (!A_reader.atStart())
                 	{

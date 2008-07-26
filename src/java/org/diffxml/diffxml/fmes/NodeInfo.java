@@ -35,13 +35,13 @@ public class NodeInfo
      * Field holding nodes depth.
      */
 
-    private int _depth;
+    private int mDepth;
 
     /**
      * Field holding value of associated tag.
      */
 
-    private String _tag;
+    private String mTag;
 
     /**
      * Constructor taking initial values.
@@ -52,8 +52,8 @@ public class NodeInfo
 
     NodeInfo(final String tag, final int depth)
         {
-        _tag = tag;
-        _depth = depth;
+        mTag = tag;
+        mDepth = depth;
         }
 
     /**
@@ -65,8 +65,8 @@ public class NodeInfo
 
     public final boolean equals(final NodeInfo ni)
         {
-        return ((ni.getDepth() == this._depth)
-                && (ni.getTag().equals(this._tag)));
+        return ((ni.getDepth() == this.mDepth)
+                && (ni.getTag().equals(this.mTag)));
         }
 
     /**
@@ -77,7 +77,7 @@ public class NodeInfo
 
     public final void setTag(final String tag)
         {
-        _tag = tag;
+        mTag = tag;
         }
 
     /**
@@ -88,7 +88,7 @@ public class NodeInfo
 
     public final String getTag()
         {
-        return _tag;
+        return mTag;
         }
 
     /**
@@ -99,7 +99,7 @@ public class NodeInfo
 
     public final void setDepth(final int depth)
         {
-        _depth = depth;
+        mDepth = depth;
         }
 
     /**
@@ -110,7 +110,7 @@ public class NodeInfo
 
     public final int getDepth()
         {
-        return _depth;
+        return mDepth;
         }
 
     public final boolean equals(final Object o)
@@ -120,6 +120,6 @@ public class NodeInfo
 
     public final int hashCode()
         {
-        return _tag.length() + _depth;
+        return mTag.length() + mDepth;
         }
 }

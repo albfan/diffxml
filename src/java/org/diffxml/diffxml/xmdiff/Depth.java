@@ -40,7 +40,7 @@ int sp = line.indexOf(' ');
 //System.out.println("Found index "+ sp);
 String depth_str = line.substring(0, (sp));
 //System.out.println("depth_str " + depth_str);
-depth=(new Integer(depth_str)).intValue();
+depth=Integer.valueOf(depth_str);
 //System.out.println("got line");
 path=line.substring((sp+1));
 
@@ -54,7 +54,7 @@ while (st.hasMoreTokens())
 	path=path+"/node()["+st.nextToken()+"]";
 	}
 
-DiffXML.log.finer("path " + path + " depth " + depth);
+DiffXML.LOG.finer("path " + path + " depth " + depth);
 
 }
 

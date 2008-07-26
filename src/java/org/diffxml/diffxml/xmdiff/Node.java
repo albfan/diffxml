@@ -35,7 +35,7 @@ public static final int TAG = 1;
 public int type;
 public String value;
 public int depth;
-public int attr_count;
+public int attrCount;
 private Vector attributes;
 
 Node()
@@ -44,7 +44,7 @@ attributes=new Vector();
 depth=0;
 value="";
 type=TAG;
-attr_count=0;
+attrCount=0;
 }
 Node(int t, String n, int d)
 {
@@ -52,7 +52,7 @@ attributes=new Vector();
 depth = d;
 value = n;
 type = t;
-attr_count=0;
+attrCount=0;
 }
 
 public void set(int t, String v, int d)
@@ -65,7 +65,7 @@ type = t;
 public void removeAttrs()
 {
 attributes.removeAllElements();
-attr_count=0;
+attrCount=0;
 }
 
 public void addAttr(String n, String v)
@@ -73,12 +73,12 @@ public void addAttr(String n, String v)
 //System.out.println("Entered addAttr name: " + n + " Value: " +v);
 attributes.add(n);
 attributes.add(v);
-attr_count++;
+attrCount++;
 }
 
 public String getAttrName(int i)
 {
-if (i>attr_count)
+if (i>attrCount)
 	return null;
 
 return ((String) attributes.get((2*i)));
@@ -87,7 +87,7 @@ return ((String) attributes.get((2*i)));
 
 public String getAttrValue(int i)
 {
-if (i>attr_count)
+if (i>attrCount)
         return null;
  
 return ((String) attributes.get((2*i)+1));

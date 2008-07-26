@@ -107,7 +107,7 @@ public class Delta
         Node con=es.createElement("context");
 
         //Move up num of parents, keeping track of domcn
-        for(p=0;p<=DiffFactory.PARENT_CONTEXT;p++)
+        for(p = 0; p <= DiffFactory.getParentContext(); p++)
             {
             Node tmp=par.getParentNode();
             //Get domcn of *previous* node
@@ -119,13 +119,13 @@ public class Delta
                     break;
                 }
 
-            DiffXML.log.finer("Moving up stack: p=" +p + " Node " + par.getNodeName() + par.getNodeValue());
+            DiffXML.LOG.finer("Moving up stack: p=" +p + " Node " + par.getNodeName() + par.getNodeValue());
             stack[p]=cn;
 
             par=tmp;
             if (NodeOps.checkIfSameNode(par, root))
                 {
-                DiffXML.log.finer("Exiting loop as reached root node");
+                DiffXML.LOG.finer("Exiting loop as reached root node");
                 break;
                 }
 
@@ -148,7 +148,7 @@ public class Delta
             }
         else
             {
-            DiffXML.log.finer("roo");
+            DiffXML.LOG.finer("roo");
             stack[p]=0;	
             }
 
@@ -156,21 +156,21 @@ public class Delta
         Node app_node=(Node) con;
         while (p>=1)
             {
-            DiffXML.log.finer("p=" +p + " par" + par.getNodeName() + par.getNodeValue());
+            DiffXML.LOG.finer("p=" +p + " par" + par.getNodeName() + par.getNodeValue());
             //Output any left sibs
             //If root node we have no siblings
 
             if (!NodeOps.checkIfSameNode(root, par))
                 {
                 NodeList par_sibs=par.getParentNode().getChildNodes();
-                left=stack[p]-DiffFactory.PARENT_SIBLING_CONTEXT;
+                left = stack[p] - DiffFactory.getParentSiblingContext();
                 if (left<0)
                     left=0;
 
                 //Attach the nodes
                 while (left <= stack[p])
                     {
-                    DiffXML.log.finer("appending node" + par_sibs.item(left).getNodeName()+" " +  par_sibs.item(left).getNodeValue());
+                    DiffXML.LOG.finer("appending node" + par_sibs.item(left).getNodeName()+" " +  par_sibs.item(left).getNodeValue());
                     app_node.appendChild( es.importNode(par_sibs.item(left), false) );
                     left++;
                     }
@@ -188,7 +188,7 @@ public class Delta
         //Now par should be n
         //Add any sibling context
         NodeList sibs=n.getParentNode().getChildNodes();
-        left=stack[0]-DiffFactory.SIBLING_CONTEXT;
+        left = stack[0] - DiffFactory.getSiblingContext();
 
         if (left<0)
             left=0;
@@ -199,12 +199,12 @@ public class Delta
             left++;
             }
         //add insert
-        DiffXML.log.fine("Appending operation to" + app_node.getNodeName());
+        DiffXML.LOG.fine("Appending operation to" + app_node.getNodeName());
         app_node.appendChild(op);
         //db.on=false;
 
         //Add right siblings
-        right=stack[0]+DiffFactory.SIBLING_CONTEXT;
+        right = stack[0] + DiffFactory.getSiblingContext();
         if (right>=sibs.getLength())
             right=sibs.getLength()-1;
 
@@ -221,9 +221,9 @@ public class Delta
         //Only a point if par_sib>0
 
 
-        if (DiffFactory.PARENT_SIBLING_CONTEXT>0)
+        if (DiffFactory.getParentSiblingContext() > 0)
             {
-            for(p=1;p<=DiffFactory.PARENT_CONTEXT;p++)
+            for(p = 1; p <= DiffFactory.getParentContext(); p++)
                 {
                 par=n.getParentNode();
 
@@ -236,7 +236,7 @@ public class Delta
                 NodeList par_sibs=n.getParentNode().getChildNodes();
                 //Note that we now want to work outwards, not inwards
                 //Note that we corrupt the stack here!!
-                right=stack[p]+DiffFactory.PARENT_SIBLING_CONTEXT;
+                right = stack[p] + DiffFactory.getParentSiblingContext();
                 if (right>=par_sibs.getLength())
                     right=par_sibs.getLength()-1;
 
@@ -257,7 +257,7 @@ public class Delta
     public static void insert(Node n, String parent, 
             int childno, int charpos, Document es)
         {
-        if (DiffFactory.DUL)
+        if (DiffFactory.isDUL())
             {
             Element ins=es.createElement("insert");
             ins.setAttribute("parent",parent);
@@ -276,7 +276,7 @@ public class Delta
 
             //Add any context information
 
-            if (DiffFactory.CONTEXT)
+            if (DiffFactory.isContext())
                 ins=addContext(n, ins);
 
             es.getDocumentElement().appendChild(ins);
@@ -327,7 +327,7 @@ public class Delta
 
     public static void delete(Node n, String path, int charpos, int length, Document es)
         {
-        if (DiffFactory.DUL)
+        if (DiffFactory.isDUL())
             {
             Element del=es.createElement("delete");
             del.setAttribute("node",path);
@@ -338,9 +338,9 @@ public class Delta
             if (length!=-1)
                 del.setAttribute("length", (""+length) );
 
-            if (DiffFactory.REVERSE_PATCH)
+            if (DiffFactory.isReversePatch())
                 del=addReverseContext(n, del);
-            else if (DiffFactory.CONTEXT)
+            else if (DiffFactory.isContext())
                 del=addContext(n,  del);
 
             es.getDocumentElement().appendChild(del);
@@ -376,9 +376,9 @@ public class Delta
         mov.setAttribute("parent",parent);
         mov.setAttribute("childno", ( ""+childno));
 
-        if (DiffFactory.REVERSE_PATCH)
+        if (DiffFactory.isReversePatch())
             addReverseContext(n,mov);
-        else if (DiffFactory.CONTEXT)
+        else if (DiffFactory.isContext())
             {
             Element con=es.createElement("context");
             con.appendChild(mark);

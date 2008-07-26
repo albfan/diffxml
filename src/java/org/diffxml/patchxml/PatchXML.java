@@ -284,8 +284,7 @@ public class PatchXML
     private int getNodeTypeFromAttr(final NamedNodeMap attrs)
         {
         //TODO: Deal with cases when no node type attr
-        return new Integer(attrs.getNamedItem("nodetype").getNodeValue()
-                ).intValue();
+        return Integer.valueOf(attrs.getNamedItem("nodetype").getNodeValue());
         }
 
     /**
@@ -371,7 +370,7 @@ public class PatchXML
 
         Node a = opAttrs.getNamedItem("old_charpos");
         if (a != null)
-            oldCharPos = new Integer(a.getNodeValue()).intValue();
+            oldCharPos = Integer.valueOf(a.getNodeValue());
 
         return oldCharPos;
         }
@@ -391,7 +390,7 @@ public class PatchXML
 
         Node a = opAttrs.getNamedItem("new_charpos");
         if (a != null)
-            newCharPos = new Integer(a.getNodeValue()).intValue();
+            newCharPos = Integer.valueOf(a.getNodeValue());
 
         return newCharPos;
         }
@@ -411,7 +410,7 @@ public class PatchXML
 
         Node a = opAttrs.getNamedItem("charpos");
         if (a != null)
-            charpos = new Integer(a.getNodeValue()).intValue();
+            charpos = Integer.valueOf(a.getNodeValue());
 
         return charpos;
         }
@@ -509,7 +508,7 @@ public class PatchXML
                 //TODO: This is a poor hack as insertAtCharPos doesn't work
                 if (charpos > 1)
                     {
-                    DiffXML.log.fine("here " + ins.getNodeValue());
+                    DiffXML.LOG.fine("here " + ins.getNodeValue());
                     parent.insertBefore(ins, siblings.item(1));
                     }
                 else 
@@ -523,7 +522,7 @@ public class PatchXML
                 }
             else
                 {
-                DiffXML.log.fine("Applying insertBefore");
+                DiffXML.LOG.fine("Applying insertBefore");
                 parent.insertBefore(ins, siblings.item(domcn));
                 }
             }
@@ -548,8 +547,8 @@ public class PatchXML
         int domcn = 0;
 
         if (opAttrs.getNamedItem("childno") != null)
-            xpathcn = new Integer(opAttrs.getNamedItem("childno").getNodeValue()
-                    ).intValue();
+            xpathcn = Integer.valueOf(opAttrs.getNamedItem(
+                    "childno").getNodeValue());
 
         //Convert xpath childno to DOM childno
         if (nodeType != Node.ATTRIBUTE_NODE)
@@ -567,7 +566,7 @@ public class PatchXML
 
     private void doInsert(final Document doc, final Node op)
         {
-        DiffXML.log.fine("Applying insert");
+        DiffXML.LOG.fine("Applying insert");
         Node ins;
 
         //Get various variables need for insert
@@ -655,13 +654,13 @@ public class PatchXML
     private void logDeleteVariables(final Node delNode,
             final NamedNodeMap opAttrs)
         {
-        DiffXML.log.finer("Deleting node "
+        DiffXML.LOG.finer("Deleting node "
                 + delNode.getNodeName() + " " + delNode.getNodeValue());
         if (opAttrs.getNamedItem("length") != null)
             {
-            DiffXML.log.finer("Supposed length "
+            DiffXML.LOG.finer("Supposed length "
                     + opAttrs.getNamedItem("length").getNodeValue());
-            DiffXML.log.finer("Actual length "
+            DiffXML.LOG.finer("Actual length "
                     + delNode.getNodeValue().length());
             }
         }
@@ -731,7 +730,7 @@ public class PatchXML
         {
         //TODO: test behaviour with text nodes
         NamedNodeMap opAttrs = op.getAttributes();
-        DiffXML.log.fine("Applying delete");
+        DiffXML.LOG.fine("Applying delete");
 
         Node delNode = getNamedNode(doc, opAttrs);
 
@@ -754,14 +753,14 @@ public class PatchXML
 
     private void logMoveVars(final NamedNodeMap opAttrs)
         {
-        DiffXML.log.finer("Node: "
+        DiffXML.LOG.finer("Node: "
                 + opAttrs.getNamedItem("node").getNodeValue()
                 + " Parent" + opAttrs.getNamedItem("parent").getNodeValue());
-        DiffXML.log.finer("childno"
+        DiffXML.LOG.finer("childno"
                 + opAttrs.getNamedItem("childno").getNodeValue());
 
         if (opAttrs.getNamedItem("length") != null)
-            DiffXML.log.finer("length "
+            DiffXML.LOG.finer("length "
                     + opAttrs.getNamedItem("length").getNodeValue());
         }
 
@@ -785,7 +784,7 @@ public class PatchXML
             		"Node to move doesn't exist.");
             System.exit(1);
         }
-        DiffXML.log.fine("moveNode: " + moveNode.getNodeName());
+        DiffXML.LOG.fine("moveNode: " + moveNode.getNodeName());
 
         int oldCharPos = getOldCharPos(opAttrs);
 
@@ -798,7 +797,7 @@ public class PatchXML
         //Find position to move to
         //Get parent
         Node parent = getNamedParent(doc, opAttrs);
-        DiffXML.log.fine("parent: " + parent.getNodeName());
+        DiffXML.LOG.fine("parent: " + parent.getNodeName());
 
         NodeList newSiblings = parent.getChildNodes();
         int domcn = getDOMChildNo(opAttrs, moveNode.getNodeType(), newSiblings);
@@ -810,7 +809,7 @@ public class PatchXML
         //TODO: Check old node removed and children properly dealt with
 
         moveNode = moveNode.getParentNode().removeChild(moveNode);
-        DiffXML.log.fine("newCharPos: " + newCharPos + " domcn: " + domcn);
+        DiffXML.LOG.fine("newCharPos: " + newCharPos + " domcn: " + domcn);
         insertNode(newSiblings, (Element) parent, domcn, newCharPos, moveNode);
         }
 
@@ -936,7 +935,7 @@ public class PatchXML
             File f1 = new File(_docFile);
             serializer.transform(new DOMSource(doc), new StreamResult(f1));
             }
-        DiffXML.log.finer("PatchXML Doc");
+        DiffXML.LOG.finer("PatchXML Doc");
         if (OUTPUT_DEBUG) 
             {
             serializer.transform(new DOMSource(patch),

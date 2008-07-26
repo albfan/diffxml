@@ -72,7 +72,7 @@ public class Match
      * @return   true if nodes match, false otherwise
      */
 
-    private boolean compareElements(final Node a, final Node b)
+    private static boolean compareElements(final Node a, final Node b)
         {
         //Check NodeNames equal
         if (a.getNodeName() != b.getNodeName())
@@ -112,13 +112,13 @@ public class Match
      * @return   True if nodes match, false otherwise
      */
 
-    private boolean compareTextNodes(final Node a, final Node b)
+    private static boolean compareTextNodes(final Node a, final Node b)
         {
 
         String aString = a.getNodeValue();
         String bString = b.getNodeValue();
 
-        if (DiffFactory.IGNORE_ALL_WHITESPACE)
+        if (DiffFactory.isIgnoreAllWhitespace())
             {
             //Remove whitespace from nodes before comparison
             //TODO: Check nextToken doesn't skip first
@@ -132,7 +132,7 @@ public class Match
             while (st.hasMoreTokens())
                 bString = bString + st.nextToken();
             }
-        else if (DiffFactory.IGNORE_LEADING_WHITESPACE)
+        else if (DiffFactory.isIgnoreLeadingWhitespace())
             {
             //Ignore leading ws
             //just call trim
@@ -142,7 +142,7 @@ public class Match
 
         //Check case optn
 
-        if (DiffFactory.IGNORE_CASE)
+        if (DiffFactory.isIgnoreCase())
             return (aString.equalsIgnoreCase(bString));
 
         return (aString.equals(bString));
@@ -159,7 +159,7 @@ public class Match
      * @return   true if nodes match, false otherwise
      */
 
-    private boolean compareNodes(final Node a, final Node b)
+    private static boolean compareNodes(final Node a, final Node b)
         {
 
         if (a.getNodeType() != b.getNodeType())
@@ -186,7 +186,7 @@ public class Match
      * @return          the resultant NodeIterator
      */
 
-    private NodeIterator makeIterator(final String nodeType, final Document doc)
+    private static NodeIterator makeIterator(final String nodeType, final Document doc)
         {
 
         //Should really be bottom up, but shouldn't make big diff
@@ -196,7 +196,7 @@ public class Match
         else
             filter = NodeFilter.SHOW_COMMENT;
 
-        DiffXML.log.finer("Matching text/comment nodes");
+        DiffXML.LOG.finer("Matching text/comment nodes");
         return ((DocumentTraversal) doc).createNodeIterator(
                 doc.getDocumentElement(),
                 filter, null, false);
@@ -214,7 +214,7 @@ public class Match
      * @return true if a match is found, false if not
      */
 
-    private boolean matchNode(final Node node, final NodeIterator ni,
+    private static boolean matchNode(final Node node, final NodeIterator ni,
             final NodeSet matchSet)
         {
         if (NodeOps.isMatched(node))
@@ -248,7 +248,7 @@ public class Match
      * @param matchSet     The NodeSet to add mathcing elements to
      */
 
-    private void matchElements(final String elementName, final Document doc1,
+    private static void matchElements(final String elementName, final Document doc1,
             final Document doc2, final NodeSet matchSet)
         {
 
@@ -289,7 +289,7 @@ public class Match
      * @param matchSet  The NodeSet to store the pairs in
      */
 
-    private void matchNodes(final String nodeType, final Document doc1,
+    private static void matchNodes(final String nodeType, final Document doc1,
             final Document doc2, final NodeSet matchSet)
         {
         NodeIterator ni1 = makeIterator(nodeType, doc1);
@@ -319,7 +319,7 @@ public class Match
      * @return NodeSet containing pairs of matching nodes.
      */
 
-    public final NodeSet fastMatch(final Document doc1, final Document doc2)
+    public static final NodeSet fastMatch(final Document doc1, final Document doc2)
         {
         NodeSet matchSet = new NodeSet();
 
@@ -343,7 +343,7 @@ public class Match
             curr = (NodeInfo) treeIter.next();
             wantedName = curr.getTag();
 
-            DiffXML.log.finer("Wanted Node: " + wantedName);
+            DiffXML.LOG.finer("Wanted Node: " + wantedName);
 
             //Get all nodes in both documents with wantedName tag
             if (wantedName.equals("#text") || wantedName.equals("#comment"))
@@ -378,7 +378,7 @@ public class Match
      * @param doc the document containg the nodes to be marked.
      */
 
-    private void markNodes(final Document doc)
+    private static void markNodes(final Document doc)
         {
         NodeIterator ni = ((DocumentTraversal) doc).createNodeIterator(
                 doc.getDocumentElement(),
@@ -403,7 +403,7 @@ public class Match
      *             depth.
      */
 
-    private TreeSet sortNodes(final Document doc)
+    private static TreeSet sortNodes(final Document doc)
         {
         //Tree walker steps through all nodes in docs
         TreeWalker walker = ((DocumentTraversal) doc).createTreeWalker(
@@ -428,7 +428,7 @@ public class Match
             NodeInfo ni = new NodeInfo(node.getNodeName(), depth);
             nodeInfoSet.add(ni);
 
-            DiffXML.log.finer("Added "  + ni.getTag()
+            DiffXML.LOG.finer("Added "  + ni.getTag()
                     + " Depth " + ni.getDepth());
 
             node =  walker.nextNode();

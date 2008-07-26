@@ -1,25 +1,25 @@
 /*
 Program to difference two XML files
-   
+
 Copyright (C) 2002-2004 Adrian Mouat
-   
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-    
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-     
+
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-      
+
 Author: Adrian Mouat
 email: amouat@postmaster.co.uk
-*/      
+ */      
 
 package org.diffxml.diffxml;
 
@@ -33,99 +33,436 @@ import org.diffxml.diffxml.xmdiff.XmDiff;
  *
  * @author 	Adrian Mouat
  */
-
-public class DiffFactory
-{
+public final class DiffFactory {
     /*
-     * Fields to set various options
-     *
-     * I have avoided setter/getter methods as unneccesary for
-     * simple methods.
-     *
-     * Also the leading '_' convention has been ignored for
-     * clarity.
-     *
-     * This may change in the future, especially concerning the
-     * methods handling ints.
-     *
      * TODO: Make state fixed for each diff instance. Currently 
      * changes to options affect in-process diffs.
      */
+
+
+    /**
+     * Report only if files differ.
+     * Default off.
+     */
+    private static boolean mBrief = false;
+
+    /**
+     * Ignore all whitespace.
+     * Default off.
+     */
+    private static boolean mIgnoreAllWhitespace = false;
+
+    /**
+     * Ignore leading whitespace.
+     * Default off.
+     */
+    private static boolean mIgnoreLeadingWhitespace = false;
+
+    /**
+     * Ignore whitespace only nodes.
+     * Default off.
+     */
+    private static boolean mIgnoreWhitespaceNodes = false;
+
+    /**
+     * Ignore changes in case only.
+     * Default off.
+     */
+    private static boolean mIgnoreCase = false;
+
+    /**
+     * Ignore comments.
+     * Default off.
+     */
+    private static boolean mIgnoreComments = false;
+
+    /**
+     * Ignore processing instructions.
+     * Default off.
+     */
+    private static boolean mIgnoreProcessingInstructions = false;
+
+    /**
+     * Output tagnames rather than node numbers.
+     * Default off.
+     */
+    private static boolean mUseTagnames = false;
+
+    /**
+     * Output reverse patching context.
+     * Default off.
+     */
+    private static boolean mReversePatch = false;
+
+    /**
+     * Whether or not to output context nodes.
+     * Default off.
+     */
+    private static boolean mContext = false;
+
+    /**
+     * Amount of sibling context.
+     * Default 2.
+     */
+    private static int mSiblingContext = 2;
+
+    /**
+     * Amount of parent context.
+     * Default 1.
+     */
+    private static int mParentContext = 1;
+
+    /**
+     * Amount of parent sibling context.
+     * Default 0.
+     */
+    private static int mParentSiblingContext = 0;
+
+    /**
+     * Algorithm to use.
+     * Default FMES.
+     */
+    private static boolean mFMES = true;
+
+    /**
+     * Use DUL output format.
+     * No other format currently supported.
+     * default on.
+     */
+    private static boolean mDUL = true;
+
+    /** Resolving of entities. */
+    private static boolean mResolveEntities = true;
+
+    /**
+     * Private constructor - shouldn't be called.
+     */
+    private DiffFactory() {
+        //Shouldn't be called
+    }
+
+    /**
+     * Only report if files differ, do not output differences.
+     * 
+     * @param brief Sets brief output
+     */
+    public static void setBrief(final boolean brief) {
+        mBrief = brief;
+    }
     
+    /**
+     * If brief mode is on, only reports if files differ, 
+     * does not output differences.
+     * 
+     * @return True if brief output is on
+     */
+    public static boolean isBrief() {
+        return mBrief;
+    }
 
-    //Report only if files differ
-    //Default off
-    public static boolean BRIEF=false;
- 
-    //Ignore all whitespace
-    //default off
-    public static boolean IGNORE_ALL_WHITESPACE=false;
- 
-    //Ignore leading whitespace
-    //default off
-    public static boolean IGNORE_LEADING_WHITESPACE=false;
- 
-    //Ignore whitespace only nodes
-    //default off?
-    public static boolean IGNORE_WHITESPACE_NODES=false;
- 
-    //Ignore changes in case only
-    //default off
-    public static boolean IGNORE_CASE=false;
+    /**
+     * Sets whether any differences in whitespace should be considered.
+     * 
+     * @param ignore If true, whitespace is ignored
+     */
+    public static void setIgnoreAllWhitespace(final boolean ignore) {
+        mIgnoreAllWhitespace = ignore;
+    }
+    
+    /**
+     * Gets whether any differences in whitespace should be considered.
+     * 
+     * @return True if whitespace is to be ignored
+     */
+    public static boolean isIgnoreAllWhitespace() {
+        return mIgnoreAllWhitespace;
+    }
 
-    //Ignore comments
-    //default off
-    public static boolean IGNORE_COMMENTS=false;
- 
-    //Ignore processing instructions
-    //default off
-    public static boolean IGNORE_PROCESSING_INSTRUCTIONS=false;
- 
-    //Output tagnames
-    //default off
-    public static boolean TAGNAMES=false;
- 
-    //Output reverse patching context
-    //default off
-    public static boolean REVERSE_PATCH=false;
- 
-    //Whether or not to output context
-    //default off
-    public static boolean CONTEXT=false;
- 
-    //Amount of sibling context
-    //default 2
-    public static int SIBLING_CONTEXT= 2;
- 
-    //Amount of parent context
-    //default 1
-    public static int PARENT_CONTEXT=1;
- 
-    //Amount of parent sibling context
-    //default 0
-    public static int PARENT_SIBLING_CONTEXT=0;
+    /**
+     * Sets whether differences in leading whitespace should be considered.
+     * 
+     * @param ignore If true, leading whitespace is ignored
+     */
+    public static void setIgnoreLeadingWhitespace(final boolean ignore) {
+        mIgnoreLeadingWhitespace = ignore;
+    }
+    
+    /**
+     * Gets whether differences in leading whitespace should be considered.
+     * 
+     * @return True if leading whitespace is to be ignored
+     */
+    public static boolean isIgnoreLeadingWhitespace() {
+        return mIgnoreLeadingWhitespace;
+    }
 
-    //Algorithm to use
-    //default fmes
-    public static boolean FMES=true;
- 
-    //Use DUL output format
-    //Setting to false is eqv to XUpdate
+    /**
+     * Sets whether nodes with only whitespace should be considered.
+     * 
+     * @param ignore If true, whitespace only nodes are ignored
+     */
+    public static void setIgnoreWhitespaceNodes(final boolean ignore) {
+        mIgnoreWhitespaceNodes = ignore;
+    }
+    
+    /**
+     * Gets whether nodes with only whitespace should be considered.
+     * 
+     * @return True if whitespace only nodes are to be ignored
+     */
+    public static boolean isIgnoreWhitespaceNodes() {
+        return mIgnoreWhitespaceNodes;
+    }
 
-    //XUpdate not currently supported!
-    //default on
-    public static boolean DUL=true;
- 
-    //Resolving of entities
-    public static boolean ENTITIES=true;
+    /**
+     * Sets whether differences in case should be considered.
+     * 
+     * @param ignore If true, case differences are ignored
+     */
+    public static void setIgnoreCase(final boolean ignore) {
+        mIgnoreCase = ignore;
+    }
+    
+    /**
+     * Gets whether differences in case should be considered.
+     * 
+     * @return True if case differences are ignored
+     */
+    public static boolean isIgnoreCase() {
+        return mIgnoreCase;
+    }
 
+    /**
+     * Sets whether differences in comments should be considered.
+     * 
+     * @param ignore If true, differences in comments are ignored
+     */
+    public static void setIgnoreComments(final boolean ignore) {
+        mIgnoreComments = ignore;
+    }
+    
+    /**
+     * Gets whether differences in comments should be considered.
+     * 
+     * @return True if differences in comments are ignored
+     */
+    public static boolean isIgnoreComments() {
+        return mIgnoreComments;
+    }
 
-    public static Diff createDiff()
-        {
-        if (DiffFactory.FMES)
-            return (new Fmes());
-        else
-            return (new XmDiff());
+    /**
+     * Sets whether differences in processing instructions should be considered.
+     * 
+     * @param ignore If true, differences in processing instructions are 
+     *               ignored.
+     */
+    public static void setIgnoreProcessingInstructions(final boolean ignore) {
+        mIgnoreProcessingInstructions = ignore;
+    }
+    
+    /**
+     * Gets whether differences in processing instructions should be considered.
+     * 
+     * @return True if differences in processing instructions are ignored
+     */
+    public static boolean isIgnoreProcessingInstructions() {
+        return mIgnoreProcessingInstructions;
+    }
+
+    /**
+     * Sets whether tagnames should be output instead of node numbers in xpaths.
+     * 
+     * @param useTagnames If true, tagnames are output in xpaths
+     */
+    public static void setUseTagnames(final boolean useTagnames) {
+        mUseTagnames = useTagnames;
+    }
+    
+    /**
+     * Gets whether tagnames should be output instead of node numbers in xpaths.
+     * 
+     * @return True if differences in processing instructions are ignored
+     */
+    public static boolean isUseTagnames() {
+        return mUseTagnames;
+    }
+
+    /**
+     * If set, adds information needed to reverse patches.
+     * 
+     * @param reverse If true, extra output is generated to allow reversing of
+     *               patches
+     */
+    public static void setReversePatch(final boolean reverse) {
+        mReversePatch = reverse;
+    }
+    
+    /**
+     * Gets whether extra output is generated to allow reversing of patches.
+     * 
+     * @return True if extra output for reverse patches is generated
+     */
+    public static boolean isReversePatch() {
+        return mReversePatch;
+    }
+
+    /**
+     * If set, adds extra context nodes to output.
+     * 
+     * @param context If true, context nodes are output.
+     */
+    public static void setContext(final boolean context) {
+        mContext = context;
+    }
+    
+    /**
+     * Gets whether extra context nodes are added to the output.
+     * 
+     * @return True if context nodes are output.
+     */
+    public static boolean isContext() {
+        return mContext;
+    }
+    
+    /**
+     * Sets the number of sibling context nodes used.
+     * These are output to each side of the node. 
+     * 
+     * @param context Number of sibling context nodes.
+     */
+    public static void setSiblingContext(final int context) {
+        
+        if (context < 0) {
+            throw new IllegalArgumentException("Sibling context must be >= 0");
         }
+        mSiblingContext = context;
+    }
+    
+    /**
+     * Gets the number of sibling context nodes used.
+     * 
+     * @return Number of sibling context nodes.
+     */
+    public static int getSiblingContext() {
+        return mSiblingContext;
+    }
+
+    /**
+     * Sets the number of parent and child context nodes used.
+     * This number of both parent and child nodes will be output. 
+     * 
+     * @param context Number of parent context nodes.
+     */
+    public static void setParentContext(final int context) {
+        
+        if (context < 0) {
+            throw new IllegalArgumentException("Parent context must be >= 0");
+        }
+        mParentContext = context;
+    }
+    
+    /**
+     * Gets the number of parent and child context nodes used.
+     * 
+     * @return Number of parent and child context nodes.
+     */
+    public static int getParentContext() {
+        return mParentContext;
+    }
+
+    /**
+     * Sets the number of parent and child sibling context nodes used.
+     * This number of nodes will be output to both sides of parent and child 
+     * nodes. 
+     * 
+     * @param context Number of parent and child sibling context nodes.
+     */
+    public static void setParentSiblingContext(final int context) {
+        
+        if (context < 0) {
+            throw new IllegalArgumentException(
+                    "ParentSibling context must be >= 0");
+        }
+        mParentSiblingContext = context;
+    }
+    
+    /**
+     * Gets the number of parent and child sibling context nodes used.
+     * 
+     * @return Number of parent and child sibling context nodes.
+     */
+    public static int getParentSiblingContext() {
+        return mParentSiblingContext;
+    }
+
+    /**
+     * Sets whether the FMES algorithm is used.
+     * 
+     * @param useFMES If true, the FMES algorithm is used.
+     */
+    public static void setFMES(final boolean useFMES) {
+        mFMES = useFMES;
+    }
+    
+    /**
+     * Gets whether the FMES algorithm is used.
+     * 
+     * @return True if the FMES algorithm is used.
+     */
+    public static boolean isFMES() {
+        return mFMES;
+    }
+
+    /**
+     * Sets whether the DUL output format is used.
+     * 
+     * @param useDUL If true, the DUL output format is used.
+     */
+    public static void setDUL(final boolean useDUL) {
+        mDUL = useDUL;
+    }
+    
+    /**
+     * Gets whether the DUL output format is used.
+     * 
+     * @return True if the DUL output format is used.
+     */
+    public static boolean isDUL() {
+        return mDUL;
+    }
+
+    /**
+     * Sets whether external entities should be resolved.
+     * 
+     * @param resolve If true, external entities are resolved.
+     */
+    public static void setResolveEntities(final boolean resolve) {
+        mResolveEntities = resolve;
+    }
+    
+    /**
+     * Gets whether external entities should be resolved.
+     * 
+     * @return True if external entities are resolved.
+     */
+    public static boolean isResolveEntities() {
+        return mResolveEntities;
+    }
+    
+    /**
+     * Creates an instance of the appropriate Diff engine.
+     * 
+     * @return a difference engine meeting implementing the Diff interface
+     */
+    public static Diff createDiff() {
+        Diff diff;
+        if (mFMES) {
+            diff = new Fmes();
+        } else {
+            diff = new XmDiff();
+        }
+        
+        return diff;
+    }
 
 }

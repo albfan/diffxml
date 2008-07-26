@@ -38,16 +38,16 @@ public final class NodePos
 {
 
     /** XPath of associated node. */
-    private String _path;
+    private String mPath;
 
     /** Character position of associated node.*/
-    private int _charpos;
+    private int mCharpos;
 
     /** Character length of associated node.*/
-    private int _length;
+    private int mLength;
 
     /** Child number of associated node.*/
-    private ChildNumber _cn;
+    private ChildNumber mChildNo;
 
     /**
      * Default constructor.
@@ -57,13 +57,14 @@ public final class NodePos
 
     public NodePos(Node n)
         {
+        assert(n != null);
         //TODO: Find out why these init values!
 
-        _path = "null";
-        _charpos = -1;
-        _length = -1;
+        mPath = "null";
+        mCharpos = -1;
+        mLength = -1;
 
-        _cn = new ChildNumber(n);
+        mChildNo = new ChildNumber(n);
 
         set(n);
         }
@@ -76,7 +77,7 @@ public final class NodePos
 
     public String getXPath()
         {
-        return _path;
+        return mPath;
         }
 
     /**
@@ -87,7 +88,7 @@ public final class NodePos
 
     public int getCharPos()
         {
-        return _charpos;
+        return mCharpos;
         }
 
 
@@ -99,7 +100,7 @@ public final class NodePos
 
     public int getLength()
         {
-        return _length;
+        return mLength;
         }
 
     /**
@@ -155,7 +156,7 @@ public final class NodePos
                 {
                 charpos = charpos + siblings.item(y).getNodeValue().length();
 
-                DiffXML.log.finer(siblings.item(y).getNodeValue()
+                DiffXML.LOG.finer(siblings.item(y).getNodeValue()
                         + " charpos " + charpos);
                 }
             else
@@ -196,7 +197,7 @@ public final class NodePos
             final boolean top)
         {
         String xpath = "[" + index + "]";
-        if (DiffFactory.TAGNAMES)
+        if (DiffFactory.isUseTagnames())
             {
             //special case for top node
             if (top)
@@ -264,31 +265,31 @@ public final class NodePos
             final NodePos nPos)
         {
         Node currSib = siblings.item(i);
-        DiffXML.log.finer("In top i=" + i
+        DiffXML.LOG.finer("In top i=" + i
                 + " currSib.nodevalue=" + currSib.getNodeValue());
 
         if (isPrevNodeTextNode(siblings, i) || isNextNodeTextNode(siblings, i))
             {
             //Loop backwards through nodes getting lengths if text
             //TODO: check charpos correct for XPath
-            nPos._charpos = 1;
+            nPos.mCharpos = 1;
             for (int y = (i - 1); y >= 0; y--)
                 {
                 if (siblings.item(y).getNodeType() == Node.TEXT_NODE)
                     {
-                    DiffXML.log.finer("Extra Text value: "
+                    DiffXML.LOG.finer("Extra Text value: "
                             + siblings.item(y).getNodeValue() + "END");
-                    nPos._charpos = nPos._charpos
+                    nPos.mCharpos = nPos.mCharpos
                             + siblings.item(y).getNodeValue().length();
-                    DiffXML.log.finer(siblings.item(y).getNodeValue()
-                            + " charpos " + nPos._charpos);
+                    DiffXML.LOG.finer(siblings.item(y).getNodeValue()
+                            + " charpos " + nPos.mCharpos);
                     }
                 else
                     break;
                 }
             //Need length if currSib node text node
             if (currSib.getNodeType() == Node.TEXT_NODE)
-                nPos._length = currSib.getNodeValue().length();
+                nPos.mLength = currSib.getNodeValue().length();
 
             }
         }
@@ -297,7 +298,6 @@ public final class NodePos
      * Calculates the XPath, length and character position of a node.
      *
      * @param n the node to find position of
-     * @return object containing position of n
      */
 
     public void set(Node n)
@@ -309,23 +309,24 @@ public final class NodePos
         if (n == null)
             return;
 
-        Node root = n.getOwnerDocument().getDocumentElement();
-        ChildNumber currChildNo = new ChildNumber(n);
+        Node curr = n;
+        Node root = curr.getOwnerDocument().getDocumentElement();
+        ChildNumber currChildNo = new ChildNumber(curr);
 
-        String xpath = getXPath(n, currChildNo.getXPath(), true);
+        String xpath = getXPath(curr, currChildNo.getXPath(), true);
 
-        NodeList siblings = n.getParentNode().getChildNodes();
+        NodeList siblings = curr.getParentNode().getChildNodes();
         setCharPos(currChildNo.getDOM(), siblings, this);
 
-        while (!NodeOps.checkIfSameNode(root, n))
+        while (!NodeOps.checkIfSameNode(root, curr))
             {
-            n = n.getParentNode();
+            curr = curr.getParentNode();
 
-            currChildNo.setChildNumber(n);
-            xpath = getXPath(n, currChildNo.getXPath(), false) + xpath;
+            currChildNo.setChildNumber(curr);
+            xpath = getXPath(curr, currChildNo.getXPath(), false) + xpath;
             }
 
-        _path = xpath;
+        mPath = xpath;
         }
 }
 

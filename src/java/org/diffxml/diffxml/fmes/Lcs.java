@@ -95,10 +95,10 @@ public final class Lcs
         j = (b.length - 1);
 
         int r = 0;
-        DiffXML.log.finer("i=" + i + " j=" + j);
+        DiffXML.LOG.finer("i=" + i + " j=" + j);
         int seqLength = matrix[i][j];
 
-        DiffXML.log.finer("seqLength=" + seqLength);
+        DiffXML.LOG.finer("seqLength=" + seqLength);
         //Store pairs of sequence
         Node[] lcs = new Node[(2 * seqLength) + 2];
         while (i >= 0 && j >= 0)

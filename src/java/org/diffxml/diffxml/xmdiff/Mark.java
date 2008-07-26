@@ -34,8 +34,9 @@ import com.sun.org.apache.xpath.internal.XPathAPI;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.NamedNodeMap;
 import java.io.File;
+
+import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.Delta;
-import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.NodePos;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -229,7 +230,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            Fmes.outputXML(es);
+            DiffXML.outputXML(es, System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}
@@ -272,7 +273,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            Fmes.outputXML(es);
+            DiffXML.outputXML(es, System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}	

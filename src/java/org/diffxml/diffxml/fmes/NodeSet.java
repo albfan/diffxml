@@ -73,6 +73,7 @@ public class NodeSet
 
     /**
      * Returns the partner of a given node.
+     * Returns null if the node does not exist.
      *
      * @param  n the node to find the partner of.
      * @return   the partner of n.
@@ -80,8 +81,11 @@ public class NodeSet
 
     public final Node getPartner(final Node n)
         {
-        //NodeImpl x = (NodeImpl) n;
         int in = _set.indexOf(n);
+        if (in == -1)
+        {
+            return null;    
+        }
 
         if ((in % 2) == 1)
             in--;

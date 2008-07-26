@@ -62,9 +62,8 @@ public class EditScript
      * @throws DocumentCreationException 
      */
 
-    public final Document create(final Document doc1, final Document doc2,
-            final NodeSet matchings) throws DocumentCreationException
-        {
+    public static Document create(final Document doc1, final Document doc2,
+            final NodeSet matchings) throws DocumentCreationException {
         Document editScript;
         try {
             editScript = makeEmptyEditScript();
@@ -73,9 +72,9 @@ public class EditScript
                     "Failed to create edit script", e);
         }
 
-        if (!doc1.getDocumentElement().getNodeName()
-                .equals(doc2.getDocumentElement().getNodeName()))
-            matchRoots(editScript, doc1, doc2);
+        //if (!doc1.getDocumentElement().getNodeName()
+        //        .equals(doc2.getDocumentElement().getNodeName()))
+            matchRoots(editScript, matchings, doc1, doc2);
 
         //Fifo used to do a breadth first traversal of doc2
         Fifo fifo = new Fifo();
@@ -83,19 +82,19 @@ public class EditScript
 
         while (!fifo.isEmpty())
             {
-            DiffXML.log.fine("In breadth traversal");
+            DiffXML.LOG.fine("In breadth traversal");
 
             Node x = (Node) fifo.pop();
             fifo.addChildrenToFifo(x);
 
             //May need to do more with root
-            /*
+            
             if (NodeOps.checkIfSameNode(x, doc2.getDocumentElement()))
                 {
                 NodeOps.setInOrder(x);
                 continue;
                 }
-                */
+                
 
             Node y = x.getParentNode();
             Node z = matchings.getPartner(y);
@@ -134,7 +133,7 @@ public class EditScript
      * @throws ParserConfigurationException If a new document can't be created
      */
 
-    private Document makeEmptyEditScript() throws ParserConfigurationException
+    private static Document makeEmptyEditScript() throws ParserConfigurationException
         {
         DocumentBuilder builder = 
             DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -143,21 +142,23 @@ public class EditScript
         Element root = editScript.createElement("delta");
 
         //Append any context information
-        if (DiffFactory.CONTEXT)
+        if (DiffFactory.isContext())
             {
-            root.setAttribute("sib_context", "" + DiffFactory.SIBLING_CONTEXT);
-            root.setAttribute("par_context", "" + DiffFactory.PARENT_CONTEXT);
+            root.setAttribute("sib_context", "" + 
+                    DiffFactory.getSiblingContext());
+            root.setAttribute("par_context", "" + 
+                    DiffFactory.getParentContext());
             root.setAttribute("par_sib_context",
-                    "" + DiffFactory.PARENT_SIBLING_CONTEXT);
+                    "" + DiffFactory.getParentSiblingContext());
             }
 
-        if (DiffFactory.REVERSE_PATCH)
+        if (DiffFactory.isReversePatch())
             root.setAttribute("reverse_patch", "true");
 
-        if (!DiffFactory.ENTITIES)
+        if (!DiffFactory.isResolveEntities())
             root.setAttribute("resolve_entities", "false");
 
-        if (!DiffFactory.DUL)
+        if (!DiffFactory.isDUL())
             {
             //Change root to xupdate style
             root = editScript.createElement("modifications");
@@ -176,37 +177,32 @@ public class EditScript
      * TODO: Write! Commented out code may give hint.
      *
      * @param editScript  the Edit Script to write changes to
+     * @param matchings   the set of node matchings
      * @param doc1        the original document
      * @param doc2        the modified document
      */
 
-    private void matchRoots(final Document editScript, final Document doc1,
-            final Document doc2)
+    private static void matchRoots(final Document editScript, final NodeSet matchings,
+            final Document doc1, final Document doc2)
+    {
+
+        /**
+         * Check for matching. If matching not between root nodes, 
+         * insert a new dummy node.
+         */
+        Element xRoot = doc2.getDocumentElement();
+        Node xPartner = matchings.getPartner(xRoot);
+        if (xPartner == null || !(xPartner.equals(doc1.getDocumentElement())))
         {
+            //TODO: Add code to either insert dummy node or update root node
+            //May have issues with changing root node etc 
+            NodeOps.setMatched(xRoot, doc1.getDocumentElement());
+            matchings.add(doc1.getDocumentElement(), xRoot);
+            NodeOps.setInOrder(xRoot);
 
-        //We need to match roots if not already matched
-        //Algortihm says to create dummy node, but this will muck up xpaths.
-        //Use update operation to match the two nodes.
-
-        /*
-           if (!doc1.getDocumentElement().getNodeName()
-               .equals(doc2.getDocumentElement()))
-           {
-        //Add update operation
-        //Need to add to Delta.java to get proper handling of args
-        //But this is a quick hack to avoid probs
-        //Need to add attributes
-        Element upd=es.createElement("update");
-        upd.setAttribute("node","/node()[1]");
-        upd.setAttribute("name",doc2.getDocumentElement().getNodeName());
-        root.appendChild(upd);
-
-        //Set Matched
-        ((Node3)doc1.getDocumentElement()).setUserData("matched","true",null);
-        ((Node3)doc2.getDocumentElement()).setUserData("matched","true",null);
         }
-        */
-        }
+
+    }
 
     /**
      * Inserts a node according to the algorithm and updates
@@ -220,10 +216,13 @@ public class EditScript
      * @return           the inserted node
      */
 
-    private Node doInsert(final Node x, final Node z,
+    private static Node doInsert(final Node x, final Node z,
             final Document doc1, final Document editScript,
             final NodeSet matchings)
         {
+        assert(x != null);
+        assert(z != null);
+        
         InsertPosition pos = findPos(x, matchings);
         NodePos zPath = new NodePos(z);
 
@@ -265,7 +264,7 @@ public class EditScript
      * @return           the moved node
      */
 
-    private Node doMove(final Node x, final Node z,
+    private static Node doMove(final Node x, final Node z,
             final Document editScript, final NodeSet matchings)
         {
         InsertPosition pos;
@@ -293,7 +292,7 @@ public class EditScript
             //TODO: Make function for following
             //Check not already one!
             Element context = editScript.createElement("mark");
-            if (DiffFactory.CONTEXT)
+            if (DiffFactory.isContext())
                 {
                 context.appendChild(editScript.importNode(w, true));
                 context = Delta.addContext(w, context);
@@ -320,16 +319,26 @@ public class EditScript
      * @param z  third node
      */
 
-    private void logNodes(final Node x, final Node y, final Node z)
+    private static void logNodes(final Node x, final Node y, final Node z)
+    {
+        if (x == null) 
         {
-        DiffXML.log.finer("x=" + x.getNodeName() + " " + x.getNodeValue());
-        DiffXML.log.finer("y=" + y.getNodeName() + " " + y.getNodeValue());
-        DiffXML.log.finer("z=" + z.getNodeName() + " " + z.getNodeValue());
-
-        if (z == null)
-            DiffXML.log.warning("Your matchings don't work you dumb"
-                    + "mutha fucka \n or root");
+            DiffXML.LOG.warning("x= null");
+        } else {
+            DiffXML.LOG.finer("x=" + x.getNodeName() + " " + x.getNodeValue());
         }
+        if (y == null) {
+            DiffXML.LOG.warning("y= null");
+        } else {
+            DiffXML.LOG.finer("y=" + y.getNodeName() + " " + y.getNodeValue());
+        }
+
+        if (z == null) {
+            DiffXML.LOG.warning("z= null. Check matchings may be root prob");
+        } else {
+            DiffXML.LOG.finer("z=" + z.getNodeName() + " " + z.getNodeValue());
+        }
+    }
 
 
     /**
@@ -339,7 +348,7 @@ public class EditScript
      * @param editScript the Edit Script to append operations to
      */
 
-    private void deletePhase(final Node n, final Document editScript)
+    private static void deletePhase(final Node n, final Document editScript)
         {
         //Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
@@ -380,7 +389,7 @@ public class EditScript
      * @param n the parent of the nodes to mark out of order
      */
 
-    private void markChildrenOutOfOrder(final Node n)
+    private static void markChildrenOutOfOrder(final Node n)
         {
         NodeList kids = n.getChildNodes();
 
@@ -401,13 +410,13 @@ public class EditScript
      * @param seq  the nodes to mark "inorder"
      */
 
-    private void setInOrderNodes(final Node[] seq)
+    private static void setInOrderNodes(final Node[] seq)
         {
         for (int i = 0; i < seq.length; i++)
             {
             if (seq[i] != null)
                 {
-                DiffXML.log.finer("seq" + seq[i].getNodeName()
+                DiffXML.LOG.finer("seq" + seq[i].getNodeName()
                         + " " + seq[i].getNodeValue());
 
                 NodeOps.setInOrder(seq[i]);
@@ -431,7 +440,7 @@ public class EditScript
      * @return      the nodes in set1 which have matches in set2
      */
 
-    private Node[] getSequence(final NodeList set1, final NodeList set2,
+    private static Node[] getSequence(final NodeList set1, final NodeList set2,
             final NodeSet matchings)
         {
         Node[] resultSet = new Node[set1.getLength()];
@@ -461,10 +470,10 @@ public class EditScript
      * @return           the context element
      */
 
-    private Element getContextBeforeMove(final Document editScript, final Node a)
+    private static Element getContextBeforeMove(final Document editScript, final Node a)
         {
         Element context = editScript.createElement("mark");
-        if (DiffFactory.CONTEXT)
+        if (DiffFactory.isContext())
             {
             context.appendChild(editScript.importNode(a, true));
             context = Delta.addContext(a, context);
@@ -484,7 +493,7 @@ public class EditScript
      * @param matchings
      */
 
-    private void moveMisalignedNodes(final NodeList xKids, final Node w,
+    private static void moveMisalignedNodes(final NodeList xKids, final Node w,
             final Document editScript, final NodeSet matchings)
         {
         //Select nodes matched but not in order
@@ -529,10 +538,10 @@ public class EditScript
      * @param matchings  the set of matchings
      */
 
-    private void alignChildren(final Node w, final Node x,
+    private static void alignChildren(final Node w, final Node x,
             final Document editScript, final NodeSet matchings)
         {
-        DiffXML.log.fine("In alignChildren");
+        DiffXML.LOG.fine("In alignChildren");
         //How does alg deal with out of order nodes not matched with
         //children of partner?
         //Calls LCS algorithm
@@ -542,8 +551,8 @@ public class EditScript
         NodeList wKids = w.getChildNodes();
         NodeList xKids = x.getChildNodes();
 
-        DiffXML.log.finer("w Name: " + w.getNodeName() + "no wKids" + wKids.getLength());
-        DiffXML.log.finer("x Name: " + x.getNodeName() + "no xKids" + xKids.getLength());
+        DiffXML.LOG.finer("w Name: " + w.getNodeName() + "no wKids" + wKids.getLength());
+        DiffXML.LOG.finer("x Name: " + x.getNodeName() + "no xKids" + xKids.getLength());
 
         //build will break if following statement not here!
         //PROBABLY SHOULDN'T BE NEEDED - INDICATIVE OF BUG
@@ -580,7 +589,7 @@ public class EditScript
      * @return  Either the "in order" left sibling or null if none
      */
 
-    private Node getInOrderLeftSibling(final Node n)
+    private static Node getInOrderLeftSibling(final Node n)
     {
         //Default l to null
         Node inOrderLeftSib =  null;
@@ -615,12 +624,6 @@ public class EditScript
         return inOrderLeftSib;
     }
 
-    class Index
-        {
-        public int dom = 0;
-        public int xPath = 0;
-        }
-
     /**
      * Gets the "in order" index of the node.
      *
@@ -630,7 +633,7 @@ public class EditScript
      * @return  the "in order" index of the node
      */
 
-    public Index getInOrderIndex(final Node n)
+    public static Index getInOrderIndex(final Node n)
         {
         Index ind = new Index();
         ind.dom = ChildNumber.getInOrderDomChildNumber(n);
@@ -649,7 +652,7 @@ public class EditScript
      * @return     The integer character position to insert at
      */
 
-    private int getCharPosition(final Index ind, final Node n)
+    private static int getCharPosition(final Index ind, final Node n)
         {
         NodeList children = n.getParentNode().getChildNodes();
         //int tmpIndex = ind.dom;
@@ -673,7 +676,7 @@ public class EditScript
                     {
                     charpos = charpos
                             + children.item(j).getNodeValue().length();
-                    DiffXML.log.finer(children.item(j).getNodeValue()
+                    DiffXML.LOG.finer(children.item(j).getNodeValue()
                             + " charpos " + charpos);
                     }
                 else
@@ -697,9 +700,9 @@ public class EditScript
      * @return          the position to insert the node at
      */
 
-    private InsertPosition findPos(final Node x, final NodeSet matchings)
+    private static InsertPosition findPos(final Node x, final NodeSet matchings)
         {
-        DiffXML.log.fine("Entered findPos");
+        DiffXML.LOG.fine("Entered findPos");
         //Node xParent = x.getParentNode();
         //NodeList xSiblings = xParent.getChildNodes();
 
@@ -743,7 +746,7 @@ public class EditScript
 
         pos.numXPath = ind.xPath;
 
-        DiffXML.log.fine("Exiting findPos normally");
+        DiffXML.LOG.fine("Exiting findPos normally");
         return pos;
         }
 }

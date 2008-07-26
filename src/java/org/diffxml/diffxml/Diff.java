@@ -1,7 +1,7 @@
 /*
 Program to difference two XML files
 
-Copyright (C) 2002-2004  Adrian Mouat
+Copyright (C) 2002-2008  Adrian Mouat
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,45 +25,42 @@ package org.diffxml.diffxml;
 
 import java.io.File;
 
+import org.w3c.dom.Document;
+
 /**
- * Diff is the base class for differencing algorithms.
+ * This is the interface all differencing algorithms should implement.
  *
  * The class defines two diff methods for handling File and String input.
- * Algorithms output result to standard out.
+ * 
+ * The result is returned as an XML document, which unfortunately means DOM
+ * needs to be used.
+ * 
+ * TODO: Add a method that takes URLs
  *
  * @author    Adrian Mouat
  */
 
-public abstract class Diff
-{
+public interface Diff {
 
     /**
      * Differences two files.
      *
-     * Result is sent to standard out.
+     * Returns a patch document representing the differences. 
+     * 
+     * The document will have only a root element if the documents are
+     * identical.
      *
-     * @return    True if differences are found.
-     *            False if files are identical.
+     * TODO: Consider changing the return type to an interface supporting
+     * printing to stream and a boolean areIdentical method.
      *
-     * @param f1  Original file
-     * @param f2  Modified file
+     * @param f1    Original file
+     * @param f2    Modified file
+     * @return Document An XML document containing the differences between the 
+     *                  2 files.
      */
 
-    public abstract boolean diff(final File f1, final File f2);
+    Document diff(final File f1, final File f2) throws DiffException;
 
 
-    /**
-     * Differences two files.
-     *
-     * Result is sent to standard out.
-     *
-     * @return    True if differences are found.
-     *            False if files are identical.
-     *
-     * @param f1  String with path to original file
-     * @param f2  String with path to modified file
-     */
-
-    public abstract boolean diff(final String f1, final String f2);
 }
 
