@@ -19,32 +19,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Author: Adrian Mouat
 email: amouat@postmaster.co.uk
-*/
+ */
 
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 /**
  * Class to handle general diffxml operations on Nodes.
  *
- * Methods in this class should be general usefulness.
  */
-
-final public class NodeOps
-{
+public final class NodeOps {
+    
+    /**
+     * Key for user data on whether the node is matched.
+     */
+    private static final String MATCHED = "matched";
+    
+    /**
+     * Key for user data on whether the node is in order.
+     */
+    private static final String INORDER = "inorder";
+    
     /**
      * Do not allow instantiation.
      */
-
-    private NodeOps() { }
+    private NodeOps() {
+    }
 
     /**
      * Inserts a given node as numbered child of a parent node.
      *
-     * If childnum doesn't exist the node is simply appended.
+     * If childNum doesn't exist the node is simply appended.
      *
      * Due to general applicability should be moved to helper class.
      *
@@ -54,15 +61,16 @@ final public class NodeOps
      */
 
     public static void insertAsChild(final int childNum, final Node parent,
-           final Node insNode)
-        {
+            final Node insNode) {
+
         NodeList kids = parent.getChildNodes();
 
-        if (kids.item(childNum) != null)
+        if (kids.item(childNum) != null) {
             parent.insertBefore(insNode, kids.item(childNum));
-        else
+        } else {
             parent.appendChild(insNode);
         }
+    }
 
     /**
      * Mark the node as being "inorder".
@@ -70,10 +78,10 @@ final public class NodeOps
      * @param n the node to mark as "inorder"
      */
 
-    public static void setInOrder(final Node n)
-        {
-        n.setUserData("inorder", "true", null);
-        }
+    public static void setInOrder(final Node n) {
+
+        n.setUserData(INORDER, true, null);
+    }
 
     /**
      * Mark the node as not being "inorder".
@@ -81,10 +89,9 @@ final public class NodeOps
      * @param n the node to mark as not "inorder"
      */
 
-    public static void setOutOfOrder(final Node n)
-        {
-        n.setUserData("inorder", "false", null);
-        }
+    public static void setOutOfOrder(final Node n) {
+        n.setUserData(INORDER, false, null);
+    }
 
     /**
      * Mark the node as being "matched".
@@ -92,10 +99,9 @@ final public class NodeOps
      * @param n the node to mark as "matched"
      */
 
-    public static void setMatched(final Node n)
-        {
-        n.setUserData("matched", "true", null);
-        }
+    public static void setMatched(final Node n) {
+        n.setUserData(MATCHED, true, null);
+    }
 
     /**
      * Mark the node as not being "matched".
@@ -103,10 +109,9 @@ final public class NodeOps
      * @param n the node to mark as not being "matched"
      */
 
-    public static void setNotMatched(final Node n)
-        {
-        n.setUserData("matched", "false", null);
-        }
+    public static void setNotMatched(final Node n) {
+        n.setUserData(MATCHED, false, null);
+    }
 
     /**
      * Mark a pair of nodes as matched.
@@ -114,26 +119,21 @@ final public class NodeOps
      * @param nodeA  The unmatched partner of nodeB
      * @param nodeB  The unmatched partner of nodeA
      */
-
-    public static void setMatched(final Node nodeA, final Node nodeB)
-        {
+    public static void setMatched(final Node nodeA, final Node nodeB) {
         setMatched(nodeA);
         setMatched(nodeB);
-        }
+    }
 
     /**
      * Check if node is marked "inorder".
-     *
-     * TODO: Check we can use "equals" in this way
      *
      * @param n node to check
      * @return true if marked "inorder", false otherwise
      */
 
-    public static boolean isInOrder(final Node n)
-        {
-        return n.getUserData("inorder").equals("true");
-        }
+    public static boolean isInOrder(final Node n) {
+        return (Boolean) n.getUserData(INORDER);
+    }
 
     /**
      * Check if node is marked "matched".
@@ -142,10 +142,9 @@ final public class NodeOps
      * @return true if marked "matched", false otherwise
      */
 
-    public static boolean isMatched(final Node n)
-        {
-        return n.getUserData("matched").equals("true");
-        }
+    public static boolean isMatched(final Node n) {
+        return (Boolean) n.getUserData(MATCHED);
+    }
 
     /**
      * Check if nodes are the same.
@@ -159,8 +158,7 @@ final public class NodeOps
      * @return true if same node, false otherwise
      */
 
-    public static boolean checkIfSameNode(final Node x, final Node y)
-        {
+    public static boolean checkIfSameNode(final Node x, final Node y) {
         return x.isSameNode(y);
-        }
+    }
 }

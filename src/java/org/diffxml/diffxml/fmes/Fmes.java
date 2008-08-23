@@ -90,10 +90,7 @@ public class Fmes implements Diff {
 
     /**
      * Sets various features on the DOM Parser.
-     * 
-     * Sets features relevant to entities, DTD and entity-ref nodes TODO:
-     * Consider moving to helper class.
-     * 
+     *  
      * @param parserFactory
      *            The parser to be set up
      * @throws ParserInitialisationException
@@ -102,36 +99,14 @@ public class Fmes implements Diff {
 
     public static void initParser(final DocumentBuilderFactory parserFactory) 
     throws ParserInitialisationException {
-        try {
-            //These features affect whether entities are resolved or not
-            if (!DiffFactory.isResolveEntities()) {
-                parserFactory.setFeature(
-                        "http://xml.org/sax/features/external-general-entities",
-                        false);
-                parserFactory.setFeature(
-                        "http://xml.org/sax/features/"
-                        + "external-parameter-entities",
-                        false);
-            }
 
-            //Turn off DTD stuff - if DTD support changes reconsider
-            parserFactory.setFeature(
-                    "http://xml.org/sax/features/validation",
-                    false);
-            parserFactory.setFeature(
-                    "http://apache.org/xml/features/nonvalidating/"
-                    + "load-dtd-grammar",
-                    false);
-
-            //We don't want entity-ref-nodes, either text or no text
-            parserFactory.setFeature(
-                    "http://apache.org/xml/features/dom/"
-                    + "create-entity-ref-nodes",
-                    false);
-        } catch (ParserConfigurationException e) {
-            throw new ParserInitialisationException(
-                    "Could not set parser feature", e);
+        if (!DiffFactory.isResolveEntities()) {
+            parserFactory.setExpandEntityReferences(false);
         }
+
+        //Turn off DTD stuff - if DTD support changes reconsider
+        parserFactory.setValidating(false);
+        parserFactory.setNamespaceAware(true);
     }
 
 
@@ -146,6 +121,7 @@ public class Fmes implements Diff {
      **/
     public final Document diff(final File file1, final File file2) 
     throws DiffException {
+        
         
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         try {
@@ -200,7 +176,7 @@ public class Fmes implements Diff {
     public final Document diff(final Document doc1, final Document doc2) 
     throws DiffException  {
 
-        NodeSet matchings = Match.fastMatch(doc1, doc2);
+        NodeSet matchings = Match.easyMatch(doc1, doc2);
 
         Document delta = null;
         try {
