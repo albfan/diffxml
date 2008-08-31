@@ -23,7 +23,6 @@ public class EditScriptTest extends TestCase {
 
         parent = testDoc.createElement("parent");
         testDoc.appendChild(parent);
-        es = new EditScript();
         
     }
     
@@ -41,9 +40,9 @@ public class EditScriptTest extends TestCase {
         parent.appendChild(b);
         parent.appendChild(c);
         
-        assertEquals(es.getInOrderIndex(a).xPath, 1);
-        assertEquals(es.getInOrderIndex(b).xPath, 2);
-        assertEquals(es.getInOrderIndex(c).xPath, 3);
+        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
+        assertEquals(EditScript.getInOrderIndex(b).xPath, 2);
+        assertEquals(EditScript.getInOrderIndex(c).xPath, 3);
     }
     
     public void testGetInOrderIndex2()
@@ -63,10 +62,10 @@ public class EditScriptTest extends TestCase {
         parent.appendChild(c);
         parent.appendChild(d);
         
-        assertEquals(es.getInOrderIndex(a).xPath, 1);
-        assertEquals(es.getInOrderIndex(b).xPath, 2);
-        assertEquals(es.getInOrderIndex(c).xPath, 2);
-        assertEquals(es.getInOrderIndex(d).xPath, 3);
+        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
+        assertEquals(EditScript.getInOrderIndex(b).xPath, 2);
+        assertEquals(EditScript.getInOrderIndex(c).xPath, 2);
+        assertEquals(EditScript.getInOrderIndex(d).xPath, 3);
 
     }
 
@@ -84,9 +83,9 @@ public class EditScriptTest extends TestCase {
         parent.appendChild(b);
         parent.appendChild(c);
         
-        assertEquals(es.getInOrderIndex(a).xPath, 1);
-        assertEquals(es.getInOrderIndex(b).xPath, 1);
-        assertEquals(es.getInOrderIndex(c).xPath, 2);
+        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
+        assertEquals(EditScript.getInOrderIndex(b).xPath, 1);
+        assertEquals(EditScript.getInOrderIndex(c).xPath, 2);
     }
     
 }

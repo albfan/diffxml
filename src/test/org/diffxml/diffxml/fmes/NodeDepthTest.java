@@ -7,12 +7,14 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.diffxml.diffxml.TestDocHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertEquals;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -24,44 +26,67 @@ import org.xml.sax.SAXException;
  */
 public class NodeDepthTest {
 
+    /** Test document. */
     private static Document mTestDoc1;
     
+    /**
+     * Initialises the test doc.
+     */
     @BeforeClass
     public static void setUpTest() {
         
-        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        try {
-            Fmes.initParser(fac);
-        } catch (ParserInitialisationException e) {
-            fail("Could not initialise parser");
-        }
+        String docString = "<x>text1<y><!-- comment --><z/>text2</y></x>";
+        mTestDoc1 = TestDocHelper.createDocument(docString);
         
-        String docString = "<x>  <y> <z/> </y></x>";
+    }
+    
+    /** 
+     * Helper method for testing nodes.
+     *  
+     * @param n The node to test
+     * @param expectedDepth The expected depth of the node
+     */
+    private void testCreatingNodeDepth(final Node n, final int expectedDepth) {
         
-        try {
-            ByteArrayInputStream is = new ByteArrayInputStream(
-                    docString.getBytes("utf-8"));
-            mTestDoc1 = fac.newDocumentBuilder().parse(is);
-        } catch (UnsupportedEncodingException e) {
-            fail("No utf-8 encoder!");
-        } catch (ParserConfigurationException e) {
-            fail("Error configuring parser: " + e.getMessage());
-        } catch (IOException e) {
-            fail("Caught IOException: " + e.getMessage());
-        } catch (SAXException e) {
-            fail("Caught SAXexception: " + e.getMessage());
-        }
-
+        NodeDepth depthTest = new NodeDepth(n);
+        assertEquals(expectedDepth, depthTest.getDepth());
+        assertEquals(n, depthTest.getNode());
+        assertEquals(n.getNodeName(), depthTest.getTag());
     }
     
     @Test
     public void testCorrectDepthCalculated() {
         
-        NodeDepth rootTest = new NodeDepth(mTestDoc1.getDocumentElement());
-        assertEquals(rootTest.getDepth(), 0);
-        assertEquals(rootTest.getNode(), mTestDoc1.getDocumentElement());
-        assertEquals(rootTest.getTag(), 
-                mTestDoc1.getDocumentElement().getNodeName());
+        //Try root node
+        Element root = mTestDoc1.getDocumentElement();
+        testCreatingNodeDepth(root, 0);
         
+        //Try first text node
+        Node text1 = root.getFirstChild();
+        testCreatingNodeDepth(text1, 1);
+        
+        //y Node
+        Node y = text1.getNextSibling();
+        testCreatingNodeDepth(y, 1);
+        
+        //Comment node
+        Node comment = y.getFirstChild();
+        testCreatingNodeDepth(comment, 2);
+        
+        //z Node
+        Node z = comment.getNextSibling();
+        testCreatingNodeDepth(z, 2);
+        
+        //second text node
+        Node text2 = z.getNextSibling();
+        testCreatingNodeDepth(text2, 2);                
+    }
+    
+    /**
+     * Check a NullPointerException is thrown if handed a null node.
+     */
+    @Test(expected = NullPointerException.class)  
+    public void testNull() {
+        NodeDepth nullTest = new NodeDepth(null);
     }
 }
