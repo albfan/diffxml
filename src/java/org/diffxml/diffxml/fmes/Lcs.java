@@ -55,7 +55,7 @@ public final class Lcs
      */
 
     public static Node[] find(final Node[] a, final Node[] b,
-            final NodeSet matchings)
+            final NodePairs matchings)
         {
         //If either list is empty, so is LCS
 

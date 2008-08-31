@@ -48,7 +48,9 @@ public final class ChildNumber
 
     public ChildNumber(final Node n)
         {
-        assert(n != null);
+        if (n == null) {
+            throw new NullPointerException("Node cannot be null");
+        }
         setChildNumber(n);
         }
 

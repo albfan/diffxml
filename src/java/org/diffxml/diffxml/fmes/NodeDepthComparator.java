@@ -39,12 +39,12 @@ class NodeDepthComparator implements Comparator<NodeDepth> {
      * Stores in reverse order of depth. Strings sorted to preserve set logic.
      * TODO: Consider making serializable, in case TreeSet is serialized.
      * 
-     * @param o1
+     * @param nodeInfo1
      *            First NodeInfo object
-     * @param o2
+     * @param nodeInfo2
      *            Second NodeInfo object
-     * @return Negative if o1 is at a greater depth than 02, Positive if smaller
-     *         depth, Tags are compared if same depth.
+     * @return Negative if nodeInfo1 is at a greater depth than nodeInfo2, 
+     *         positive if smaller depth, result of tag comparison if equal 
      */
 
     public final int compare(final NodeDepth nodeInfo1, 

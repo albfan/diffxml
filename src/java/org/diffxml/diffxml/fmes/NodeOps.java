@@ -33,11 +33,6 @@ import org.w3c.dom.NodeList;
 public final class NodeOps {
     
     /**
-     * Key for user data on whether the node is matched.
-     */
-    private static final String MATCHED = "matched";
-    
-    /**
      * Key for user data on whether the node is in order.
      */
     private static final String INORDER = "inorder";
@@ -47,7 +42,7 @@ public final class NodeOps {
      */
     private NodeOps() {
     }
-
+    
     /**
      * Inserts a given node as numbered child of a parent node.
      *
@@ -77,7 +72,6 @@ public final class NodeOps {
      *
      * @param n the node to mark as "inorder"
      */
-
     public static void setInOrder(final Node n) {
 
         n.setUserData(INORDER, true, null);
@@ -88,63 +82,30 @@ public final class NodeOps {
      *
      * @param n the node to mark as not "inorder"
      */
-
     public static void setOutOfOrder(final Node n) {
         n.setUserData(INORDER, false, null);
     }
 
     /**
-     * Mark the node as being "matched".
-     *
-     * @param n the node to mark as "matched"
-     */
-
-    public static void setMatched(final Node n) {
-        n.setUserData(MATCHED, true, null);
-    }
-
-    /**
-     * Mark the node as not being "matched".
-     *
-     * @param n the node to mark as not being "matched"
-     */
-
-    public static void setNotMatched(final Node n) {
-        n.setUserData(MATCHED, false, null);
-    }
-
-    /**
-     * Mark a pair of nodes as matched.
-     *
-     * @param nodeA  The unmatched partner of nodeB
-     * @param nodeB  The unmatched partner of nodeA
-     */
-    public static void setMatched(final Node nodeA, final Node nodeB) {
-        setMatched(nodeA);
-        setMatched(nodeB);
-    }
-
-    /**
      * Check if node is marked "inorder".
      *
-     * @param n node to check
-     * @return true if marked "inorder", false otherwise
-     */
-
-    public static boolean isInOrder(final Node n) {
-        return (Boolean) n.getUserData(INORDER);
-    }
-
-    /**
-     * Check if node is marked "matched".
+     * Note that nodes are inorder by default.
      *
      * @param n node to check
-     * @return true if marked "matched", false otherwise
+     * @return false if UserData set to False, true otherwise
      */
-
-    public static boolean isMatched(final Node n) {
-        return (Boolean) n.getUserData(MATCHED);
+    public static boolean isInOrder(final Node n) {
+        
+        boolean ret;
+        Object data = n.getUserData(INORDER);
+        if (data == null) {
+            ret = true;
+        } else {
+            ret = (Boolean) data;
+        }
+        return ret;
     }
+
 
     /**
      * Check if nodes are the same.

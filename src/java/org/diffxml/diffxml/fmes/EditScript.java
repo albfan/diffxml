@@ -45,9 +45,24 @@ import org.w3c.dom.NodeList;
  *
  * @author Adrian Mouat
  */
-
-public class EditScript
-{
+public final class EditScript {
+    
+    private static final String RESOLVE_ENTITIES = "resolve_entities";
+    private static final String FALSE = "false";
+    private static final String TRUE = "true";
+    private static final String REVERSE_PATCH = "reverse_patch";
+    private static final String PARENT_SIBLING_CONTEXT = "par_sib_context";
+    private static final String PARENT_CONTEXT = "par_context";
+    private static final String SIBLING_CONTEXT = "sib_context";
+    private static final String DELTA = "delta";
+    
+    /**
+     * Private constructor.
+     */
+    private EditScript() {
+        //Shouldn't be called
+    }
+    
     /**
      * Creates an Edit Script conforming to matchings that transforms
      * doc1 into doc2.
@@ -59,11 +74,11 @@ public class EditScript
      * @param doc2      the modified document
      * @param matchings the set of matching nodes
      * @return          the resultant Edit Script
-     * @throws DocumentCreationException 
+     * @throws DocumentCreationException When the output doc can't be made
      */
-
     public static Document create(final Document doc1, final Document doc2,
-            final NodeSet matchings) throws DocumentCreationException {
+            final NodePairs matchings) throws DocumentCreationException {
+        
         Document editScript;
         try {
             editScript = makeEmptyEditScript();
@@ -102,7 +117,7 @@ public class EditScript
             logNodes(x, y, z);
             Node w;
 
-            if (!NodeOps.isMatched(x))
+            if (!matchings.isMatched(x))
                 w = doInsert(x, z, doc1, editScript, matchings);
             else
                 w = doMove(x, z, editScript, matchings);
@@ -113,7 +128,7 @@ public class EditScript
             alignChildren(w, x, editScript, matchings);
             }
 
-        deletePhase(doc1.getDocumentElement(), editScript);
+        deletePhase(doc1.getDocumentElement(), editScript, matchings);
 
         //Post-Condition es is a minimum cost edit script,
         //Matchings is a total matching and
@@ -124,52 +139,44 @@ public class EditScript
 
     /** Prepares an empty Edit Script document.
      *
-     * Makes root element, appends any neccessary attributes
+     * Makes root element, appends any necessary attributes
      * and context information.
-     *
-     * Move to delta.java?
      *
      * @return a properly formatted, empty edit script
      * @throws ParserConfigurationException If a new document can't be created
      */
 
-    private static Document makeEmptyEditScript() throws ParserConfigurationException
-        {
+    private static Document makeEmptyEditScript() 
+    throws ParserConfigurationException {
+
         DocumentBuilder builder = 
             DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document editScript = builder.newDocument();
 
-        Element root = editScript.createElement("delta");
+        Element root = editScript.createElement(DELTA);
 
         //Append any context information
-        if (DiffFactory.isContext())
-            {
-            root.setAttribute("sib_context", "" + 
-                    DiffFactory.getSiblingContext());
-            root.setAttribute("par_context", "" + 
-                    DiffFactory.getParentContext());
-            root.setAttribute("par_sib_context",
-                    "" + DiffFactory.getParentSiblingContext());
-            }
+        if (DiffFactory.isContext()) {
+            root.setAttribute(SIBLING_CONTEXT, 
+                    Integer.toString(DiffFactory.getSiblingContext()));
+            root.setAttribute(PARENT_CONTEXT,
+                    Integer.toString(DiffFactory.getParentContext()));
+            root.setAttribute(PARENT_SIBLING_CONTEXT,
+                    Integer.toString(DiffFactory.getParentSiblingContext()));
+        }
 
-        if (DiffFactory.isReversePatch())
-            root.setAttribute("reverse_patch", "true");
+        if (DiffFactory.isReversePatch()) {
+            root.setAttribute(REVERSE_PATCH, TRUE);
+        }
 
-        if (!DiffFactory.isResolveEntities())
-            root.setAttribute("resolve_entities", "false");
-
-        if (!DiffFactory.isDUL())
-            {
-            //Change root to xupdate style
-            root = editScript.createElement("modifications");
-            root.setAttribute("version", "1.0");
-            root.setAttribute("xmlns:xupdate", "http://www.xmldb.org/xupdate");
-            }
+        if (!DiffFactory.isResolveEntities()) {
+            root.setAttribute(RESOLVE_ENTITIES, FALSE);
+        }
 
         editScript.appendChild(root);
 
         return editScript;
-        }
+    }
 
     /**
      * Handles non-matching root nodes.
@@ -182,22 +189,22 @@ public class EditScript
      * @param doc2        the modified document
      */
 
-    private static void matchRoots(final Document editScript, final NodeSet matchings,
+    private static void matchRoots(final Document editScript, final NodePairs matchings,
             final Document doc1, final Document doc2)
     {
 
-        /**
-         * Check for matching. If matching not between root nodes, 
-         * insert a new dummy node.
-         */
+
         Element xRoot = doc2.getDocumentElement();
         Node xPartner = matchings.getPartner(xRoot);
-        if (xPartner == null || !(xPartner.equals(doc1.getDocumentElement())))
-        {
+        if (xPartner == null || !(xPartner.equals(doc1.getDocumentElement()))) {
+            
             //TODO: Add code to either insert dummy node or update root node
-            //May have issues with changing root node etc 
-            NodeOps.setMatched(xRoot, doc1.getDocumentElement());
-            matchings.add(doc1.getDocumentElement(), xRoot);
+            //May have issues with changing root node etc
+            Element dummy1 = doc1.createElement("DUMMY");
+            dummy1.appendChild(doc1.getDocumentElement());
+            Element dummy2 = doc2.createElement("DUMMY");
+            dummy2.appendChild(xRoot);
+            matchings.add(doc2.getDocumentElement(), doc1.getDocumentElement());
             NodeOps.setInOrder(xRoot);
 
         }
@@ -218,7 +225,7 @@ public class EditScript
 
     private static Node doInsert(final Node x, final Node z,
             final Document doc1, final Document editScript,
-            final NodeSet matchings)
+            final NodePairs matchings)
         {
         assert(x != null);
         assert(z != null);
@@ -232,7 +239,6 @@ public class EditScript
         //TODO: Ensure attributes properly added
 
         Node w = doc1.importNode(x, false);
-        NodeOps.setMatched(w);
 
         //Need to set in order as won't be revisited
         NodeOps.setInOrder(w);
@@ -242,7 +248,6 @@ public class EditScript
         NodeOps.insertAsChild(pos.insertBefore, z, w);
 
         //Add to matching set
-        NodeOps.setMatched(x);
         matchings.add(w, x);
 
         //System.err.println("insert: " + pos.numXPath + " " + pos.insertBefore + " " +w.getNodeValue());
@@ -265,7 +270,7 @@ public class EditScript
      */
 
     private static Node doMove(final Node x, final Node z,
-            final Document editScript, final NodeSet matchings)
+            final Document editScript, final NodePairs matchings)
         {
         InsertPosition pos;
 
@@ -348,7 +353,8 @@ public class EditScript
      * @param editScript the Edit Script to append operations to
      */
 
-    private static void deletePhase(final Node n, final Document editScript)
+    private static void deletePhase(final Node n, final Document editScript, 
+            final NodePairs matchings)
         {
         //Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
@@ -361,13 +367,13 @@ public class EditScript
                 if (Fmes.isBanned(kids.item(i)))
                     continue;
 
-                deletePhase(kids.item(i), editScript);
+                deletePhase(kids.item(i), editScript, matchings);
                 }
             }
 
         //If node isn't matched, delete it
         //TODO: Make function for following.
-        if (!NodeOps.isMatched(n))
+        if (!matchings.isMatched(n))
             {
             Element par = (Element) n.getParentNode();
             NodePos delPos = new NodePos(n);
@@ -441,7 +447,7 @@ public class EditScript
      */
 
     private static Node[] getSequence(final NodeList set1, final NodeList set2,
-            final NodeSet matchings)
+            final NodePairs matchings)
         {
         Node[] resultSet = new Node[set1.getLength()];
 
@@ -494,13 +500,13 @@ public class EditScript
      */
 
     private static void moveMisalignedNodes(final NodeList xKids, final Node w,
-            final Document editScript, final NodeSet matchings)
+            final Document editScript, final NodePairs matchings)
         {
         //Select nodes matched but not in order
         for (int i = 0; i < xKids.getLength(); i++)
             {
             if ((!NodeOps.isInOrder(xKids.item(i)))
-                    && NodeOps.isMatched(xKids.item(i)))
+                    && matchings.isMatched(xKids.item(i)))
                 {
                 //Get childno for move
                 InsertPosition pos = findPos(xKids.item(i), matchings);
@@ -539,7 +545,7 @@ public class EditScript
      */
 
     private static void alignChildren(final Node w, final Node x,
-            final Document editScript, final NodeSet matchings)
+            final Document editScript, final NodePairs matchings)
         {
         DiffXML.LOG.fine("In alignChildren");
         //How does alg deal with out of order nodes not matched with
@@ -700,7 +706,7 @@ public class EditScript
      * @return          the position to insert the node at
      */
 
-    private static InsertPosition findPos(final Node x, final NodeSet matchings)
+    private static InsertPosition findPos(final Node x, final NodePairs matchings)
         {
         DiffXML.LOG.fine("Entered findPos");
         //Node xParent = x.getParentNode();

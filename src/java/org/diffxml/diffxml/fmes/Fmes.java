@@ -176,7 +176,7 @@ public class Fmes implements Diff {
     public final Document diff(final Document doc1, final Document doc2) 
     throws DiffException  {
 
-        NodeSet matchings = Match.easyMatch(doc1, doc2);
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
 
         Document delta = null;
         try {

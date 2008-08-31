@@ -23,14 +23,11 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
-
 import org.diffxml.diffxml.DiffFactory;
-import org.diffxml.diffxml.DiffXML;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -41,7 +38,7 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.traversal.DocumentTraversal;
 
 /**
- * Solves the "good matchings" problem for the fmes algorithm.
+ * Solves the "good matchings" problem for the FMES algorithm.
  *
  * Essentially pairs nodes that match between documents.
  * Uses the "fast match" algorithm is detailed in the paper
@@ -49,6 +46,8 @@ import org.w3c.dom.traversal.DocumentTraversal;
  *
  * WARNING: Will only work correctly with acylic documents.
  * TODO: Add alternate matching code for cylic documents.
+ * See: http://www.devarticles.com/c/a/Development-Cycles/How-to-Strike-a-Match/
+ * for information on how to match strings.
  *
  * @author Adrian Mouat
  */
@@ -75,10 +74,10 @@ public final class Match {
      * 
      * @return NodeSet containing pairs of matching nodes.
      */
-    public static NodeSet easyMatch(final Document doc1,
+    public static NodePairs easyMatch(final Document doc1,
             final Document doc2) {
 
-        NodeSet matchSet = new NodeSet();
+        NodePairs matchSet = new NodePairs();
 
         doc1.getDocumentElement().normalize();
         doc2.getDocumentElement().normalize();
@@ -96,17 +95,12 @@ public final class Match {
                 if (compareNodes(n1, n2)) {
                     
                     matchSet.add(n1, n2);
-                    NodeOps.setMatched(n1, n2);
                     
                     //Don't want to consider it again
                     tree2.remove(nd2);
                     break;
                 }
             }
-        }
-        
-        if (DiffXML.LOG.getLevel().intValue() <= Level.FINER.intValue()) {
-            matchSet.printSet();
         }
 
         return matchSet;
@@ -218,7 +212,6 @@ public final class Match {
     /**
      * Compares 2 nodes to determine whether they should match.
      * 
-     * TODO: Verify each of the comparisons. 
      * TODO: Check if more comparisons are needed
      * TODO: Consider moving out to a separate class, implementing an interface
      * 
@@ -250,14 +243,7 @@ public final class Match {
     }
 
     /**
-     * Sets default user data tags on each node in document and returns set of
-     * Nodes with depths.
-     * 
-     * Marks each node not matched and inorder.
-     * 
-     * Nodes should be "inorder" by default, and be changed by EditScript if
-     * needed. Nodes should not be "matched" until node is matched with a node
-     * in the other document.
+     * Returns a set of Nodes sorted according to their depths.
      * 
      * TreeSet is sorted in reverse order of depth according to
      * NodeInfoComparator.
@@ -276,8 +262,6 @@ public final class Match {
 
         Node n;
         while ((n = ni.nextNode()) != null) {
-            NodeOps.setInOrder(n);
-            NodeOps.setNotMatched(n);
             depthSorted.add(new NodeDepth(n));
         }
         

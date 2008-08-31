@@ -48,6 +48,10 @@ public class NodeDepth {
      * @param node The node to find the depth of
      */
     NodeDepth(final Node node) {
+        
+        if (node == null) {
+            throw new NullPointerException("Node cannot be null");
+        }
         mNode = node;
         mDepth = calculateDepth(mNode);
     }
