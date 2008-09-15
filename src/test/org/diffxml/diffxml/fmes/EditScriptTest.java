@@ -1,91 +1,58 @@
 package org.diffxml.diffxml.fmes;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import static org.junit.Assert.assertEquals;
 
+import org.diffxml.diffxml.TestDocHelper;
+import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import junit.framework.TestCase;
-
-public class EditScriptTest extends TestCase {
+/**
+ * Test main EditScript class and methods.
+ * 
+ * @author Adrian Mouat
+ *
+ */
+public class EditScriptTest {
     
-    Document testDoc;
-    Element parent;
-    EditScript es;
-    
-    protected void setUp() throws Exception 
-    {
-        super.setUp();
+   
+    @Test
+    public void testMatchingRootNodes() {
         
-        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        testDoc = fac.newDocumentBuilder().newDocument();
+        //Shouldn't do anything if roots match
+        Document test1 = TestDocHelper.createDocument("<a><b/></a>");
+        Document test2 = TestDocHelper.createDocument("<a><b/></a>");
+        NodePairs matchings = Match.easyMatch(test1, test2);
+        (new EditScript(test1, test2, matchings)).matchRoots();
+        
+        assertEquals("a", test1.getDocumentElement().getNodeName());
+        assertEquals("b", 
+                test1.getDocumentElement().getFirstChild().getNodeName());
+        assertEquals("a", test2.getDocumentElement().getNodeName());
+        assertEquals("b", 
+                test2.getDocumentElement().getFirstChild().getNodeName());
+        
+        //Should add dummy node if they don't
+        test1 = TestDocHelper.createDocument("<a><b/></a>");
+        test2 = TestDocHelper.createDocument("<c><b/></c>");
+        matchings = Match.easyMatch(test1, test2);
+        (new EditScript(test1, test2, matchings)).matchRoots();
+        
+        assertEquals("DUMMY", test1.getDocumentElement().getNodeName());
+        assertEquals("a", 
+                test1.getDocumentElement().getFirstChild().getNodeName());
+        assertEquals("b", 
+                test1.getDocumentElement().getFirstChild().getFirstChild(
+                        ).getNodeName());
 
-        parent = testDoc.createElement("parent");
-        testDoc.appendChild(parent);
+        assertEquals("DUMMY", test2.getDocumentElement().getNodeName());
+        assertEquals("c", 
+                test2.getDocumentElement().getFirstChild().getNodeName());
+        assertEquals("b", 
+                test2.getDocumentElement().getFirstChild().getFirstChild(
+                        ).getNodeName());
         
-    }
-    
-    public void testGetInOrderIndex()
-    {
-        //InsertPosition and NodePos are both calculating XPath in different ways :(
-        Element a = testDoc.createElement("a");
-        Element b = testDoc.createElement("b");
-        Element c = testDoc.createElement("c");
-        NodeOps.setInOrder(a);
-        NodeOps.setInOrder(b);
-        NodeOps.setInOrder(c);
-        
-        parent.appendChild(a);
-        parent.appendChild(b);
-        parent.appendChild(c);
-        
-        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
-        assertEquals(EditScript.getInOrderIndex(b).xPath, 2);
-        assertEquals(EditScript.getInOrderIndex(c).xPath, 3);
-    }
-    
-    public void testGetInOrderIndex2()
-    {
-        Element a = testDoc.createElement("a");
-        Node b = testDoc.createTextNode("1");
-        Node c = testDoc.createTextNode("2");
-        Element d = testDoc.createElement("d");
-        
-        NodeOps.setInOrder(a);
-        NodeOps.setInOrder(b);
-        NodeOps.setInOrder(c);
-        NodeOps.setInOrder(d);
-        
-        parent.appendChild(a);
-        parent.appendChild(b);
-        parent.appendChild(c);
-        parent.appendChild(d);
-        
-        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
-        assertEquals(EditScript.getInOrderIndex(b).xPath, 2);
-        assertEquals(EditScript.getInOrderIndex(c).xPath, 2);
-        assertEquals(EditScript.getInOrderIndex(d).xPath, 3);
-
-    }
-
-    public void testGetInOrderIndex3()
-    {
-        Node a = testDoc.createTextNode("1");
-        Node b = testDoc.createTextNode("2");
-        Element c = testDoc.createElement("a");
-        
-        NodeOps.setInOrder(a);
-        NodeOps.setInOrder(b);
-        NodeOps.setInOrder(c);
-        
-        parent.appendChild(a);
-        parent.appendChild(b);
-        parent.appendChild(c);
-        
-        assertEquals(EditScript.getInOrderIndex(a).xPath, 1);
-        assertEquals(EditScript.getInOrderIndex(b).xPath, 1);
-        assertEquals(EditScript.getInOrderIndex(c).xPath, 2);
+        assertEquals(matchings.getPartner(test2.getDocumentElement()), 
+                test1.getDocumentElement());
     }
     
 }
