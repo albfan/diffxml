@@ -23,7 +23,8 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -34,35 +35,36 @@ import org.w3c.dom.Node;
  * Equivalent to a stack where elements are removed from
  * the *opposite* end to where the are added. Hence the
  * Stack terms "push" and pop" are used.
+ * 
+ * Only real addition over Java library is method to add children of a node.
  */
 
-public class Fifo
-{
+public class NodeFifo {
+    
     /**
-     * Underlying data structure is an ArrayList.
+     * Underlying list.
      */
-
-    private ArrayList _fifo;
+    private final Queue<Node> mFifo;
 
     /**
      * Default constructor.
      */
-
-    Fifo()
-        {
-        _fifo = new ArrayList();
-        }
+    NodeFifo() {
+        
+        /*
+         * TODO: Check if ArrayList is faster.
+         */
+        mFifo = new LinkedList<Node>();
+    }
 
     /**
-     * Adds an object to the Fifo.
+     * Adds a Node to the Fifo.
      *
-     * @param o the object to added
+     * @param n the Node to added
      */
-
-    public final void push(final Object o)
-        {
-        _fifo.add(o);
-        }
+    public final void push(final Node n) {
+        mFifo.add(n);
+    }
 
     /**
      * Checks if the Fifo contains any objects.
@@ -70,54 +72,49 @@ public class Fifo
      * @return true if there are any objects in the Fifo
      */
 
-    public final boolean isEmpty()
-        {
-        return _fifo.isEmpty();
-        }
+    public final boolean isEmpty() {
+        return mFifo.isEmpty();
+    }
 
     /**
-     * Remove an object from the Fifo.
+     * Remove a Node from the Fifo.
      *
-     * This object is always the oldest item in the array.
+     * This Node is always the oldest item in the array.
      *
      * @return the oldest item in the Fifo
      */
+    public final Node pop() {
 
-    public final Object pop()
-        {
-        if (_fifo.isEmpty())
-            return null;
-
-        return _fifo.remove(0);
+        Node ret;
+        if (mFifo.isEmpty()) {
+            ret = null;
+        } else {
+            ret = mFifo.remove();
         }
+
+        return ret;
+    }
 
     /**
      * Adds the children of a node to the fifo.
      *
-     *
+     * TODO: Check use of isBanned()
+     * 
      * @param x    the node whose children are to be added
-     * @param fifo the fifo to add the children to.
      */
-
-    public void addChildrenToFifo(final Node x)
-        {
+    public final void addChildrenOfNode(final Node x) {
+        
         NodeList kids = x.getChildNodes();
 
-        if (kids != null)
-            {
-            for (int i = 0; i < kids.getLength(); i++)
-                {
-                if (Fmes.isBanned(kids.item(i)))
+        if (kids != null) {
+            for (int i = 0; i < kids.getLength(); i++) {
+                if (Fmes.isBanned(kids.item(i))) {
                     continue;
-
-                this.push(kids.item(i));
                 }
+
+                push(kids.item(i));
             }
         }
-
+    }
 
 }
-
-
-
-

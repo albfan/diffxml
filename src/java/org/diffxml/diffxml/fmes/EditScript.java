@@ -57,10 +57,42 @@ public final class EditScript {
     private static final String DELTA = "delta";
     
     /**
-     * Private constructor.
+     * Whether dummy root nodes have been added to the tree.
      */
-    private EditScript() {
-        //Shouldn't be called
+    private boolean mAddedDummyRoot = false;
+    
+    /**
+     * The original document.
+     */
+    private final Document mDoc1;
+    
+    /**
+     * The modified document.
+     */
+    private final Document mDoc2;
+    
+    /**
+     * The set of matching nodes.
+     */
+    private NodePairs mMatchings;
+    
+    private Document mEditScript;
+    
+    /**
+     * Constructor for EditScript.
+     * Used to create a list of modifications that will turn doc1 into doc2,
+     * given a set of matching nodes.
+     * 
+     * @param doc1      the original document
+     * @param doc2      the modified document
+     * @param matchings the set of matching nodes
+     */
+    public EditScript(final Document doc1, final Document doc2,
+            final NodePairs matchings) {
+        
+        mDoc1 = doc1;
+        mDoc2 = doc2;
+        mMatchings = matchings;
     }
     
     /**
@@ -70,72 +102,55 @@ public final class EditScript {
      * Uses algorithm in "Change Detection in Hierarchically Structured
      * Information".
      *
-     * @param doc1      the original document
-     * @param doc2      the modified document
-     * @param matchings the set of matching nodes
-     * @return          the resultant Edit Script
+     * @return the resultant Edit Script
      * @throws DocumentCreationException When the output doc can't be made
      */
-    public static Document create(final Document doc1, final Document doc2,
-            final NodePairs matchings) throws DocumentCreationException {
-        
-        Document editScript;
+    public Document create() throws DocumentCreationException {
+
         try {
-            editScript = makeEmptyEditScript();
+            mEditScript = makeEmptyEditScript();
         } catch (ParserConfigurationException e) {
-            throw new DocumentCreationException(
-                    "Failed to create edit script", e);
+            throw new DocumentCreationException("Failed to create edit script",
+                    e);
         }
 
-        //if (!doc1.getDocumentElement().getNodeName()
-        //        .equals(doc2.getDocumentElement().getNodeName()))
-            matchRoots(editScript, matchings, doc1, doc2);
+        matchRoots();
 
-        //Fifo used to do a breadth first traversal of doc2
-        Fifo fifo = new Fifo();
-        fifo.push(doc2.getDocumentElement());
+        // Fifo used to do a breadth first traversal of doc2
+        NodeFifo fifo = new NodeFifo();
+        fifo.addChildrenOfNode(mDoc2.getDocumentElement());
 
-        while (!fifo.isEmpty())
-            {
+        while (!fifo.isEmpty()) {
+            
             DiffXML.LOG.fine("In breadth traversal");
 
-            Node x = (Node) fifo.pop();
-            fifo.addChildrenToFifo(x);
-
-            //May need to do more with root
-            
-            if (NodeOps.checkIfSameNode(x, doc2.getDocumentElement()))
-                {
-                NodeOps.setInOrder(x);
-                continue;
-                }
-                
+            Node x = fifo.pop();
+            fifo.addChildrenOfNode(x);
 
             Node y = x.getParentNode();
-            Node z = matchings.getPartner(y);
+            Node z = mMatchings.getPartner(y);
 
             logNodes(x, y, z);
             Node w;
 
-            if (!matchings.isMatched(x))
-                w = doInsert(x, z, doc1, editScript, matchings);
-            else
-                w = doMove(x, z, editScript, matchings);
-
-            //normalize coalesces text nodes - may be useful esp for debugging
-            //w.normalize();
-            //x.normalize();
-            alignChildren(w, x, editScript, matchings);
+            if (!mMatchings.isMatched(x)) {
+                w = doInsert(x, z);
+            } else {
+                // TODO: Update should go here
+                w = doMove(x, z, mEditScript, mMatchings);
             }
 
-        deletePhase(doc1.getDocumentElement(), editScript, matchings);
-
-        //Post-Condition es is a minimum cost edit script,
-        //Matchings is a total matching and
-        //doc1 is isomorphic to doc2
-
-        return editScript;
+            alignChildren(w, x, mEditScript, mMatchings);
         }
+
+        deletePhase(mDoc1.getDocumentElement(), mEditScript, mMatchings);
+
+        // Post-Condition es is a minimum cost edit script,
+        // Matchings is a total matching and
+        // doc1 is isomorphic to doc2
+
+        return mEditScript;
+    }
 
     /** Prepares an empty Edit Script document.
      *
@@ -181,31 +196,30 @@ public final class EditScript {
     /**
      * Handles non-matching root nodes.
      *
-     * TODO: Write! Commented out code may give hint.
+     * TODO: Make private. Package for temporary testing.
      *
-     * @param editScript  the Edit Script to write changes to
-     * @param matchings   the set of node matchings
-     * @param doc1        the original document
-     * @param doc2        the modified document
      */
 
-    private static void matchRoots(final Document editScript, final NodePairs matchings,
-            final Document doc1, final Document doc2)
-    {
+    /*package*/ void matchRoots() {
 
 
-        Element xRoot = doc2.getDocumentElement();
-        Node xPartner = matchings.getPartner(xRoot);
-        if (xPartner == null || !(xPartner.equals(doc1.getDocumentElement()))) {
+        Element xRoot = mDoc2.getDocumentElement();
+        Node xPartner = mMatchings.getPartner(xRoot);
+        if (xPartner == null 
+                || !(xPartner.equals(mDoc1.getDocumentElement()))) {
             
-            //TODO: Add code to either insert dummy node or update root node
-            //May have issues with changing root node etc
-            Element dummy1 = doc1.createElement("DUMMY");
-            dummy1.appendChild(doc1.getDocumentElement());
-            Element dummy2 = doc2.createElement("DUMMY");
+            Element dummy1 = mDoc1.createElement("DUMMY");
+            dummy1.appendChild(mDoc1.getDocumentElement());
+            mDoc1.appendChild(dummy1);
+            Element dummy2 = mDoc2.createElement("DUMMY");
             dummy2.appendChild(xRoot);
-            matchings.add(doc2.getDocumentElement(), doc1.getDocumentElement());
-            NodeOps.setInOrder(xRoot);
+            mDoc2.appendChild(dummy2);
+            mMatchings.add(mDoc2.getDocumentElement(), 
+                    mDoc1.getDocumentElement());
+            NodeOps.setInOrder(mDoc1.getDocumentElement());
+            NodeOps.setInOrder(mDoc2.getDocumentElement());
+            
+            mAddedDummyRoot = true;
 
         }
 
@@ -217,43 +231,38 @@ public final class EditScript {
      *
      * @param x          current node
      * @param z          partner of x's parent
-     * @param doc1       the original document
-     * @param editScript the Edit Script to append operations to
-     * @param matchings  the set of matching nodes
      * @return           the inserted node
      */
+    private Node doInsert(final Node x, final Node z) {
 
-    private static Node doInsert(final Node x, final Node z,
-            final Document doc1, final Document editScript,
-            final NodePairs matchings)
-        {
-        assert(x != null);
-        assert(z != null);
+        assert (x != null);
+        assert (z != null);
         
-        InsertPosition pos = findPos(x, matchings);
+        FindPosition pos = new FindPosition(x, mMatchings);
         NodePos zPath = new NodePos(z);
 
         //Apply insert to doc1
         //The node we want to insert is the import of x with all
         //its text node children
         //TODO: Ensure attributes properly added
+        //TODO: Check we want text node children
 
-        Node w = doc1.importNode(x, false);
+        Node w = mDoc1.importNode(x, false);
 
         //Need to set in order as won't be revisited
         NodeOps.setInOrder(w);
         NodeOps.setInOrder(x);
 
         //Take match of parent (z), and insert
-        NodeOps.insertAsChild(pos.insertBefore, z, w);
+        NodeOps.insertAsChild(pos.getInsertBefore(), z, w);
 
         //Add to matching set
-        matchings.add(w, x);
+        mMatchings.add(w, x);
 
         //System.err.println("insert: " + pos.numXPath + " " + pos.insertBefore + " " +w.getNodeValue());
-        Delta.insert(w, zPath.getXPath(), pos.numXPath, pos.charPosition, editScript);
+        Delta.insert(w, zPath.getXPath(), pos.getXPathNum(), pos.getCharPosition(), mEditScript);
 
-        Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), editScript);
+        Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), mEditScript);
 
         return w;
         }
@@ -272,7 +281,7 @@ public final class EditScript {
     private static Node doMove(final Node x, final Node z,
             final Document editScript, final NodePairs matchings)
         {
-        InsertPosition pos;
+        FindPosition pos;
 
         Node w = matchings.getPartner(x);
 
@@ -286,7 +295,7 @@ public final class EditScript {
         Node partnerY = matchings.getPartner(y);
         if ((v.getNodeType() != Node.DOCUMENT_NODE) && !NodeOps.checkIfSameNode(v, partnerY))
             {
-            pos = findPos(x, matchings);
+            pos = new FindPosition(x, matchings);
             NodePos wPath = new NodePos(w);
             NodePos zPath = new NodePos(z);
 
@@ -304,10 +313,10 @@ public final class EditScript {
                 }
 
             //Apply move to T1
-            NodeOps.insertAsChild(pos.insertBefore, z, w);
+            NodeOps.insertAsChild(pos.getInsertBefore(), z, w);
 
-            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.numXPath,
-                     wPath.getCharPos(), pos.charPosition, wPath.getLength(), editScript);
+            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.getXPathNum(),
+                     wPath.getCharPos(), pos.getCharPosition(), wPath.getLength(), editScript);
             }
         return w;
         }
@@ -509,7 +518,7 @@ public final class EditScript {
                     && matchings.isMatched(xKids.item(i)))
                 {
                 //Get childno for move
-                InsertPosition pos = findPos(xKids.item(i), matchings);
+                FindPosition pos = new FindPosition(xKids.item(i), matchings);
 
                 //Get partner and position
                 Node a = matchings.getPartner(xKids.item(i));
@@ -520,14 +529,14 @@ public final class EditScript {
                 //Easiest to get context now
                 Element context = getContextBeforeMove(editScript, a);
 
-                NodeOps.insertAsChild(pos.insertBefore, w, a);
+                NodeOps.insertAsChild(pos.getInsertBefore(), w, a);
 
                 NodeOps.setInOrder(xKids.item(i));
                 NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
-                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.numXPath,
-                        aPos.getCharPos(), pos.charPosition,
+                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.getXPathNum(),
+                        aPos.getCharPos(), pos.getCharPosition(),
                         aPos.getLength(), editScript);
                 }
             }
@@ -588,171 +597,8 @@ public final class EditScript {
         moveMisalignedNodes(xKids, w, editScript, matchings);
         }
 
-    /**
-     * Gets the rightmost left sibling of n marked "inorder".
-     *
-     * @param n Node to find "in order" left sibling of
-     * @return  Either the "in order" left sibling or null if none
-     */
 
-    private static Node getInOrderLeftSibling(final Node n)
-    {
-        //Default l to null
-        Node inOrderLeftSib =  null;
-        //Changed as I'm not sure nodelists are in order
-        /*
-         
-         NodeList nSiblings = n.getParentNode().getChildNodes();
-         
-         for (int i = 0; i < nSiblings.getLength(); i++)
-         {
-         Node test = nSiblings.item(i);
-         
-         if (NodeOps.checkIfSameNode(test, n))
-         break;
-         
-         if (NodeOps.isInOrder(test))
-         l = test;
-         }
-         
-         return l;
-         */
-        Node curr = n.getParentNode().getFirstChild();
-        
-        while (curr != null && !NodeOps.checkIfSameNode(curr, n))
-        {
-            if (NodeOps.isInOrder(curr))
-            {
-                inOrderLeftSib = curr;
-            }
-            curr = curr.getNextSibling();
-        }
-        return inOrderLeftSib;
-    }
 
-    /**
-     * Gets the "in order" index of the node.
-     *
-     * The "in order" index counts only nodes marked "in order".
-     *
-     * @param n the node to find the index of
-     * @return  the "in order" index of the node
-     */
 
-    public static Index getInOrderIndex(final Node n)
-        {
-        Index ind = new Index();
-        ind.dom = ChildNumber.getInOrderDomChildNumber(n);
-        ind.xPath  = ChildNumber.getInOrderXPathChildNumber(n);
-
-        return ind;
-        }
-
-    /**
-     * Calculates the character position at which to insert a node.
-     *
-     * TODO: Check logic and test
-     *
-     * @param n    The node to find the char position of
-     * @param ind  The index of the node
-     * @return     The integer character position to insert at
-     */
-
-    private static int getCharPosition(final Index ind, final Node n)
-        {
-        NodeList children = n.getParentNode().getChildNodes();
-        //int tmpIndex = ind.dom;
-        //int lastIndex = children.getLength() - 1;
-
-        //if (ind.dom > lastIndex)
-        //    tmpIndex = lastIndex;
-
-        int charpos = 1;
-        Node test = children.item(ind.dom - 1);
-        if (children.item(ind.dom - 1).getNodeType() != Node.TEXT_NODE
-                && NodeOps.isInOrder(test))
-            charpos = -1;
-        else
-            {
-            for (int j = (ind.dom - 1); j >= 0; j--)
-                {
-                test = children.item(j);
-                if (children.item(j).getNodeType() == Node.TEXT_NODE
-                        && NodeOps.isInOrder(test))
-                    {
-                    charpos = charpos
-                            + children.item(j).getNodeValue().length();
-                    DiffXML.LOG.finer(children.item(j).getNodeValue()
-                            + " charpos " + charpos);
-                    }
-                else
-                    break;
-                }
-            }
-        return charpos;
-
-        }
-    /**
-     * Finds the childnumber to insert a node as.
-     *
-     * (Equivalent to the current childnumber of the node to insert
-     * before)
-     *
-     * TODO: Move to InsertPosition?
-     *
-     * @param x         the node to find the position of? *check*
-     * @param matchings the set of matching nodes
-     *
-     * @return          the position to insert the node at
-     */
-
-    private static InsertPosition findPos(final Node x, final NodePairs matchings)
-        {
-        DiffXML.LOG.fine("Entered findPos");
-        //Node xParent = x.getParentNode();
-        //NodeList xSiblings = xParent.getChildNodes();
-
-        InsertPosition pos = new InsertPosition();
-
-        Node v = getInOrderLeftSibling(x);
-
-        if (v == null)
-            {
-            //SHOULD CHAR be 1 or -1? depends on next node. Safest at 1?
-            //TODO: Check logic - pretty sure wrong!
-            pos.insertBefore = 0;
-            pos.numXPath = 1;
-            pos.charPosition = 1;
-            return pos;
-            }
-
-        //Get partner of v
-        Node u = matchings.getPartner(v);
-        Node uParent = u.getParentNode();
-        NodeList children = uParent.getChildNodes();
-
-        Index ind = getInOrderIndex(u);
-
-        //Need i+1 child
-        pos.insertBefore = ++ind.dom;
-
-        //If this is a text node, and last node was a text node,
-        //don't increment xpath
-
-        //Get charpos
-        //Can't use NodePos func as node may not exist
-        pos.charPosition = getCharPosition(ind, u);
-
-        //If this is a text node, and last node was a text node,
-        //don't increment xpath
-        if (!(x.getNodeType() == Node.TEXT_NODE
-                    && (children.item(ind.dom - 1).getNodeType()
-                        == Node.TEXT_NODE)))
-            ind.xPath++;
-
-        pos.numXPath = ind.xPath;
-
-        DiffXML.LOG.fine("Exiting findPos normally");
-        return pos;
-        }
+ 
 }
