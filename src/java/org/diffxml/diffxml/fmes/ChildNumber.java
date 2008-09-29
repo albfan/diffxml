@@ -23,188 +23,315 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
-import org.diffxml.diffxml.DiffFactory;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
  * Class to hold and calculate DOM and XPath child numbers of node.
  */
-
-public final class ChildNumber
-{
+public final class ChildNumber {
+    
     /** DOM child number. */
-    private int mDOMChildNumber;
+    private int mDOMChildNo;
 
     /** XPath child number. */
-    private int mXPathChildNumber;
+    private int mXPathChildNo;
 
+    /** XPath char position. */
+    private int mXPathCharPos;
+
+    /** In-order DOM child number. */
+    private int mInOrderDOMChildNo;
+
+    /** In-order XPath child number. */
+    private int mInOrderXPathChildNo;
+    
+    /** In-order XPath text position. */
+    private int mInOrderXPathCharPos;
+    
+    /** The node we are doing the calcs on. */
+    private final Node mNode;
+    
+    /** The siblings of the node and the node itself. */
+    private NodeList mSiblings;
+    
+    
     /**
      * Default constructor.
-     *
-     * @param n Node to find the child numbers of
+     * 
+     * @param n
+     *            Node to find the child numbers of
      */
-
-    public ChildNumber(final Node n)
-        {
+    public ChildNumber(final Node n) {
+        
         if (n == null) {
-            throw new NullPointerException("Node cannot be null");
+            throw new IllegalArgumentException("Node cannot be null");
         }
-        setChildNumber(n);
+        if (n.getParentNode() == null) {
+            throw new IllegalArgumentException("Node must have parent");
         }
+        
+        mNode = n;
+        //TODO: Need some checks here
+        mSiblings = mNode.getParentNode().getChildNodes();
+        setChildNumbers();
+    }
 
     /**
      * Get the DOM child number.
-     *
+     * 
      * @return DOM child number of associated node.
      */
-
-    public int getDOM()
-        {
-        return mDOMChildNumber;
-        }
+    public int getDOM() {
+        
+        return mDOMChildNo;
+    }
 
     /**
      * Get the XPath child number.
-     *
+     * 
      * @return XPath child number of associated node.
      */
-
-    public int getXPath()
-        {
-        return mXPathChildNumber;
-        }
+    public int getXPathCharPos() {
+        
+        return mXPathCharPos;
+    }
 
     /**
-     * Determines whether XPath index should be incremented.
-     *
-     * Handles differences between DOM index and XPath index
-     *
-     * @param tag      the tag of the node we are looking for
-     * @param siblings the siblings of the node we are looking for
-     * @param i        the current position in siblings
-     * @return         true if index should be incremented
+     * Get the XPath child number.
+     * 
+     * @return XPath child number of associated node.
      */
+    public int getInOrderXPathCharPos() {
+        
+        return mInOrderXPathCharPos;
+    }
 
-    private static boolean incIndex(final String tag,
-            final NodeList siblings, final int i)
-        {
-        //TODO: Handle comments if needed.
+    
+    /**
+     * Get the XPath child number.
+     * 
+     * @return XPath child number of associated node.
+     */
+    public int getXPath() {
+        
+        return mXPathChildNo;
+    }
 
-        Node currSib = siblings.item(i);
+    /**
+     * Get the in-order XPath child number.
+     * 
+     * Only counts nodes marked in-order.
+     * 
+     * @return In-order XPath child number of associated node.
+     */
+    public int getInOrderXPath() {
+        
+        return mInOrderXPathChildNo;
+    }
+
+    /**
+     * Get the in-order DOM child number.
+     * 
+     * Only counts nodes marked in-order.
+     * 
+     * @return In-order DOM child number of associated node.
+     */
+    public int getInOrderDOM() {
+        
+        return mInOrderDOMChildNo;
+    }
+    
+    /**
+     * Determines whether XPath index should be incremented.
+     * 
+     * Handles differences between DOM index and XPath index
+     * 
+     * @param i
+     *            the current position in siblings
+     * @return true if index should be incremented
+     */
+    private boolean incIndex(final int i) {
 
         boolean inc = true;
-        if (DiffFactory.isUseTagnames())
-            {
-            if (!tag.equals(currSib.getNodeName()))
-                inc = false;
-            }
-        if (currSib.getNodeType() == Node.DOCUMENT_TYPE_NODE)
-        {
+ 
+        // Handle non-coalescing of text nodes
+        if ((i > 0) && nodesAreTextNodes(
+                mSiblings.item(i), mSiblings.item(i - 1))) {
             inc = false;
         }
 
-        //Handle non-coalescing of text nodes
-        if ((i > 0) && (inc == true))
-            {
-            if (currSib.getNodeType() == Node.TEXT_NODE
-                    && siblings.item(i - 1).getNodeType() == Node.TEXT_NODE)
-                inc = false;
+        return inc;
+    }
+    
+    /**
+     * Determines whether the given Nodes are all text nodes or not.
+     * 
+     * @param nodes The Nodes to checks.
+     * @return true if all the given Nodes are text nodes
+     */
+    private static boolean nodesAreTextNodes(final Node... nodes) {
+
+        boolean areText = true;
+
+        for (Node n : nodes) {
+            if (n.getNodeType() != Node.TEXT_NODE) {
+                areText = false;
+                break;
             }
 
-        return inc;
         }
+        return areText;
+    }
 
     /**
      * Calculate child numbers of node.
-     *
-     * @param n the node to find the child numbers of
+     * 
      */
+    private void setChildNumbers() {
 
-    public void setChildNumber(final Node n)
-        {
-  
-        mXPathChildNumber = getXPathChildNumber(n);
-        mDOMChildNumber= getDomChildNumber(n);
-        }
-    
-    public static int getDomChildNumber(final Node n)
-    {
-        //This isn't checking tagnames mofo 
-        NodeList siblings = n.getParentNode().getChildNodes();
-        int childNo = 0;
+        calculateXPathChildNumberAndPosition();
+        calculateDOMChildNumber();
+        calculateInOrderDOMChildNumber();
+        calculateInOrderXPathChildNumberAndPosition();
+    }
+
+    /**
+     * Calculates the DOM index of the node.
+     * 
+     */
+    private void calculateDOMChildNumber() {
         
-        for (childNo = 0; childNo < siblings.getLength(); childNo++)
-        {
-            if (NodeOps.checkIfSameNode(siblings.item(childNo), n))
-            {
+        int cn;
+        
+        for (cn = 0; cn < mSiblings.getLength(); cn++) {
+            if (NodeOps.checkIfSameNode(mSiblings.item(cn), mNode)) {
                 break;
             }
         }
         
-        return childNo;
+        mDOMChildNo = cn;
     }
 
-    public static int getInOrderDomChildNumber(final Node n)
-    {
-        //This isn't checking tagnames mofo 
-        NodeList siblings = n.getParentNode().getChildNodes();
-        int childNo = 0;
+    /**
+     * Calculates the "in order" DOM child number of the node.
+     * 
+     */
+    private void calculateInOrderDOMChildNumber() {
+
+        mInOrderDOMChildNo = 0;
+
+        for (int i = 0; i < mSiblings.getLength(); i++) {
+            if (NodeOps.checkIfSameNode(mSiblings.item(i), mNode)) {
+                break;
+            }
+            if (NodeOps.isInOrder(mSiblings.item(i))) {
+                mInOrderDOMChildNo++;
+            }
+        }
+    }
+
+    /**
+     * Sets the XPath child number and text position.
+     */
+    private void calculateXPathChildNumberAndPosition() {
         
-        for (childNo = 0; childNo < siblings.getLength(); childNo++)
-        {
-            if (NodeOps.isInOrder(siblings.item(childNo)) &&
-                    NodeOps.checkIfSameNode(siblings.item(childNo), n))
-            {
+        int domIndex = calculateXPathChildNumber();
+        calculateXPathTextPosition(domIndex);   
+    }
+
+    /**
+     * Sets the XPath child number and text position.
+     */
+    private void calculateInOrderXPathChildNumberAndPosition() {
+        
+        int domIndex = calculateInOrderXPathChildNumber();
+        calculateInOrderXPathTextPosition(domIndex);   
+    }
+    
+    /**
+     * Calculate the character position of the node.
+     * 
+     * @param domIndex The DOM index of the node in its siblings.
+     */
+    private void calculateXPathTextPosition(final int domIndex) {
+        
+        mXPathCharPos = 1;
+        for (int i = (domIndex - 1); i >= 0; i--) {
+            if (mSiblings.item(i).getNodeType() == Node.TEXT_NODE) {
+                mXPathCharPos = mXPathCharPos 
+                    + mSiblings.item(i).getTextContent().length();
+            } else {
                 break;
             }
         }
-        
-        return childNo;
     }
-    
-    public static int getXPathChildNumber(final Node n)
-    {
-        assert(n != null);
 
-        NodeList siblings = n.getParentNode().getChildNodes();
+    /**
+     * Set the XPath child number of the node.
+     * 
+     * @return The DOM index of the node in its siblings
+     */
+    private int calculateXPathChildNumber() {
         int childNo = 0;
-        
-        for (int i = 0; i < siblings.getLength(); i++)
-        {
-            if (incIndex(n.getNodeName(), siblings, i))
-            {
+
+        int domIndex;
+        for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
+            if (incIndex(domIndex)) {
                 childNo++;
             }
-            if (NodeOps.checkIfSameNode(siblings.item(i), n))
-            {
+            if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
                 break;
             }
-
         }
-        return childNo;
-    }
-    
-    public static int getInOrderXPathChildNumber(final Node n)
-    {
-        NodeList siblings = n.getParentNode().getChildNodes();
-        int childNo = 0;
         
-        for (int i = 0; i < siblings.getLength(); i++)
-        {
-            if (NodeOps.isInOrder(siblings.item(i)) &&
-                    incIndex(n.getNodeName(), siblings, i))
-            {
+        mXPathChildNo = childNo;
+        return domIndex;
+    }
+
+    /**
+     * Set the in-order XPath child number of the node.
+     * 
+     * @return The DOM index of the node in its siblings
+     */
+    private int calculateInOrderXPathChildNumber() {
+
+        int childNo = 0;
+
+        int domIndex;
+        for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
+            if (NodeOps.isInOrder(mSiblings.item(domIndex)) 
+                    && incIndex(domIndex)) {
                 childNo++;
             }
-            if (NodeOps.checkIfSameNode(siblings.item(i), n))
-            {
+            if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
                 break;
             }
 
         }
-        return childNo;
+        
+        mInOrderXPathChildNo = childNo;
+        return domIndex;
+    }
+    
+    /**
+     * Calculate the character position of the node.
+     * 
+     * @param domIndex The DOM index of the node in its siblings.
+     */
+    private void calculateInOrderXPathTextPosition(final int domIndex) {
+        
+        mInOrderXPathCharPos = 1;
+        for (int i = (domIndex - 1); i >= 0; i--) {
+            if (mSiblings.item(i).getNodeType() == Node.TEXT_NODE) {
+                if (NodeOps.isInOrder(mSiblings.item(i))) {
+                    mInOrderXPathCharPos = mInOrderXPathCharPos 
+                        + mSiblings.item(i).getTextContent().length();
+                }
+            } else {
+                break;
+            }
+        }
     }
 
 }

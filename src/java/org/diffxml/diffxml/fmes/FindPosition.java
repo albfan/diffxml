@@ -22,48 +22,49 @@ public class FindPosition {
      * @param matchings the set of matching nodes
      */
     public FindPosition(final Node x, final NodePairs matchings) {
-        
+
         DiffXML.LOG.fine("Entered findPos");
         //Node xParent = x.getParentNode();
         //NodeList xSiblings = xParent.getChildNodes();
 
         Node v = getInOrderLeftSibling(x);
 
-        if (v == null)
-            {
+        if (v == null) {
             //SHOULD CHAR be 1 or -1? depends on next node. Safest at 1?
             //TODO: Check logic - pretty sure wrong!
             insertBefore = 0;
             numXPath = 1;
             charPosition = 1;
-            return;
-            }
+            
+        } else {
 
-        //Get partner of v
-        Node u = matchings.getPartner(v);
-        Node uParent = u.getParentNode();
-        NodeList children = uParent.getChildNodes();
+            //Get partner of v
+            Node u = matchings.getPartner(v);
+            assert (u != null);
+            Node uParent = u.getParentNode();
+            NodeList children = uParent.getChildNodes();
 
-        Index ind = getInOrderIndex(u);
+            Index ind = getInOrderIndex(u);
 
-        //Need i+1 child
-        insertBefore = ++ind.dom;
+            //Need i+1 child
+            insertBefore = ++ind.dom;
 
-        //If this is a text node, and last node was a text node,
-        //don't increment xpath
+            //If this is a text node, and last node was a text node,
+            //don't increment xpath
 
-        //Get charpos
-        //Can't use NodePos func as node may not exist
-        charPosition = getCharPosition(ind, u);
+            //Get charpos
+            //Can't use NodePos func as node may not exist
+            charPosition = getCharPosition(ind, u);
 
-        //If this is a text node, and last node was a text node,
-        //don't increment xpath
-        if (!(x.getNodeType() == Node.TEXT_NODE
+            //If this is a text node, and last node was a text node,
+            //don't increment xpath
+            if (!(x.getNodeType() == Node.TEXT_NODE
                     && (children.item(ind.dom - 1).getNodeType()
-                        == Node.TEXT_NODE)))
-            ind.xPath++;
+                            == Node.TEXT_NODE)))
+                ind.xPath++;
 
-        numXPath = ind.xPath;
+            numXPath = ind.xPath;
+        }
 
         DiffXML.LOG.fine("Exiting findPos normally");
         }
@@ -79,14 +80,15 @@ public class FindPosition {
      * @return  the "in order" index of the node
      */
 
-    /*package*/ static Index getInOrderIndex(final Node n)
-        {
+    /* package */ static Index getInOrderIndex(final Node n) {
+
         Index ind = new Index();
-        ind.dom = ChildNumber.getInOrderDomChildNumber(n);
-        ind.xPath  = ChildNumber.getInOrderXPathChildNumber(n);
+        ChildNumber cn = new ChildNumber(n);
+        ind.dom = cn.getInOrderDOM();
+        ind.xPath = cn.getInOrderXPath();
 
         return ind;
-        }
+    }
  
     /**
      * Calculates the character position at which to insert a node.

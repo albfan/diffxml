@@ -322,7 +322,7 @@ public final class NodePos
             {
             curr = curr.getParentNode();
 
-            currChildNo.setChildNumber(curr);
+            currChildNo = new ChildNumber(curr);
             xpath = getXPath(curr, currChildNo.getXPath(), false) + xpath;
             }
 
