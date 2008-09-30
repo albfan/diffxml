@@ -26,6 +26,8 @@ package org.diffxml.diffxml.fmes;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.org.apache.bcel.internal.generic.ARETURN;
+
 /**
  * Class to hold and calculate DOM and XPath child numbers of node.
  */
@@ -72,7 +74,6 @@ public final class ChildNumber {
         }
         
         mNode = n;
-        //TODO: Need some checks here
         mSiblings = mNode.getParentNode().getChildNodes();
         setChildNumbers();
     }
@@ -175,7 +176,7 @@ public final class ChildNumber {
         boolean areText = true;
 
         for (Node n : nodes) {
-            if (n.getNodeType() != Node.TEXT_NODE) {
+            if ((n == null) || (n.getNodeType() != Node.TEXT_NODE)) {
                 areText = false;
                 break;
             }
@@ -273,16 +274,22 @@ public final class ChildNumber {
      * @return The DOM index of the node in its siblings
      */
     private int calculateXPathChildNumber() {
-        int childNo = 0;
+        
+        int childNo = 1;
 
         int domIndex;
         for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
+            
+            if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
+                if (!incIndex(domIndex)) {
+                    childNo--;
+                }
+                break;
+            }
             if (incIndex(domIndex)) {
                 childNo++;
             }
-            if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
-                break;
-            }
+
         }
         
         mXPathChildNo = childNo;
@@ -297,21 +304,32 @@ public final class ChildNumber {
     private int calculateInOrderXPathChildNumber() {
 
         int childNo = 0;
-
         int domIndex;
+        Node lastInOrderNode = null;
+        Node currNode;
         for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
-            if (NodeOps.isInOrder(mSiblings.item(domIndex)) 
-                    && incIndex(domIndex)) {
+            currNode = mSiblings.item(domIndex);
+            if (NodeOps.isInOrder(currNode)
+                    && !nodesAreTextNodes(currNode, lastInOrderNode)) {
                 childNo++;
             }
-            if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
+            if (NodeOps.checkIfSameNode(currNode, mNode)) {
                 break;
             }
-
+            if (NodeOps.isInOrder(currNode)) {
+                lastInOrderNode = currNode;
+            }
         }
-        
+   
+        //For cases where the node is out of order and there are no 
+        //inorder nodes
+        if (childNo == 0) {
+            childNo = 1;
+        }
+   
         mInOrderXPathChildNo = childNo;
         return domIndex;
+        
     }
     
     /**

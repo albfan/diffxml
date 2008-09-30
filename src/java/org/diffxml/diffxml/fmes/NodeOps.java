@@ -122,4 +122,5 @@ public final class NodeOps {
     public static boolean checkIfSameNode(final Node x, final Node y) {
         return x.isSameNode(y);
     }
+
 }
