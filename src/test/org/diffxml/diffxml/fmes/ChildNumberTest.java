@@ -18,27 +18,47 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Test class for ChildNumber.
+ * 
+ * @author Adrian Mouat
+ *
+ */
 public class ChildNumberTest {
 
+    /** Test XML document. */
     private Document testDoc;
+    
+    /** Test XML Element. */
     private Element parent;
+    
+    /** Factory for docs. */
     private DocumentBuilderFactory mFac;
+    
+    /** Factory for XPath Expressions. */
     private XPathFactory mXPathFac;
     
+    /**
+     * Prepares commonly used test elements etc.
+     * 
+     * @throws Exception
+     */
     @Before
-    public void setUp() throws Exception {
+    public final void setUp() throws Exception {
 
         mFac = DocumentBuilderFactory.newInstance();
         mXPathFac = XPathFactory.newInstance();
         testDoc = mFac.newDocumentBuilder().newDocument();
         parent = testDoc.createElement("parent");
-        testDoc.appendChild(parent);
-        
+        testDoc.appendChild(parent); 
     }
     
+    /**
+     * Check straightforward case.
+     */
     @Test
-    public void testSimpleChildNo() {
-        //InsertPosition and NodePos are both calculating XPath in different ways :(
+    public final void testSimpleChildNo() {
+
         Element a = testDoc.createElement("a");
         Element b = testDoc.createElement("b");
         Element c = testDoc.createElement("c");
@@ -77,8 +97,11 @@ public class ChildNumberTest {
         
     }
     
+    /**
+     * Test handling of text nodes.
+     */
     @Test
-    public void testTextNodeChildNo() {
+    public final void testTextNodeChildNo() {
         
         //<parent><a/>12</d></parent>
         Element a = testDoc.createElement("a");
@@ -131,8 +154,11 @@ public class ChildNumberTest {
 
     }
 
+    /**
+     * Test two initial text nodes are counted properly.
+     */
     @Test
-    public void testTwoInitialTextNodes() {
+    public final void testTwoInitialTextNodes() {
         
         Node a = testDoc.createTextNode("1234");
         Node b = testDoc.createTextNode("5");
@@ -174,8 +200,11 @@ public class ChildNumberTest {
         }
     }
 
+    /**
+     * Test in-order counting of DOM nodes.
+     */
     @Test
-    public void testDOMInOrder() {
+    public final void testDOMInOrder() {
         
         Node a = testDoc.createTextNode("1234");
         NodeOps.setOutOfOrder(a);
@@ -209,8 +238,11 @@ public class ChildNumberTest {
         assertEquals(1, bChildNo.getInOrderDOM());        
     }
     
+    /**
+     * Test counting of in-order XPath nodes.
+     */
     @Test
-    public void testXPathInOrder() {
+    public final void testXPathInOrder() {
         
         Node a = testDoc.createTextNode("1234");
         NodeOps.setOutOfOrder(a);
@@ -242,5 +274,22 @@ public class ChildNumberTest {
         
     }
     
-    //Test handling nulls, nodes with no parent
+    /**
+     * Check exception thrown if given null.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public final void testNull() {
+        
+        new ChildNumber(null);
+    }
+    
+    /**
+     * Test exception thrown if no parent.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public final void testChildWithNoParent() {
+        
+        Node child = testDoc.createElement("noparent");
+        new ChildNumber(child);
+    }
 }
