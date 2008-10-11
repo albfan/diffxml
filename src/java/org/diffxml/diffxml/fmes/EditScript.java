@@ -226,8 +226,8 @@ public final class EditScript {
     }
 
     /**
-     * Inserts a node according to the algorithm and updates
-     * the Edit Script.
+     * Inserts (the import of) node x as child of z according to the algorithm 
+     * and updates the Edit Script.
      *
      * @param x          current node
      * @param z          partner of x's parent
@@ -238,6 +238,7 @@ public final class EditScript {
         assert (x != null);
         assert (z != null);
         
+        //Supposed to find the child number (k) to insert w as child of z 
         FindPosition pos = new FindPosition(x, mMatchings);
         NodePos zPath = new NodePos(z);
 
@@ -254,13 +255,13 @@ public final class EditScript {
         NodeOps.setInOrder(x);
 
         //Take match of parent (z), and insert
-        NodeOps.insertAsChild(pos.getInsertBefore(), z, w);
+        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
         //Add to matching set
         mMatchings.add(w, x);
 
         //System.err.println("insert: " + pos.numXPath + " " + pos.insertBefore + " " +w.getNodeValue());
-        Delta.insert(w, zPath.getXPath(), pos.getXPathNum(), pos.getCharPosition(), mEditScript);
+        Delta.insert(w, zPath.getXPath(), pos.getXPathInsertPosition(), pos.getCharInsertPosition(), mEditScript);
 
         Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), mEditScript);
 
@@ -313,10 +314,10 @@ public final class EditScript {
                 }
 
             //Apply move to T1
-            NodeOps.insertAsChild(pos.getInsertBefore(), z, w);
+            NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
-            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.getXPathNum(),
-                     wPath.getCharPos(), pos.getCharPosition(), wPath.getLength(), editScript);
+            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.getXPathInsertPosition(),
+                     wPath.getCharPos(), pos.getCharInsertPosition(), wPath.getLength(), editScript);
             }
         return w;
         }
@@ -529,14 +530,14 @@ public final class EditScript {
                 //Easiest to get context now
                 Element context = getContextBeforeMove(editScript, a);
 
-                NodeOps.insertAsChild(pos.getInsertBefore(), w, a);
+                NodeOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
                 NodeOps.setInOrder(xKids.item(i));
                 NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
-                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.getXPathNum(),
-                        aPos.getCharPos(), pos.getCharPosition(),
+                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.getXPathInsertPosition(),
+                        aPos.getCharPos(), pos.getCharInsertPosition(),
                         aPos.getLength(), editScript);
                 }
             }

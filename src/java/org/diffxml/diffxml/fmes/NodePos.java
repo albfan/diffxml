@@ -32,6 +32,8 @@ import org.w3c.dom.NodeList;
 
 /**
  * Class to deal with finding positions of nodes within document.
+ * 
+ * TODO: Duplicate of ChildNumber - delete and move XPath function
  */
 
 public final class NodePos

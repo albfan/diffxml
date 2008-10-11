@@ -26,30 +26,28 @@ package org.diffxml.diffxml.fmes;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.org.apache.bcel.internal.generic.ARETURN;
-
 /**
  * Class to hold and calculate DOM and XPath child numbers of node.
  */
 public final class ChildNumber {
     
     /** DOM child number. */
-    private int mDOMChildNo;
+    private int mDOMChildNo = -1;
 
     /** XPath child number. */
-    private int mXPathChildNo;
+    private int mXPathChildNo = -1;
 
     /** XPath char position. */
-    private int mXPathCharPos;
+    private int mXPathCharPos = -1;
 
     /** In-order DOM child number. */
-    private int mInOrderDOMChildNo;
+    private int mInOrderDOMChildNo = -1;
 
     /** In-order XPath child number. */
-    private int mInOrderXPathChildNo;
+    private int mInOrderXPathChildNo = -1;
     
     /** In-order XPath text position. */
-    private int mInOrderXPathCharPos;
+    private int mInOrderXPathCharPos = -1;
     
     /** The node we are doing the calcs on. */
     private final Node mNode;
@@ -75,7 +73,6 @@ public final class ChildNumber {
         
         mNode = n;
         mSiblings = mNode.getParentNode().getChildNodes();
-        setChildNumbers();
     }
 
     /**
@@ -84,6 +81,10 @@ public final class ChildNumber {
      * @return DOM child number of associated node.
      */
     public int getDOM() {
+        
+        if (mDOMChildNo == -1) {
+            calculateDOMChildNumber();
+        }
         
         return mDOMChildNo;
     }
@@ -95,6 +96,9 @@ public final class ChildNumber {
      */
     public int getXPathCharPos() {
         
+        if (mXPathCharPos == -1) {
+            calculateXPathChildNumberAndPosition();
+        }
         return mXPathCharPos;
     }
 
@@ -104,7 +108,10 @@ public final class ChildNumber {
      * @return XPath child number of associated node.
      */
     public int getInOrderXPathCharPos() {
-        
+    
+        if (mInOrderXPathCharPos == -1) {
+            calculateInOrderXPathChildNumberAndPosition();
+        }
         return mInOrderXPathCharPos;
     }
 
@@ -116,6 +123,9 @@ public final class ChildNumber {
      */
     public int getXPath() {
         
+        if (mXPathChildNo == -1) {
+            calculateXPathChildNumberAndPosition();
+        }
         return mXPathChildNo;
     }
 
@@ -127,7 +137,10 @@ public final class ChildNumber {
      * @return In-order XPath child number of associated node.
      */
     public int getInOrderXPath() {
-        
+
+        if (mInOrderXPathChildNo == -1) {
+            calculateInOrderXPathChildNumberAndPosition();
+        }
         return mInOrderXPathChildNo;
     }
 
@@ -139,7 +152,10 @@ public final class ChildNumber {
      * @return In-order DOM child number of associated node.
      */
     public int getInOrderDOM() {
-        
+
+        if (mInOrderXPathChildNo == -1) {
+            calculateInOrderDOMChildNumber();
+        }
         return mInOrderDOMChildNo;
     }
     
@@ -183,18 +199,6 @@ public final class ChildNumber {
 
         }
         return areText;
-    }
-
-    /**
-     * Calculate child numbers of node.
-     * 
-     */
-    private void setChildNumbers() {
-
-        calculateXPathChildNumberAndPosition();
-        calculateDOMChildNumber();
-        calculateInOrderDOMChildNumber();
-        calculateInOrderXPathChildNumberAndPosition();
     }
 
     /**
@@ -306,7 +310,8 @@ public final class ChildNumber {
         int childNo = 0;
         int domIndex;
         Node lastInOrderNode = null;
-        Node currNode;
+        Node currNode = null;
+        
         for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
             currNode = mSiblings.item(domIndex);
             if (NodeOps.isInOrder(currNode)
@@ -321,10 +326,9 @@ public final class ChildNumber {
             }
         }
    
-        //For cases where the node is out of order and there are no 
-        //inorder nodes
-        if (childNo == 0) {
-            childNo = 1;
+        //Add 1 if the given node wasn't in order
+        if (currNode != null && !NodeOps.isInOrder(currNode)) {
+            childNo++;
         }
    
         mInOrderXPathChildNo = childNo;
