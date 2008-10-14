@@ -123,4 +123,29 @@ public final class NodeOps {
         return x.isSameNode(y);
     }
 
+    /**
+     * Calculates an xpath that uniquely identifies the given node.
+     * 
+     * @param n The node to calculate the xpath for.
+     * @return The XPath to the node as a String
+     */
+    public static String getXPath(final Node n) {
+
+        Node root = n.getOwnerDocument().getDocumentElement();
+        Node curr = n;        
+        
+        String xpath;
+        ChildNumber cn = new ChildNumber(curr);
+        if (NodeOps.checkIfSameNode(root, curr)) {
+            // Not clear if node() *always* matches the root node 
+            xpath = "/" + n.getNodeName();
+        } else {
+            xpath = getXPath(curr.getParentNode()) 
+                    + "/node()[" + cn.getXPath() + "]";
+        }
+        
+        return xpath;
+    }
+
+    
 }
