@@ -38,7 +38,7 @@ public final class NodeOps {
     private static final String INORDER = "inorder";
     
     /**
-     * Do not allow instantiation.
+     * Disallow instantiation.
      */
     private NodeOps() {
     }
@@ -111,7 +111,6 @@ public final class NodeOps {
      * Check if nodes are the same.
      *
      * Does not test if data equivalent, but if same node in same doc.
-     * TODO: Test this method!
      * TODO: Handle null cases.
      *
      * @param x first node to check
@@ -125,6 +124,8 @@ public final class NodeOps {
 
     /**
      * Calculates an xpath that uniquely identifies the given node.
+     * For text nodes, this will return a String, not a Node, due to coalescing
+     * issues.
      * 
      * @param n The node to calculate the xpath for.
      * @return The XPath to the node as a String
@@ -139,6 +140,10 @@ public final class NodeOps {
         if (NodeOps.checkIfSameNode(root, curr)) {
             // Not clear if node() *always* matches the root node 
             xpath = "/" + n.getNodeName();
+        } else if (curr.getNodeType() == Node.TEXT_NODE) {
+            xpath = "substring(" + getXPath(curr.getParentNode())
+                    + "/node()[" + cn.getXPath() + "]," + cn.getXPathCharPos() 
+                    + "," + curr.getTextContent().length() + ")";
         } else {
             xpath = getXPath(curr.getParentNode()) 
                     + "/node()[" + cn.getXPath() + "]";

@@ -107,6 +107,8 @@ public class Fmes implements Diff {
         //Turn off DTD stuff - if DTD support changes reconsider
         parserFactory.setValidating(false);
         parserFactory.setNamespaceAware(true);
+        
+        parserFactory.setIgnoringComments(false);
     }
 
 

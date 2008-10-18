@@ -285,6 +285,7 @@ public final class ChildNumber {
         for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
             
             if (NodeOps.checkIfSameNode(mSiblings.item(domIndex), mNode)) {
+                
                 if (!incIndex(domIndex)) {
                     childNo--;
                 }
@@ -293,7 +294,6 @@ public final class ChildNumber {
             if (incIndex(domIndex)) {
                 childNo++;
             }
-
         }
         
         mXPathChildNo = childNo;
