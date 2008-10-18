@@ -5,6 +5,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +29,7 @@ public class NodeOpsTest {
      * Test getting the unique XPath for nodes.
      */
     @Test
-    public void testGetXPath() {
+    public final void testGetXPath() {
         //Create an XML doc, loop through nodes, confirming that doing a
         //getXPath then a select returns the node
         XPathFactory xPathFac = XPathFactory.newInstance();
@@ -36,6 +37,14 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<a>aa<b attr='test'>b<!-- comment -->c<c/></b>d</a>");
+        
+        Node b = testDoc.getDocumentElement().getFirstChild().getNextSibling();
+        
+        //Old test to ensure comment nodes are processed
+        assertEquals(b.getFirstChild().getNextSibling().getNodeType(),
+                Node.COMMENT_NODE);
+        assertEquals(b.getChildNodes().item(1).getNodeType(), 
+                Node.COMMENT_NODE); 
         
         testXPathForNode(testDoc.getDocumentElement(), xpath);
     }
@@ -52,16 +61,22 @@ public class NodeOpsTest {
     private void testXPathForNode(final Node n, final XPath xp) {
         
         String xpath = NodeOps.getXPath(n);
-        //System.out.println(xpath);
+
         try {
-            Object ret = xp.evaluate(xpath, n.getOwnerDocument(), 
-                    XPathConstants.NODE);
-            Node nRet = (Node) ret;
-            assertNotNull(nRet);
-            assertTrue(
-                    nRet.getNodeName() + ":" + nRet.getNodeValue() + " is not "
-                    + n.getNodeName() + ":" + n.getNodeValue(), 
-                    n.isSameNode((Node) ret));
+            if (n.getNodeType() == Node.TEXT_NODE) {
+                String ret = (String) xp.evaluate(xpath, n.getOwnerDocument(), 
+                        XPathConstants.STRING);
+                assertNotNull(ret);
+                assertEquals(n.getTextContent(), ret);
+            } else {
+                Node ret = (Node) xp.evaluate(xpath, n.getOwnerDocument(), 
+                        XPathConstants.NODE);
+                assertNotNull(ret);
+                assertTrue(
+                        ret.getNodeName() + ":" + ret.getNodeValue() 
+                        + " is not " + n.getNodeName() + ":" + n.getNodeValue(),
+                        n.isSameNode((Node) ret));
+            }
         } catch (XPathExpressionException e) {
             fail("Caught exception: " + e.getMessage());
         }
@@ -72,8 +87,11 @@ public class NodeOpsTest {
         }
     }
     
+    /**
+     * Test for the horrible co-alesced text nodes issue.
+     */
     @Test
-    public void testGetXPathWithTextNodes() {
+    public final void testGetXPathWithTextNodes() {
         
         Document testDoc = TestDocHelper.createDocument("<a>b</a>");
         Element root = testDoc.getDocumentElement();

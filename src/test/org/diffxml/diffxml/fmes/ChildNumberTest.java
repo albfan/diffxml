@@ -103,26 +103,30 @@ public class ChildNumberTest {
     @Test
     public final void testTextNodeChildNo() {
         
-        //<parent><a/>12</d></parent>
+        //<parent><a/>12<!--d-->3</parent>
         Element a = testDoc.createElement("a");
         Node b = testDoc.createTextNode("1");
         Node c = testDoc.createTextNode("2");
-        Element d = testDoc.createElement("d");
+        Node d = testDoc.createComment("d");
+        Node e = testDoc.createTextNode("3");
         
         parent.appendChild(a);
         parent.appendChild(b);
         parent.appendChild(c);
         parent.appendChild(d);
+        parent.appendChild(e);
         
         ChildNumber aChildNo = new ChildNumber(a);
         ChildNumber bChildNo = new ChildNumber(b);
         ChildNumber cChildNo = new ChildNumber(c);
         ChildNumber dChildNo = new ChildNumber(d);
+        ChildNumber eChildNo = new ChildNumber(e);
         
         assertEquals(0, aChildNo.getDOM());
         assertEquals(1, bChildNo.getDOM());
         assertEquals(2, cChildNo.getDOM());
         assertEquals(3, dChildNo.getDOM());
+        assertEquals(4, eChildNo.getDOM());
         
         XPath xpath = mXPathFac.newXPath();
         try {
@@ -147,9 +151,15 @@ public class ChildNumberTest {
             ret = xpath.evaluate(pre + dChildNo.getXPath() + "]",
                     testDoc, XPathConstants.NODE);
             assertTrue("Got: " + ret.toString(), d.isSameNode(((Node) ret)));
-            
-        } catch (XPathExpressionException e) {
-            fail("Caught XPathExpressionException: " + e.getMessage());
+
+            ret = xpath.evaluate(
+                    "substring(" + pre + eChildNo.getXPath() + "],"
+                    + eChildNo.getXPathCharPos() + ",1)", testDoc, 
+                    XPathConstants.STRING);
+            assertEquals(e.getTextContent(), ret.toString());
+
+        } catch (XPathExpressionException ex) {
+            fail("Caught XPathExpressionException: " + ex.getMessage());
         }
 
     }
