@@ -1,22 +1,13 @@
 package org.diffxml.diffxml.fmes;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.diffxml.diffxml.TestDocHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertEquals;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Test class for NodeDepth.
@@ -54,6 +45,9 @@ public class NodeDepthTest {
         assertEquals(n.getNodeName(), depthTest.getTag());
     }
     
+    /**
+     * Test calculating depth of nodes in document.
+     */
     @Test
     public void testCorrectDepthCalculated() {
         

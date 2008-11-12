@@ -1,0 +1,297 @@
+package org.diffxml.diffxml.fmes;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+
+import org.diffxml.diffxml.DiffXML;
+import org.diffxml.diffxml.TestDocHelper;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+/**
+ * Test Delta creates elements DUL elements properly.
+ * 
+ * @author Adrian Mouat
+ */
+public class DeltaTest {
+
+    /**
+     * The edit script to add commands to.
+     */
+    private DULDelta mDelta;
+    
+    /**
+     * Set up the DUL EditScript.
+     */
+    @Before
+    public final void setUp() {
+        try {
+            mDelta = new DULDelta();
+        } catch (DeltaInitialisationException e) {
+            fail("Caught Exception: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Test inserting a new element.
+     */
+    @Test
+    public final void testInsertElement() {
+        
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Node ins = testDoc2.createElement("insertTest");
+        mDelta.insert(ins, "/a", 1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><insert childno=\"1\" name=\"insertTest\" "
+                    + "nodetype=\"1\" parent=\"/a\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
+    }
+        
+    /**
+     * Test inserting an attribute.
+     */
+    @Test
+    public final void testInsertAttribute() {
+
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Attr ins = testDoc2.createAttribute("insertTest");
+        ins.setNodeValue("ins");
+        mDelta.insert(ins, "/a", 1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains("<delta><insert name=\"insertTest\""
+                    + " nodetype=\"2\" parent=\"/a\">ins</insert></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+
+    /**
+     * Test inserting an element with attributes.
+     */
+    @Test
+    public final void testInsertElementWithAttrs() {
+        
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Element ins = testDoc2.createElement("attrTest");
+        Attr attr1 = testDoc2.createAttribute("attrTest1");
+        attr1.setValue("one");
+        ins.setAttributeNode(attr1);
+        Attr attr2 = testDoc2.createAttribute("attrTest2");
+        attr2.setValue("two");
+        ins.setAttributeNode(attr2);
+        mDelta.insert(ins, "/a", 1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><insert childno=\"1\" name=\"attrTest\" "
+                    + "nodetype=\"1\" parent=\"/a\"/>"));
+            assertTrue(out.contains("<insert name=\"attrTest1\" nodetype=\"2\" "
+                    + "parent=\"/a/node()[1]\">one</insert>"));
+            assertTrue(out.contains("<insert name=\"attrTest2\" nodetype=\"2\" "
+                    + "parent=\"/a/node()[1]\">two</insert></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Test inserting a comment.
+     */
+    @Test
+    public final void testInsertComment() {
+
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Comment ins = testDoc2.createComment("insertTest");
+        ins.setNodeValue("ins");
+        mDelta.insert(ins, "/a", 1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><insert childno=\"1\" nodetype=\"8\" parent=\"/a\">"
+                    + "ins</insert></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+    
+    /**
+     * Test deleting an Element.
+     */
+    @Test
+    public final void testDeleteElement() {
+
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Element del = testDoc2.createElement("deleteTest");
+        testDoc2.getDocumentElement().appendChild(del);
+        
+        mDelta.delete(del);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><delete node=\"/a/node()[1]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+
+    /**
+     * Test deleting a text nodes.
+     */
+    @Test
+    public final void testDeleteTextNode() {
+
+        //Check start, end, middle
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Node del1 = testDoc2.createTextNode("text");
+        Node del2 = testDoc2.createTextNode("moretext");
+        Node del3 = testDoc2.createTextNode("evenmoretext");
+        testDoc2.getDocumentElement().appendChild(del1);
+        testDoc2.getDocumentElement().appendChild(del2);
+        testDoc2.getDocumentElement().appendChild(del3);
+        
+        mDelta.delete(del1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><delete charpos=\"1\" length=\"4\" "
+                    + "node=\"/a/node()[1]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
+        
+        mDelta.delete(del2);
+        os.reset();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delete charpos=\"5\" length=\"8\" "
+                    + "node=\"/a/node()[1]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
+        
+        mDelta.delete(del3);
+        os.reset();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delete charpos=\"13\" length=\"12\" "
+                    + "node=\"/a/node()[1]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Test deleting a comment.
+     */
+    @Test
+    public final void testDeleteComment() {
+
+        //Check start, end, middle
+        Document testDoc2 = TestDocHelper.createDocument("<a></a>");
+        Node  del = testDoc2.createComment("deleteTest");
+        testDoc2.getDocumentElement().appendChild(del);
+        
+        mDelta.delete(del);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><delete node=\"/a/node()[1]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+
+    /**
+     * Test deleting an attribute.
+     */
+    @Test
+    public final void testDeleteAttribute() {
+
+        //Check start, end, middle
+        Document testDoc2 = TestDocHelper.createDocument("<a><b/></a>");
+        Attr del = testDoc2.createAttribute("deleteTest");
+        del.setNodeValue("del");
+        ((Element) testDoc2.getDocumentElement().getFirstChild()
+                ).setAttributeNode(del);
+ 
+        mDelta.delete(del);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta>"
+                    + "<delete node=\"/a/node()[1]/@deleteTest\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+    
+    /**
+     * Test moving nodes.
+     */
+    @Test
+    public final void testMove() {
+
+        Document testDoc2 = TestDocHelper.createDocument("<a><b/><c/></a>");
+        Node move = testDoc2.createElement("moveTest");
+        testDoc2.getDocumentElement().getFirstChild().appendChild(move);
+        Node moveTo = testDoc2.getDocumentElement().getFirstChild(
+                ).getNextSibling();
+        
+        mDelta.move(move, NodeOps.getXPath(move), NodeOps.getXPath(moveTo), 1, 
+                1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><move childno=\"1\" new_charpos=\"1\" "
+                    + "node=\"/a/node()[1]/node()[1]\" old_charpos=\"1\" "
+                    + "parent=\"/a/node()[2]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+    
+    /**
+     * REfactor.
+     */
+    @Test
+    public final void testRefactor() {
+        fail("not written yet");
+        //Delta.delete(nodeToBeDeleted, es);
+        //THink about insert too
+    }
+}

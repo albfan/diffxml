@@ -149,7 +149,7 @@ public class MatchTest {
     }
 
     /**
-     * Test similar docs match partly.
+     * Test similar documents match partly.
      */
     @Test
     public final void testSimilarDocs() {
