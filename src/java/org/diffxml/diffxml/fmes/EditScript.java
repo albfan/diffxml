@@ -23,11 +23,6 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.DiffXML;
 
 
@@ -47,15 +42,7 @@ import org.w3c.dom.NodeList;
  */
 public final class EditScript {
     
-    private static final String RESOLVE_ENTITIES = "resolve_entities";
-    private static final String FALSE = "false";
-    private static final String TRUE = "true";
-    private static final String REVERSE_PATCH = "reverse_patch";
-    private static final String PARENT_SIBLING_CONTEXT = "par_sib_context";
-    private static final String PARENT_CONTEXT = "par_context";
-    private static final String SIBLING_CONTEXT = "sib_context";
-    private static final String DELTA = "delta";
-    
+   
     /**
      * Whether dummy root nodes have been added to the tree.
      */
@@ -76,7 +63,7 @@ public final class EditScript {
      */
     private NodePairs mMatchings;
     
-    private Document mEditScript;
+    private DULDelta mDelta;
     
     /**
      * Constructor for EditScript.
@@ -108,8 +95,8 @@ public final class EditScript {
     public Document create() throws DocumentCreationException {
 
         try {
-            mEditScript = makeEmptyEditScript();
-        } catch (ParserConfigurationException e) {
+            mDelta = new DULDelta();
+        } catch (DeltaInitialisationException e) {
             throw new DocumentCreationException("Failed to create edit script",
                     e);
         }
@@ -137,60 +124,19 @@ public final class EditScript {
                 w = doInsert(x, z);
             } else {
                 // TODO: Update should go here
-                w = doMove(x, z, mEditScript, mMatchings);
+                w = doMove(x, z, mMatchings);
             }
 
-            alignChildren(w, x, mEditScript, mMatchings);
+            alignChildren(w, x, mMatchings);
         }
 
-        deletePhase(mDoc1.getDocumentElement(), mEditScript, mMatchings);
+        deletePhase(mDoc1.getDocumentElement(), mMatchings);
 
         // Post-Condition es is a minimum cost edit script,
         // Matchings is a total matching and
         // doc1 is isomorphic to doc2
 
-        return mEditScript;
-    }
-
-    /** Prepares an empty Edit Script document.
-     *
-     * Makes root element, appends any necessary attributes
-     * and context information.
-     *
-     * @return a properly formatted, empty edit script
-     * @throws ParserConfigurationException If a new document can't be created
-     */
-
-    private static Document makeEmptyEditScript() 
-    throws ParserConfigurationException {
-
-        DocumentBuilder builder = 
-            DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document editScript = builder.newDocument();
-
-        Element root = editScript.createElement(DELTA);
-
-        //Append any context information
-        if (DiffFactory.isContext()) {
-            root.setAttribute(SIBLING_CONTEXT, 
-                    Integer.toString(DiffFactory.getSiblingContext()));
-            root.setAttribute(PARENT_CONTEXT,
-                    Integer.toString(DiffFactory.getParentContext()));
-            root.setAttribute(PARENT_SIBLING_CONTEXT,
-                    Integer.toString(DiffFactory.getParentSiblingContext()));
-        }
-
-        if (DiffFactory.isReversePatch()) {
-            root.setAttribute(REVERSE_PATCH, TRUE);
-        }
-
-        if (!DiffFactory.isResolveEntities()) {
-            root.setAttribute(RESOLVE_ENTITIES, FALSE);
-        }
-
-        editScript.appendChild(root);
-
-        return editScript;
+        return mDelta.getDocument();
     }
 
     /**
@@ -240,13 +186,12 @@ public final class EditScript {
         
         //Supposed to find the child number (k) to insert w as child of z 
         FindPosition pos = new FindPosition(x, mMatchings);
-        NodePos zPath = new NodePos(z);
+        //NodePos zPath = new NodePos(z);
 
         //Apply insert to doc1
-        //The node we want to insert is the import of x with all
-        //its text node children
+        //The node we want to insert is the import of x with attributes but no
+        //children
         //TODO: Ensure attributes properly added
-        //TODO: Check we want text node children
 
         Node w = mDoc1.importNode(x, false);
 
@@ -255,18 +200,16 @@ public final class EditScript {
         NodeOps.setInOrder(x);
 
         //Take match of parent (z), and insert
-        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+        w = NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
         //Add to matching set
         mMatchings.add(w, x);
 
-        //System.err.println("insert: " + pos.numXPath + " " + pos.insertBefore + " " +w.getNodeValue());
-        Delta.insert(w, zPath.getXPath(), pos.getXPathInsertPosition(), pos.getCharInsertPosition(), mEditScript);
-
-        Delta.addAttrsToDelta(x.getAttributes(), new NodePos(w).getXPath(), mEditScript);
+        mDelta.insert(w, NodeOps.getXPath(z), pos.getXPathInsertPosition(), 
+                pos.getCharInsertPosition());
 
         return w;
-        }
+    }
 
     /**
      * Performs a move operation according to the algorithm and updates
@@ -279,8 +222,7 @@ public final class EditScript {
      * @return           the moved node
      */
 
-    private static Node doMove(final Node x, final Node z,
-            final Document editScript, final NodePairs matchings)
+    private Node doMove(final Node x, final Node z, final NodePairs matchings)
         {
         FindPosition pos;
 
@@ -304,20 +246,11 @@ public final class EditScript {
             NodeOps.setInOrder(w);
             NodeOps.setInOrder(x);
 
-            //TODO: Make function for following
-            //Check not already one!
-            Element context = editScript.createElement("mark");
-            if (DiffFactory.isContext())
-                {
-                context.appendChild(editScript.importNode(w, true));
-                context = Delta.addContext(w, context);
-                }
-
             //Apply move to T1
             NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
-            Delta.move(context, w, wPath.getXPath(), zPath.getXPath(), pos.getXPathInsertPosition(),
-                     wPath.getCharPos(), pos.getCharInsertPosition(), wPath.getLength(), editScript);
+            mDelta.move(w, wPath.getXPath(), zPath.getXPath(), pos.getXPathInsertPosition(),
+                     wPath.getCharPos(), pos.getCharInsertPosition());
             }
         return w;
         }
@@ -363,8 +296,7 @@ public final class EditScript {
      * @param editScript the Edit Script to append operations to
      */
 
-    private static void deletePhase(final Node n, final Document editScript, 
-            final NodePairs matchings)
+    private void deletePhase(final Node n, final NodePairs matchings)
         {
         //Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
@@ -373,11 +305,11 @@ public final class EditScript {
             //Note that we loop *backward* through kids
             for (int i = (kids.getLength() - 1); i >= 0; i--)
                 {
-                //Don't call delete phase for ignored ndoes
+                //Don't call delete phase for ignored nodes
                 if (Fmes.isBanned(kids.item(i)))
                     continue;
 
-                deletePhase(kids.item(i), editScript, matchings);
+                deletePhase(kids.item(i), matchings);
                 }
             }
 
@@ -385,12 +317,9 @@ public final class EditScript {
         //TODO: Make function for following.
         if (!matchings.isMatched(n))
             {
-            Element par = (Element) n.getParentNode();
-            NodePos delPos = new NodePos(n);
+            mDelta.delete(n);
 
-            Delta.delete(n, delPos.getXPath(), delPos.getCharPos(),
-                    delPos.getLength(), editScript);
-            par.removeChild(n);
+            n.getParentNode().removeChild(n);
             }
 
         }
@@ -479,26 +408,6 @@ public final class EditScript {
         }
 
     /**
-     * Gets any required context nodes before performing move.
-     *
-     * @param editScript needed to create element
-     * @param a          the node to get context of
-     * @return           the context element
-     */
-
-    private static Element getContextBeforeMove(final Document editScript, final Node a)
-        {
-        Element context = editScript.createElement("mark");
-        if (DiffFactory.isContext())
-            {
-            context.appendChild(editScript.importNode(a, true));
-            context = Delta.addContext(a, context);
-            }
-
-        return context;
-        }
-
-    /**
      * Moves nodes that are not in order to correct position.
      *
      * TODO: Check logic.
@@ -509,8 +418,8 @@ public final class EditScript {
      * @param matchings
      */
 
-    private static void moveMisalignedNodes(final NodeList xKids, final Node w,
-            final Document editScript, final NodePairs matchings)
+    private void moveMisalignedNodes(final NodeList xKids, final Node w,
+            final NodePairs matchings)
         {
         //Select nodes matched but not in order
         for (int i = 0; i < xKids.getLength(); i++)
@@ -527,18 +436,14 @@ public final class EditScript {
 
                 NodePos wPos = new NodePos(w);
 
-                //Easiest to get context now
-                Element context = getContextBeforeMove(editScript, a);
-
                 NodeOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
                 NodeOps.setInOrder(xKids.item(i));
                 NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
-                Delta.move(context, a, aPos.getXPath(), wPos.getXPath(), pos.getXPathInsertPosition(),
-                        aPos.getCharPos(), pos.getCharInsertPosition(),
-                        aPos.getLength(), editScript);
+                mDelta.move(a, aPos.getXPath(), wPos.getXPath(), pos.getXPathInsertPosition(),
+                        aPos.getCharPos(), pos.getCharInsertPosition());
                 }
             }
         }
@@ -554,8 +459,8 @@ public final class EditScript {
      * @param matchings  the set of matchings
      */
 
-    private static void alignChildren(final Node w, final Node x,
-            final Document editScript, final NodePairs matchings)
+    private void alignChildren(final Node w, final Node x,
+            final NodePairs matchings)
         {
         DiffXML.LOG.fine("In alignChildren");
         //How does alg deal with out of order nodes not matched with
@@ -595,11 +500,7 @@ public final class EditScript {
         //Need to be careful if want xKids or wKids
         //Check
 
-        moveMisalignedNodes(xKids, w, editScript, matchings);
+        moveMisalignedNodes(xKids, w, matchings);
         }
-
-
-
-
  
 }

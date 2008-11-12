@@ -23,6 +23,7 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -48,23 +49,24 @@ public final class NodeOps {
      *
      * If childNum doesn't exist the node is simply appended.
      *
-     * Due to general applicability should be moved to helper class.
-     *
      * @param childNum  the position to add the node to
      * @param parent    the node that is to be the parent
      * @param insNode   the node to be inserted
+     * @return The inserted Node
      */
-
-    public static void insertAsChild(final int childNum, final Node parent,
+    public static Node insertAsChild(final int childNum, final Node parent,
             final Node insNode) {
 
+        Node ret;
         NodeList kids = parent.getChildNodes();
 
         if (kids.item(childNum) != null) {
-            parent.insertBefore(insNode, kids.item(childNum));
+            ret = parent.insertBefore(insNode, kids.item(childNum));
         } else {
-            parent.appendChild(insNode);
+            ret = parent.appendChild(insNode);
         }
+        
+        return ret;
     }
 
     /**
@@ -123,30 +125,36 @@ public final class NodeOps {
     }
 
     /**
-     * Calculates an xpath that uniquely identifies the given node.
-     * For text nodes, this will return a String, not a Node, due to coalescing
-     * issues.
+     * Calculates an XPath that uniquely identifies the given node.
+     * For text nodes note that the given node may only be part of the returned
+     * node due to coalescing issues; use an offset and length to identify it
+     * unambiguously.
      * 
-     * @param n The node to calculate the xpath for.
+     * @param n The node to calculate the XPath for.
      * @return The XPath to the node as a String
      */
     public static String getXPath(final Node n) {
 
         Node root = n.getOwnerDocument().getDocumentElement();
         Node curr = n;        
-        
+
         String xpath;
-        ChildNumber cn = new ChildNumber(curr);
-        if (NodeOps.checkIfSameNode(root, curr)) {
-            // Not clear if node() *always* matches the root node 
-            xpath = "/" + n.getNodeName();
-        } else if (curr.getNodeType() == Node.TEXT_NODE) {
-            xpath = "substring(" + getXPath(curr.getParentNode())
-                    + "/node()[" + cn.getXPath() + "]," + cn.getXPathCharPos() 
-                    + "," + curr.getTextContent().length() + ")";
+        
+        if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
+            //Slightly special case for attributes as they are considered to
+            //have no parent
+            ((Attr) n).getOwnerElement();
+            xpath = getXPath(((Attr) n).getOwnerElement())
+                 + "/@" + n.getNodeName();
         } else {
-            xpath = getXPath(curr.getParentNode()) 
-                    + "/node()[" + cn.getXPath() + "]";
+            ChildNumber cn = new ChildNumber(curr);
+            if (NodeOps.checkIfSameNode(root, curr)) {
+                // Not clear if node() *always* matches the root node 
+                xpath = "/" + n.getNodeName();
+            } else {
+                xpath = getXPath(curr.getParentNode()) 
+                + "/node()[" + cn.getXPath() + "]";
+            }
         }
         
         return xpath;

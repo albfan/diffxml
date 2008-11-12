@@ -36,7 +36,7 @@ import org.w3c.dom.NamedNodeMap;
 import java.io.File;
 
 import org.diffxml.diffxml.DiffXML;
-import org.diffxml.diffxml.fmes.Delta;
+import org.diffxml.diffxml.fmes.DULDelta;
 import org.diffxml.diffxml.fmes.NodePos;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -103,7 +103,7 @@ public class Mark
 
     }
 
-    public static void del(Node n, Document es)
+    public static void del(Node n, DULDelta es)
     {
 //      Special traversal
 //      Don't know name!
@@ -122,13 +122,11 @@ public class Mark
         if (n.getUserData("delete")!=null)
         {
             //Output delete
-            //Pos del_pos=NodePos.get(n);
-            NodePos delPos = new NodePos(n);
-            Delta.delete(n, delPos.getXPath(), delPos.getCharPos(), delPos.getLength(), es);
+            es.delete(n);
         }	
     }
 
-    public static void ins(Node n, Document es)
+    public static void ins(Node n, DULDelta es)
     {
 //      Think we want an in-order traversal here
 
@@ -162,7 +160,7 @@ public class Mark
 
             }
 
-            Delta.insert(n, parentPos.getXPath(), index, charpos, es);
+            es.insert(n, parentPos.getXPath(), index, charpos);
 
             //Insert any attributes
             NamedNodeMap attrs=n.getAttributes();
@@ -174,7 +172,7 @@ public class Mark
                     NodePos nPos= new NodePos(n);
                     for (int j=0; j<attrs.getLength(); j++)
                     {
-                        Delta.insert(attrs.item(j), nPos.getXPath(), 0, -1, es);
+                        es.insert(attrs.item(j), nPos.getXPath(), 0, -1);
                     }
                 }
             }
@@ -209,9 +207,7 @@ public class Mark
 
             mark(xm, doc1, doc2);
             //Make a document for EditScript
-            Document es = parser1.newDocument();
-            Element root = es.createElement("delta");
-            es.appendChild(root);
+            DULDelta es = new DULDelta();
 
             del(doc1.getDocumentElement(),es);
             ins(doc2.getDocumentElement(),es);
@@ -230,7 +226,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            DiffXML.outputXML(es, System.out);
+            DiffXML.outputXML(es.getDocument(), System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}
@@ -252,9 +248,7 @@ public class Mark
 
             mark(xm, doc1, doc2);
             //Make a document called EditScript
-            Document es= parser1.newDocument();
-            Element root = es.createElement("delta");
-            es.appendChild(root); 
+            DULDelta es = new DULDelta();
 
             del(doc1.getDocumentElement(),es);
             ins(doc2.getDocumentElement(),es);
@@ -273,7 +267,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            DiffXML.outputXML(es, System.out);
+            DiffXML.outputXML(es.getDocument(), System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}	
