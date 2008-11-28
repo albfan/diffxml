@@ -42,31 +42,77 @@ import org.w3c.dom.Element;
  */
 public class DULDelta {
 
+    /** If entities were resolved when creating the delta. **/
     private static final String RESOLVE_ENTITIES = "resolve_entities";
+    
+    /** False constant. **/
     private static final String FALSE = "false";
+    
+    /** True constant. **/
     private static final String TRUE = "true";
+    
+    /** If the delta was created as a "reverse patch". **/
     private static final String REVERSE_PATCH = "reverse_patch";
+    
+    /** The amount of parent sibling context. **/
     private static final String PARENT_SIBLING_CONTEXT = "par_sib_context";
+    
+    /** The amount of parent context. **/
     private static final String PARENT_CONTEXT = "par_context";
+    
+    /** The amount of sibling context. **/
     private static final String SIBLING_CONTEXT = "sib_context";
+    
+    /** Root element of a DUL EditScript. **/
     private static final String DELTA = "delta";
     
-    private static final String CONTEXT = "context";
+    /** Character position of the "new" node. **/
     private static final String NEW_CHARPOS = "new_charpos";
+    
+    /** Character position of the "old" node. **/
     private static final String OLD_CHARPOS = "old_charpos";
+    
+    /** Move operation element. **/
     private static final String MOVE = "move";
+    
+    /** Number of characters to extract from a test node. **/
     private static final String LENGTH = "length";
+    
+    /** The node for the operation. **/
     private static final String NODE = "node";
+    
+    /** Delete operation element. **/
     private static final String DELETE = "delete";
+    
+    /** Character position in text of the node. **/
     private static final String CHARPOS = "charpos";
+    
+    /** Name of the node. **/
     private static final String NAME = "name";
+    
+    /** Child number of parent node. **/
     private static final String CHILDNO = "childno";
+    
+    /** DOM type of the node. **/
     private static final String NODETYPE = "nodetype";
+    
+    /** Parent of the node. **/
     private static final String PARENT = "parent";
+    
+    /** Insert operation element. **/ 
     private static final String INSERT = "insert";
 
+    /**
+     * The EditScript we are creating.
+     */
     private Document mEditScript;
     
+    /**
+     * Creates a new, blank EditScript.
+     * 
+     * @throws DeltaInitialisationException If the EditScript can't be 
+     * initialised.
+     */
     public DULDelta() throws DeltaInitialisationException {
         
         try {
@@ -76,7 +122,12 @@ public class DULDelta {
         }
     }
     
-    public Document getDocument() {
+    /**
+     * Get the XML Document for the EditScript.
+     * 
+     * @return The EditScript as an XML document.
+     */
+    public final Document getDocument() {
         return mEditScript;
     }
     
@@ -128,10 +179,8 @@ public class DULDelta {
      *            the attributes to be added
      * @param path
      *            the path to the node they are to be added to
-     * @param editScript
-     *            the Edit Script to add the inserts to
      */
-    public void addAttrsToDelta(final NamedNodeMap attrs,
+    public final void addAttrsToDelta(final NamedNodeMap attrs, 
             final String path) {
 
         int numAttrs;
@@ -150,22 +199,23 @@ public class DULDelta {
      * Appends an insert operation to the EditScript given the inserted node, 
      * XPath to parent, character position & child number.
      * 
+     * Set charpos to 1 if not needed.
+     * 
      * @param n The node to insert
      * @param parent The path to the node to be parent of n
      * @param childno The child number of the parent node that n will become
      * @param charpos The character position to insert at
-     * @param es The EditScript 
      */
-    public void insert(final Node n, final String parent, 
+    public final void insert(final Node n, final String parent, 
             final int childno, final int charpos) {
 
         Element ins = mEditScript.createElement(INSERT);
         
         ins.setAttribute(PARENT, parent);
-        ins.setAttribute(NODETYPE, ("" + n.getNodeType()));
+        ins.setAttribute(NODETYPE, Integer.toString(n.getNodeType()));
 
         if (n.getNodeType() != Node.ATTRIBUTE_NODE) {
-            ins.setAttribute(CHILDNO, "" + childno);
+            ins.setAttribute(CHILDNO, Integer.toString(childno));
         }
 
         if (n.getNodeType() == Node.ATTRIBUTE_NODE 
@@ -173,12 +223,9 @@ public class DULDelta {
                 || n.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
             ins.setAttribute(NAME, n.getNodeName());
         }
-
-        //XPath character position starts at 1
-        assert charpos >= 1 : charpos;
         
-        if (charpos != 1) {
-            ins.setAttribute(CHARPOS, ("" + charpos));
+        if (charpos > 1) {
+            ins.setAttribute(CHARPOS, Integer.toString(charpos));
         }
 
         String value = n.getNodeValue();
@@ -197,7 +244,27 @@ public class DULDelta {
         }
     }
 
-    public void delete(Node n) {
+    /**
+     * Appends an insert operation to the EditScript given the inserted node, 
+     * parent Node, character position & child number.
+     * 
+     * @param n The node to insert
+     * @param parent The Node to be parent of n
+     * @param childno The child number of the parent node that n will become
+     * @param charpos The character position to insert at
+     */
+    public final void insert(final Node n, final Node parent, final int childno,
+            final int charpos) {
+
+        insert(n, NodeOps.getXPath(parent), childno, charpos);
+    }
+    
+    /**
+     * Adds a delete operation to the EditScript for the given Node.
+     * 
+     * @param n The Node that is to be deleted
+     */
+    public final void delete(final Node n) {
         
         Element del = mEditScript.createElement(DELETE);
         del.setAttribute(NODE, NodeOps.getXPath(n));
@@ -218,10 +285,16 @@ public class DULDelta {
         mEditScript.getDocumentElement().appendChild(del);
     }
 
-    // Moves are a little more complicated
-    // With context info we need old parent and DOM cn
-    // CHANGED
-    // now only need mark element
+    /**
+     * Adds a Move operation to the EditScript. 
+     * 
+     * @param n The node being moved
+     * @param path XPath for the Node (DELETE!!!)
+     * @param parent XPath to the new parent Node
+     * @param childno Child number of the parent n will become
+     * @param ocharpos The character position of the old Node
+     * @param ncharpos The new character position for the Node
+     */
     public void move(Node n, String path, String parent,
             int childno, int ocharpos, int ncharpos) {
         

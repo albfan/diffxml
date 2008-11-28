@@ -205,7 +205,7 @@ public final class EditScript {
         //Add to matching set
         mMatchings.add(w, x);
 
-        mDelta.insert(w, NodeOps.getXPath(z), pos.getXPathInsertPosition(), 
+        mDelta.insert(w, z, pos.getXPathInsertPosition(), 
                 pos.getCharInsertPosition());
 
         return w;
