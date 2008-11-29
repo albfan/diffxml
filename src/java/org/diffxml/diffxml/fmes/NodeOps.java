@@ -149,7 +149,7 @@ public final class NodeOps {
         } else {
             ChildNumber cn = new ChildNumber(curr);
             if (NodeOps.checkIfSameNode(root, curr)) {
-                // Not clear if node() *always* matches the root node 
+                // Not clear if node() *always* matches the root node in XPath
                 xpath = "/" + n.getNodeName();
             } else {
                 xpath = getXPath(curr.getParentNode()) 

@@ -24,6 +24,9 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.diffxml.diffxml.DiffXML;
+import org.diffxml.diffxml.fmes.delta.DULDelta;
+import org.diffxml.diffxml.fmes.delta.DeltaIF;
+import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 
 
 import org.w3c.dom.Document;
@@ -63,7 +66,10 @@ public final class EditScript {
      */
     private NodePairs mMatchings;
     
-    private DULDelta mDelta;
+    /**
+     * The EditScript.
+     */
+    private DeltaIF mDelta;
     
     /**
      * Constructor for EditScript.
@@ -217,7 +223,6 @@ public final class EditScript {
      *
      * @param x          current node
      * @param z          the partner of x's parent
-     * @param editScript the Edit Script to append operations to
      * @param matchings  the set of matching nodes
      * @return           the moved node
      */
@@ -239,8 +244,6 @@ public final class EditScript {
         if ((v.getNodeType() != Node.DOCUMENT_NODE) && !NodeOps.checkIfSameNode(v, partnerY))
             {
             pos = new FindPosition(x, matchings);
-            NodePos wPath = new NodePos(w);
-            NodePos zPath = new NodePos(z);
 
             //Following two statements may be unnecessary
             NodeOps.setInOrder(w);
@@ -249,8 +252,8 @@ public final class EditScript {
             //Apply move to T1
             NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
-            mDelta.move(w, wPath.getXPath(), zPath.getXPath(), pos.getXPathInsertPosition(),
-                     wPath.getCharPos(), pos.getCharInsertPosition());
+            mDelta.move(w, z, pos.getXPathInsertPosition(), 
+                    pos.getCharInsertPosition());
             }
         return w;
         }
@@ -432,9 +435,6 @@ public final class EditScript {
 
                 //Get partner and position
                 Node a = matchings.getPartner(xKids.item(i));
-                NodePos aPos = new NodePos(a);
-
-                NodePos wPos = new NodePos(w);
 
                 NodeOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
@@ -442,8 +442,8 @@ public final class EditScript {
                 NodeOps.setInOrder(a);
 
                 //Note that now a is now at new position
-                mDelta.move(a, aPos.getXPath(), wPos.getXPath(), pos.getXPathInsertPosition(),
-                        aPos.getCharPos(), pos.getCharInsertPosition());
+                mDelta.move(a, w, pos.getXPathInsertPosition(), 
+                        pos.getCharInsertPosition());
                 }
             }
         }

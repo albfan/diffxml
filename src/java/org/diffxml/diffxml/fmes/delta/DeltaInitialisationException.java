@@ -1,4 +1,4 @@
-package org.diffxml.diffxml.fmes;
+package org.diffxml.diffxml.fmes.delta;
 
 /**
  * Indicates the Delta document could not be created.

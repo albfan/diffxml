@@ -21,13 +21,15 @@ Author: Adrian Mouat
 email: amouat@postmaster.co.uk
 */
 
-package org.diffxml.diffxml.fmes;
+package org.diffxml.diffxml.fmes.delta;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.diffxml.diffxml.DiffFactory;
+import org.diffxml.diffxml.fmes.ChildNumber;
+import org.diffxml.diffxml.fmes.NodeOps;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -40,7 +42,7 @@ import org.w3c.dom.Element;
  * 
  * @author Adrian Mouat
  */
-public class DULDelta {
+public class DULDelta implements DeltaIF {
 
     /** If entities were resolved when creating the delta. **/
     private static final String RESOLVE_ENTITIES = "resolve_entities";
@@ -289,19 +291,12 @@ public class DULDelta {
      * Adds a Move operation to the EditScript. 
      * 
      * @param n The node being moved
-     * @param path XPath for the Node (DELETE!!!)
      * @param parent XPath to the new parent Node
      * @param childno Child number of the parent n will become
-     * @param ocharpos The character position of the old Node
      * @param ncharpos The new character position for the Node
      */
-    public void move(Node n, String path, String parent,
-            int childno, int ocharpos, int ncharpos) {
-        
-        if (ocharpos < 1) {
-            throw new IllegalArgumentException(
-                    "Old Character position must be >= 1");
-        }
+    public final void move(final Node n, final Node parent,
+            final int childno, final int ncharpos) {
         
         if (ncharpos < 1) {
             throw new IllegalArgumentException(
@@ -309,17 +304,19 @@ public class DULDelta {
         }
         
         Element mov = mEditScript.createElement(MOVE);
-        mov.setAttribute(NODE, path);
+        mov.setAttribute(NODE, NodeOps.getXPath(n));
         
-        mov.setAttribute(OLD_CHARPOS, ("" + ocharpos));
-        mov.setAttribute(NEW_CHARPOS, ("" + ncharpos));
+        int ocharpos = new ChildNumber(n).getXPathCharPos();
+        mov.setAttribute(OLD_CHARPOS, Integer.toString(ocharpos));
+        mov.setAttribute(NEW_CHARPOS, Integer.toString(ncharpos));
 
         if (n.getNodeType() == Node.TEXT_NODE) {
-            mov.setAttribute(LENGTH, "" + n.getNodeValue().length());
+            mov.setAttribute(LENGTH, 
+                    Integer.toString(n.getNodeValue().length()));
         }
 
-        mov.setAttribute(PARENT, parent);
-        mov.setAttribute(CHILDNO, ("" + childno));
+        mov.setAttribute(PARENT, NodeOps.getXPath(parent));
+        mov.setAttribute(CHILDNO, Integer.toString(childno));
 
         mEditScript.getDocumentElement().appendChild(mov);
     }

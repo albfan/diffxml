@@ -36,8 +36,8 @@ import org.w3c.dom.NamedNodeMap;
 import java.io.File;
 
 import org.diffxml.diffxml.DiffXML;
-import org.diffxml.diffxml.fmes.DULDelta;
 import org.diffxml.diffxml.fmes.NodePos;
+import org.diffxml.diffxml.fmes.delta.DULDelta;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
