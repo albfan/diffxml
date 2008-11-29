@@ -1,4 +1,4 @@
-package org.diffxml.diffxml.fmes;
+package org.diffxml.diffxml.fmes.delta;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.TestDocHelper;
+import org.diffxml.diffxml.fmes.delta.DULDelta;
+import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Attr;
@@ -21,7 +23,7 @@ import org.w3c.dom.Node;
  * 
  * @author Adrian Mouat
  */
-public class DeltaTest {
+public class DULDeltaTest {
 
     /**
      * The edit script to add commands to.
@@ -259,7 +261,7 @@ public class DeltaTest {
     }
     
     /**
-     * Test moving nodes.
+     * Test moving an Element.
      */
     @Test
     public final void testMove() {
@@ -270,8 +272,7 @@ public class DeltaTest {
         Node moveTo = testDoc2.getDocumentElement().getFirstChild(
                 ).getNextSibling();
         
-        mDelta.move(move, NodeOps.getXPath(move), NodeOps.getXPath(moveTo), 1, 
-                1, 1);
+        mDelta.move(move, moveTo, 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         DiffXML.outputXML(mDelta.getDocument(), os);
         try {
@@ -284,14 +285,58 @@ public class DeltaTest {
             fail("Caught exception: " + e.getMessage());
         }        
     }
-    
+
     /**
-     * REfactor.
+     * Test moving an Element at a character offset.
      */
     @Test
-    public final void testRefactor() {
-        fail("not written yet");
-        //Delta.delete(nodeToBeDeleted, es);
-        //THink about insert too
+    public final void testMoveInText() {
+
+        Document testDoc2 = TestDocHelper.createDocument(
+                "<a><b>text</b><c>moretext</c></a>");
+        Node move = testDoc2.createElement("moveTest");
+        testDoc2.getDocumentElement().getFirstChild().appendChild(move);
+        Node moveTo = testDoc2.getDocumentElement().getFirstChild(
+                ).getNextSibling();
+        
+        mDelta.move(move, moveTo, 2, 9);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><move childno=\"2\" new_charpos=\"9\" "
+                    + "node=\"/a/node()[1]/node()[2]\" old_charpos=\"5\" "
+                    + "parent=\"/a/node()[2]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+    }
+
+    /**
+     * Test moving a text Node.
+     */
+    @Test
+    public final void testMoveTextNode() {
+        
+        Document testDoc2 = TestDocHelper.createDocument("<a><b/><c/></a>");
+        Node move = testDoc2.createTextNode("moveTest");
+        testDoc2.getDocumentElement().getFirstChild().appendChild(move);
+        Node moveTo = testDoc2.getDocumentElement().getFirstChild(
+                ).getNextSibling();
+        
+        mDelta.move(move, moveTo, 1, 1);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiffXML.outputXML(mDelta.getDocument(), os);
+        try {
+            String out = new String(os.toByteArray(), "UTF-8");
+            assertTrue(out.contains(
+                    "<delta><move childno=\"1\" length=\"8\" new_charpos=\"1\" "
+                    + "node=\"/a/node()[1]/node()[1]\" old_charpos=\"1\" "
+                    + "parent=\"/a/node()[2]\"/></delta>"));
+        } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        }        
+        
     }
 }
