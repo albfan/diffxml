@@ -6,6 +6,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
@@ -64,7 +65,6 @@ public class NodeOpsTest {
     private void testXPathForNode(final Node n, final XPath xp) {
         
         String xpath = NodeOps.getXPath(n);
-        System.out.println(xpath);
         
         try {
             Node ret = (Node) xp.evaluate(xpath, n.getOwnerDocument(), 
@@ -72,7 +72,6 @@ public class NodeOpsTest {
             assertNotNull(ret);
 
             if (n.getNodeType() == Node.TEXT_NODE) {
-                System.out.println();
                 assertTrue(ret.getTextContent() 
                         + " does not contain " + n.getTextContent(), 
                         ret.getTextContent().contains(n.getTextContent()));
@@ -133,5 +132,27 @@ public class NodeOpsTest {
  
         testXPathForNode(attrs.item(0), xpathExpr);
     }   
-    
+ 
+    /**
+     * Test getElementsOfNodeList.
+     */
+    @Test
+    public final void testGetElementsOfNodeList() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<a><b/><c>1</c>23<!--comm--><d attr=\"1\"/></a>");
+        Element root = testDoc.getDocumentElement();
+        NodeList nodeList = root.getChildNodes();
+        Node[] nodeArray = NodeOps.getElementsOfNodeList(nodeList);
+        
+        assertEquals(nodeList.getLength(), nodeArray.length);
+        for (int i = 0; i < nodeArray.length; i++) {
+            assertEquals(nodeArray[i], nodeList.item(i));
+        }
+        
+        assertNull(NodeOps.getElementsOfNodeList(null));
+        assertEquals(NodeOps.getElementsOfNodeList(root.getFirstChild(
+                ).getChildNodes()).length, 0);
+        
+    }
 }
