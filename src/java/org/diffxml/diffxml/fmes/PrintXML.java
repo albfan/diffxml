@@ -1,6 +1,8 @@
 /*
 Class to print some XML stuff if we need
  
+ TODO: Delete
+ 
 Copyright (C) 2002  Adrian Mouat
  
 This program is free software; you can redistribute it and/or

@@ -27,7 +27,7 @@ public class FindPosition {
      * (Equivalent to the current child number of the node to insert
      * before)
      *
-     * @param x         the node to find the position of? *check*
+     * @param x         the node with no partner
      * @param matchings the set of matching nodes
      */
     public FindPosition(final Node x, final NodePairs matchings) {
@@ -36,16 +36,19 @@ public class FindPosition {
 
         Node v = getInOrderLeftSibling(x);
 
-        if (v == null || v.isSameNode(x)) {
+        if (v == null) {
+            
             mInsertPositionDOM = 0;
             mInsertPositionXPath = 1;
             mCharInsertPosition = 1;
             
         } else {
 
-            //Get partner of v and return index after
-            //(we want to insert after the previous in-order node, so that
-            //w's position is equivalent to x's).
+            /**
+             * Get partner of v and return index after
+             * (we want to insert after the previous in-order node, so that
+             * w's position is equivalent to x's).
+             */
             Node u = matchings.getPartner(v);
             assert (u != null);
 
@@ -76,18 +79,12 @@ public class FindPosition {
      */
     private static Node getInOrderLeftSibling(final Node n) {
         
-        //Default to null
-        Node inOrderLeftSib =  null;
-
-        Node curr = n.getParentNode().getFirstChild();
-
-        while (curr != null && !NodeOps.checkIfSameNode(curr, n)) {
-            if (NodeOps.isInOrder(curr)) {
-                inOrderLeftSib = curr;
-            }
-            curr = curr.getNextSibling();
+        Node curr = n.getPreviousSibling();
+        while (curr != null && !NodeOps.isInOrder(curr)) {
+            curr = curr.getPreviousSibling();
         }
-        return inOrderLeftSib;
+
+        return curr;
     }
 
     /**

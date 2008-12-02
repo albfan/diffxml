@@ -23,9 +23,14 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.diffxml.diffxml.DiffXML;
 
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Implements simple Longest Common Substring (LCS) algorithm.
@@ -36,15 +41,47 @@ import org.w3c.dom.Node;
  * TODO: Refactor into smaller functions.
  */
 
-public final class Lcs
+public final class NodeSequence
 {
 
     /**
      * Do not allow instantiation.
      */
 
-    private Lcs() { }
+    private NodeSequence() { }
 
+    /**
+     * Gets the nodes in set1 which have matches in set2.
+     *
+     * This is done in a way that is definitely sub-optimal.
+     * May need to shrink array size at end.
+     *
+     * Move to helper class?
+     * Should probably be in own class, actual algorithm should be hidden.
+     *
+     * @param set1      the first set of nodes
+     * @param set2      the set of nodes to match against
+     * @param matchings the set of matching nodes
+     *
+     * @return      the nodes in set1 which have matches in set2
+     */
+    public static Node[] getSequence(final NodeList set1, final NodeList set2,
+            final NodePairs matchings) {
+        
+        List<Node> resultSet = new ArrayList<Node>(set1.getLength());
+
+        List<Node> set2list = Arrays.asList(
+                NodeOps.getElementsOfNodeList(set2));
+
+        for (int i = 0; i < set1.getLength(); i++) {
+            if (set2list.contains(matchings.getPartner(set1.item(i)))) {
+                resultSet.add(set1.item(i));
+            }            
+        }
+        
+        return resultSet.toArray(new Node[resultSet.size()]);
+    }
+    
     /**
      * Finds the longest common subsequence of two Node[].
      *

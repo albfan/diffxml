@@ -160,5 +160,23 @@ public final class NodeOps {
         return xpath;
     }
 
+    /**
+     * Returns the NodeList as an array of Nodes.
+     *  
+     * @param nodeList The NodeList to convert
+     * @return A Node[] representing the NodeList.
+     */
+    public static Node[] getElementsOfNodeList(final NodeList nodeList) {
+        
+        Node[] ret = null;
+        if (nodeList != null) {
+            ret = new Node[nodeList.getLength()];
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                ret[i] = nodeList.item(i);
+            }
+        }
+        
+        return ret;
+    }
     
 }

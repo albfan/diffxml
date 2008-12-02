@@ -151,9 +151,7 @@ public final class EditScript {
      * TODO: Make private. Package for temporary testing.
      *
      */
-
     /*package*/ void matchRoots() {
-
 
         Element xRoot = mDoc2.getDocumentElement();
         Node xPartner = mMatchings.getPartner(xRoot);
@@ -192,13 +190,10 @@ public final class EditScript {
         
         //Supposed to find the child number (k) to insert w as child of z 
         FindPosition pos = new FindPosition(x, mMatchings);
-        //NodePos zPath = new NodePos(z);
 
         //Apply insert to doc1
         //The node we want to insert is the import of x with attributes but no
         //children
-        //TODO: Ensure attributes properly added
-
         Node w = mDoc1.importNode(x, false);
 
         //Need to set in order as won't be revisited
@@ -226,37 +221,31 @@ public final class EditScript {
      * @param matchings  the set of matching nodes
      * @return           the moved node
      */
-
-    private Node doMove(final Node x, final Node z, final NodePairs matchings)
-        {
-        FindPosition pos;
+    private Node doMove(final Node x, final Node z, final NodePairs matchings) {
 
         Node w = matchings.getPartner(x);
 
         Node v = w.getParentNode();
         Node y = x.getParentNode();
 
-        //UPDATE would be here if implemented
-
         //Apply move if parents not matched and not null
 
         Node partnerY = matchings.getPartner(y);
-        if ((v.getNodeType() != Node.DOCUMENT_NODE) && !NodeOps.checkIfSameNode(v, partnerY))
-            {
-            pos = new FindPosition(x, matchings);
+        assert !NodeOps.checkIfSameNode(v, partnerY);
 
-            //Following two statements may be unnecessary
-            NodeOps.setInOrder(w);
-            NodeOps.setInOrder(x);
+        FindPosition pos = new FindPosition(x, matchings);
 
-            //Apply move to T1
-            NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+        NodeOps.setInOrder(w);
+        NodeOps.setInOrder(x);
 
-            mDelta.move(w, z, pos.getXPathInsertPosition(), 
-                    pos.getCharInsertPosition());
-            }
+        //Apply move to T1
+        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+
+        mDelta.move(w, z, pos.getXPathInsertPosition(), 
+                pos.getCharInsertPosition());
+        
         return w;
-        }
+    }
 
     /**
      * Logs the names and values of 3 nodes.
@@ -269,11 +258,9 @@ public final class EditScript {
      * @param y  second node
      * @param z  third node
      */
+    private static void logNodes(final Node x, final Node y, final Node z) {
 
-    private static void logNodes(final Node x, final Node y, final Node z)
-    {
-        if (x == null) 
-        {
+        if (x == null) {
             DiffXML.LOG.warning("x= null");
         } else {
             DiffXML.LOG.finer("x=" + x.getNodeName() + " " + x.getNodeValue());
@@ -296,119 +283,59 @@ public final class EditScript {
      * Performs the deletePhase of the algorithm.
      *
      * @param n          the current node
-     * @param editScript the Edit Script to append operations to
+     * @param matchings  the set of matching nodes
      */
-
-    private void deletePhase(final Node n, final NodePairs matchings)
-        {
-        //Deletes nodes in Post-order traversal
+    private void deletePhase(final Node n, final NodePairs matchings) {
+        
+        // Deletes nodes in Post-order traversal
         NodeList kids = n.getChildNodes();
-        if (kids != null)
-            {
-            //Note that we loop *backward* through kids
-            for (int i = (kids.getLength() - 1); i >= 0; i--)
-                {
-                //Don't call delete phase for ignored nodes
-                if (Fmes.isBanned(kids.item(i)))
-                    continue;
-
+        if (kids != null) {
+            // Note that we loop *backward* through kids
+            for (int i = (kids.getLength() - 1); i >= 0; i--) {
                 deletePhase(kids.item(i), matchings);
-                }
             }
-
-        //If node isn't matched, delete it
-        //TODO: Make function for following.
-        if (!matchings.isMatched(n))
-            {
-            mDelta.delete(n);
-
-            n.getParentNode().removeChild(n);
-            }
-
         }
+
+        // If node isn't matched, delete it
+        if (!matchings.isMatched(n)) {
+            mDelta.delete(n);
+            n.getParentNode().removeChild(n);
+        }
+
+    }
 
     /**
      * Mark the children of a node out of order.
      *
-     * Not sure about the ignoring of banned nodes.
-     * May very well f up move.
      * Move to helper class if of use to other classes.
      *
      * @param n the parent of the nodes to mark out of order
      */
 
-    private static void markChildrenOutOfOrder(final Node n)
-        {
+    private static void markChildrenOutOfOrder(final Node n) {
+
         NodeList kids = n.getChildNodes();
-
-        for (int i = 0; i < kids.getLength(); i++)
-            {
-            if (Fmes.isBanned(kids.item(i)))
-                continue;
-
+        for (int i = 0; i < kids.getLength(); i++) {
             NodeOps.setOutOfOrder(kids.item(i));
-            }
         }
+    }
 
     /**
      * Marks the nodes in the given array "inorder".
      *
-     * Move to helper class if of use to other classes.
-     *
      * @param seq  the nodes to mark "inorder"
      */
+    private static void setNodesInOrder(final Node[] seq) {
 
-    private static void setInOrderNodes(final Node[] seq)
-        {
-        for (int i = 0; i < seq.length; i++)
-            {
-            if (seq[i] != null)
-                {
-                DiffXML.LOG.finer("seq" + seq[i].getNodeName()
-                        + " " + seq[i].getNodeValue());
-
+        for (int i = 0; i < seq.length; i++) {
+            
+            if (seq[i] != null) {
                 NodeOps.setInOrder(seq[i]);
-                }
             }
         }
+    }
 
-    /**
-     * Gets the nodes in set1 which have matches in set2.
-     *
-     * This is done in a way that is definitely sub-optimal.
-     * May need to shrink array size at end.
-     *
-     * Move to helper class?
-     * Should probably be in own class, actual algorithm should be hidden.
-     *
-     * @param set1      the first set of nodes
-     * @param set2      the set of nodes to match against
-     * @param matchings the set of matching nodes
-     *
-     * @return      the nodes in set1 which have matches in set2
-     */
 
-    private static Node[] getSequence(final NodeList set1, final NodeList set2,
-            final NodePairs matchings)
-        {
-        Node[] resultSet = new Node[set1.getLength()];
-
-        int index = 0;
-        for (int i = 0; i < set1.getLength(); i++)
-            {
-            Node wanted = matchings.getPartner(set1.item(i));
-
-            for (int j = 0; j < set2.getLength(); j++)
-                {
-                if (NodeOps.checkIfSameNode(wanted, set2.item(j)))
-                    {
-                    resultSet[index++] = set1.item(i);
-                    break;
-                    }
-                }
-            }
-        return resultSet;
-        }
 
     /**
      * Moves nodes that are not in order to correct position.
@@ -455,45 +382,26 @@ public final class EditScript {
      *
      * @param w  the match of the current node.
      * @param x  the current node
-     * @param editScript the Edit Script to append the operation to
      * @param matchings  the set of matchings
      */
 
     private void alignChildren(final Node w, final Node x,
-            final NodePairs matchings)
-        {
+            final NodePairs matchings) {
+        
         DiffXML.LOG.fine("In alignChildren");
-        //How does alg deal with out of order nodes not matched with
-        //children of partner?
-        //Calls LCS algorithm
 
         //Order of w and x is important
-        //Mark children of w and x "out of order"
-        NodeList wKids = w.getChildNodes();
-        NodeList xKids = x.getChildNodes();
-
-        DiffXML.LOG.finer("w Name: " + w.getNodeName() + "no wKids" + wKids.getLength());
-        DiffXML.LOG.finer("x Name: " + x.getNodeName() + "no xKids" + xKids.getLength());
-
-        //build will break if following statement not here!
-        //PROBABLY SHOULDN'T BE NEEDED - INDICATIVE OF BUG
-        //Theory - single text node children are being matched,
-        //Need to be moved, but aren't.
-        //if ((wKids.getLength() == 0) || (xKids.getLength() == 0))
-        //    return;
-
         markChildrenOutOfOrder(w);
         markChildrenOutOfOrder(x);
 
-        if ((wKids.getLength() == 0) || (xKids.getLength() == 0))
-                return;
+        NodeList wKids = w.getChildNodes();
+        NodeList xKids = x.getChildNodes();
 
-            
-        Node[] wSeq = getSequence(wKids, xKids, matchings);
-        Node[] xSeq = getSequence(xKids, wKids, matchings);
+        Node[] wSeq = NodeSequence.getSequence(wKids, xKids, matchings);
+        Node[] xSeq = NodeSequence.getSequence(xKids, wKids, matchings);
 
-        Node[] seq = Lcs.find(wSeq, xSeq, matchings);
-        setInOrderNodes(seq);
+        Node[] seq = NodeSequence.find(wSeq, xSeq, matchings);
+        setNodesInOrder(seq);
 
         //Go through children of w.
         //If not inorder but matched, move
