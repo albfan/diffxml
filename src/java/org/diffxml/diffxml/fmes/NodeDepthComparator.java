@@ -34,29 +34,25 @@ import java.util.Comparator;
 class NodeDepthComparator implements Comparator<NodeDepth> {
 
     /**
-     * Compares two NodeInfo objects.
+     * Compares two NodeDepth objects.
      * 
-     * Stores in reverse order of depth. Strings sorted to preserve set logic.
+     * Stores in reverse order of depth.
+     * *NOT* consistent with equals; we only care about depth and it is
+     * expensive to compare Nodes.
+     * 
      * TODO: Consider making serializable, in case TreeSet is serialized.
+     * TODO: Check if need to enforce Document Position ordering
      * 
      * @param nodeInfo1
      *            First NodeInfo object
      * @param nodeInfo2
      *            Second NodeInfo object
      * @return Negative if nodeInfo1 is at a greater depth than nodeInfo2, 
-     *         positive if smaller depth, result of tag comparison if equal 
+     *         positive if smaller depth, 0 if same depth 
      */
-
     public final int compare(final NodeDepth nodeInfo1, 
             final NodeDepth nodeInfo2) {
 
-        int ret;
-        if (nodeInfo1.getDepth() == nodeInfo2.getDepth()) {
-            ret = nodeInfo1.getTag().compareTo(nodeInfo2.getTag());
-        } else {
-            ret = nodeInfo2.getDepth() - nodeInfo1.getDepth();
-        }
-
-        return ret;
+            return nodeInfo2.getDepth() - nodeInfo1.getDepth();
     }
 }

@@ -23,6 +23,8 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import java.util.List;
+
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
@@ -321,17 +323,14 @@ public final class EditScript {
     }
 
     /**
-     * Marks the nodes in the given array "inorder".
+     * Marks the nodes in the given list "inorder".
      *
      * @param seq  the nodes to mark "inorder"
      */
-    private static void setNodesInOrder(final Node[] seq) {
+    private static void setNodesInOrder(final List<Node> seq) {
 
-        for (int i = 0; i < seq.length; i++) {
-            
-            if (seq[i] != null) {
-                NodeOps.setInOrder(seq[i]);
-            }
+        for (Node node : seq) {
+            NodeOps.setInOrder(node);
         }
     }
 
@@ -400,7 +399,7 @@ public final class EditScript {
         Node[] wSeq = NodeSequence.getSequence(wKids, xKids, matchings);
         Node[] xSeq = NodeSequence.getSequence(xKids, wKids, matchings);
 
-        Node[] seq = NodeSequence.find(wSeq, xSeq, matchings);
+        List<Node> seq = NodeSequence.getLCS(wSeq, xSeq, matchings);
         setNodesInOrder(seq);
 
         //Go through children of w.

@@ -106,16 +106,6 @@ public class NodeDepth {
     public final int hashCode() {
         return mNode.hashCode();
     }
-    
-    /**
-     * Returns the tag value.
-     *
-     * @return The current value of the tag
-     */
-
-    public final String getTag() {
-        return mNode.getNodeName();
-    }
 
     /**
      * Returns the depth value.

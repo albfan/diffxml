@@ -25,8 +25,9 @@ package org.diffxml.diffxml.fmes;
 
 import org.diffxml.diffxml.DiffFactory;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.Document;
@@ -82,12 +83,12 @@ public final class Match {
         doc1.getDocumentElement().normalize();
         doc2.getDocumentElement().normalize();
 
-        SortedSet<NodeDepth> tree1 = initialiseAndOrderNodes(doc1);
-        SortedSet<NodeDepth> tree2 = initialiseAndOrderNodes(doc2);
+        List<NodeDepth> list1 = initialiseAndOrderNodes(doc1);
+        List<NodeDepth> list2 = initialiseAndOrderNodes(doc2);
 
-        // Proceed bottom up on Tree 1
-        for (NodeDepth nd1 : tree1) {
-            for (NodeDepth nd2 : tree2) {
+        // Proceed bottom up on List 1
+        for (NodeDepth nd1 : list1) {
+            for (NodeDepth nd2 : list2) {
                 
                 Node n1 = nd1.getNode();
                 Node n2 = nd2.getNode();
@@ -97,7 +98,7 @@ public final class Match {
                     matchSet.add(n1, n2);
                     
                     //Don't want to consider it again
-                    tree2.remove(nd2);
+                    list2.remove(nd2);
                     break;
                 }
             }
@@ -243,29 +244,29 @@ public final class Match {
     }
 
     /**
-     * Returns a set of Nodes sorted according to their depths.
+     * Returns a list of Nodes sorted according to their depths.
      * 
      * TreeSet is sorted in reverse order of depth according to
      * NodeInfoComparator.
      * 
      * @param doc The document to be initialised and ordered.
-     * @return A depth-ordered set of the nodes in the doc.
+     * @return A depth-ordered list of the nodes in the doc.
      */
-    private static SortedSet<NodeDepth> initialiseAndOrderNodes(
+    private static List<NodeDepth> initialiseAndOrderNodes(
             final Document doc) {
 
         NodeIterator ni = ((DocumentTraversal) doc).createNodeIterator(
                 doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
 
-        TreeSet<NodeDepth> depthSorted = new TreeSet<NodeDepth>(
-                new NodeDepthComparator());
-
+        List<NodeDepth> depthSorted = new ArrayList<NodeDepth>();
+             
         Node n;
         while ((n = ni.nextNode()) != null) {
             depthSorted.add(new NodeDepth(n));
         }
         
         ni.detach();
+        Collections.sort(depthSorted, new NodeDepthComparator());
         
         return depthSorted;
     }
