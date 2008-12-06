@@ -179,4 +179,45 @@ public class MatchTest {
         
     }
 
+    /**
+     * Test documents with same elements but in different order match 
+     * completely.
+     */
+    @Test
+    public final void testDifferentOrdering() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b/>c<z/><d/>e<f/></a>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<a><b/>c<d/>e<f/><z/></a>");
+        
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        
+        Node aRoot = doc1.getDocumentElement();
+        Node bRoot = doc2.getDocumentElement();
+        assertEquals(bRoot, matches.getPartner(aRoot));
+        
+        Node aB = aRoot.getFirstChild();
+        Node bB = bRoot.getFirstChild();
+        assertEquals(bB, matches.getPartner(aB));
+        
+        Node aC = aB.getNextSibling();
+        Node bC = bB.getNextSibling();
+        assertEquals(bC, matches.getPartner(aC));
+        
+        Node aZ = aC.getNextSibling();
+        Node bD = bC.getNextSibling();
+        Node aD = aZ.getNextSibling();
+        assertEquals(bD, matches.getPartner(aD));
+        
+        Node aE = aD.getNextSibling();
+        Node bE = bD.getNextSibling();
+        assertEquals(bE, matches.getPartner(aE));
+        
+        Node aF = aE.getNextSibling();
+        Node bF = bE.getNextSibling();
+        assertEquals(bF, matches.getPartner(aF));
+        
+        Node bZ = bF.getNextSibling();
+        assertEquals(bZ, matches.getPartner(aZ));
+    }
 }

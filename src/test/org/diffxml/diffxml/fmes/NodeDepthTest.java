@@ -42,7 +42,6 @@ public class NodeDepthTest {
         NodeDepth depthTest = new NodeDepth(n);
         assertEquals(expectedDepth, depthTest.getDepth());
         assertEquals(n, depthTest.getNode());
-        assertEquals(n.getNodeName(), depthTest.getTag());
     }
     
     /**
