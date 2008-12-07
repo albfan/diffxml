@@ -30,7 +30,6 @@ import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
 import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -126,13 +125,15 @@ public final class EditScript {
             Node z = mMatchings.getPartner(y);
 
             logNodes(x, y, z);
-            Node w;
+            Node w = mMatchings.getPartner(x);
 
             if (!mMatchings.isMatched(x)) {
                 w = doInsert(x, z);
             } else {
                 // TODO: Update should go here
-                w = doMove(x, z, mMatchings);
+                if (!mMatchings.getPartner(y).equals(w.getParentNode())) {
+                    doMove(w, x, z, mMatchings);
+                }
             }
 
             alignChildren(w, x, mMatchings);
@@ -202,14 +203,14 @@ public final class EditScript {
         NodeOps.setInOrder(w);
         NodeOps.setInOrder(x);
 
+        mDelta.insert(w, z, pos.getXPathInsertPosition(), 
+                pos.getCharInsertPosition());
+
         //Take match of parent (z), and insert
         w = NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
         //Add to matching set
         mMatchings.add(w, x);
-
-        mDelta.insert(w, z, pos.getXPathInsertPosition(), 
-                pos.getCharInsertPosition());
 
         return w;
     }
@@ -223,9 +224,8 @@ public final class EditScript {
      * @param matchings  the set of matching nodes
      * @return           the moved node
      */
-    private Node doMove(final Node x, final Node z, final NodePairs matchings) {
-
-        Node w = matchings.getPartner(x);
+    private void doMove(final Node w, final Node x, final Node z, 
+            final NodePairs matchings) {
 
         Node v = w.getParentNode();
         Node y = x.getParentNode();
@@ -240,13 +240,11 @@ public final class EditScript {
         NodeOps.setInOrder(w);
         NodeOps.setInOrder(x);
 
-        //Apply move to T1
-        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
-
         mDelta.move(w, z, pos.getXPathInsertPosition(), 
                 pos.getCharInsertPosition());
-        
-        return w;
+
+        //Apply move to T1
+        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
     }
 
     /**
@@ -323,14 +321,17 @@ public final class EditScript {
     }
 
     /**
-     * Marks the nodes in the given list "inorder".
+     * Marks the Nodes in the given list and their partners "inorder".
      *
-     * @param seq  the nodes to mark "inorder"
+     * @param seq  the Nodes to mark "inorder"
+     * @param matchings the set of matching Nodes
      */
-    private static void setNodesInOrder(final List<Node> seq) {
+    private static void setNodesInOrder(final List<Node> seq,
+            final NodePairs matchings) {
 
         for (Node node : seq) {
             NodeOps.setInOrder(node);
+            NodeOps.setInOrder(matchings.getPartner(node));
         }
     }
 
@@ -339,37 +340,30 @@ public final class EditScript {
     /**
      * Moves nodes that are not in order to correct position.
      *
-     * TODO: Check logic.
-     *
-     * @param xKids
-     * @param w
-     * @param editScript
-     * @param matchings
+     * @param w Node with potentially misaligned children
+     * @param wSeq Sequence of children of w that have matches in the children
+     *             of x
+     * @param stay The List of nodes not to be moved
+     * @param matchings The set of matching nodes
      */
 
-    private void moveMisalignedNodes(final NodeList xKids, final Node w,
-            final NodePairs matchings)
-        {
-        //Select nodes matched but not in order
-        for (int i = 0; i < xKids.getLength(); i++)
-            {
-            if ((!NodeOps.isInOrder(xKids.item(i)))
-                    && matchings.isMatched(xKids.item(i)))
-                {
-                //Get childno for move
-                FindPosition pos = new FindPosition(xKids.item(i), matchings);
+    private void moveMisalignedNodes(final Node w, final Node[] wSeq, 
+            final List<Node> stay, final NodePairs matchings) {
+        
+        //Get Nodes that are not in LCS but are in wSeq (or xSeq)
+        for (Node a : wSeq) {
+            if (!stay.contains(a)) {
 
-                //Get partner and position
-                Node a = matchings.getPartner(xKids.item(i));
+                Node b = matchings.getPartner(a);
+                FindPosition pos = new FindPosition(b, matchings);
+
+                mDelta.move(a, w, pos.getXPathInsertPosition(), 
+                        pos.getCharInsertPosition());
 
                 NodeOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
-                NodeOps.setInOrder(xKids.item(i));
                 NodeOps.setInOrder(a);
-
-                //Note that now a is now at new position
-                mDelta.move(a, w, pos.getXPathInsertPosition(), 
-                        pos.getCharInsertPosition());
+                NodeOps.setInOrder(b);
                 }
             }
         }
@@ -377,10 +371,9 @@ public final class EditScript {
     /**
      * Aligns children of current node that are not in order.
      *
-     * TODO: Check logic.
-     *
      * @param w  the match of the current node.
      * @param x  the current node
+
      * @param matchings  the set of matchings
      */
 
@@ -399,15 +392,9 @@ public final class EditScript {
         Node[] wSeq = NodeSequence.getSequence(wKids, xKids, matchings);
         Node[] xSeq = NodeSequence.getSequence(xKids, wKids, matchings);
 
-        List<Node> seq = NodeSequence.getLCS(wSeq, xSeq, matchings);
-        setNodesInOrder(seq);
-
-        //Go through children of w.
-        //If not inorder but matched, move
-        //Need to be careful if want xKids or wKids
-        //Check
-
-        moveMisalignedNodes(xKids, w, matchings);
+        List<Node> lcsSeq = NodeSequence.getLCS(wSeq, xSeq, matchings);
+        setNodesInOrder(lcsSeq, matchings);
+        
+        moveMisalignedNodes(w, wSeq, lcsSeq, matchings);
         }
- 
 }

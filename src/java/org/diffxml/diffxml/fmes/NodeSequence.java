@@ -76,6 +76,8 @@ public final class NodeSequence {
      * Gets the Longest Common Subsequence for the given Node arrays.
      * 
      * "Matched" Nodes are considered equal.
+     * The returned nodes are from s1.
+     * 
      * TODO: Check for better algorithms
      * 
      * @param s1 First Node sequence 
@@ -121,7 +123,7 @@ public final class NodeSequence {
             }
         }
         
-        //TODO: Check if needed for our needs
+        //TODO: Check if required for our needs
         Collections.reverse(result);
 
         return result;
