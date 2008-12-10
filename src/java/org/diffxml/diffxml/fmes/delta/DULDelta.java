@@ -35,6 +35,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element; 
 
+import org.diffxml.dul.DULConstants;
+
 /**
  * Handle operations related to creating a DUL delta.
  * 
@@ -43,66 +45,6 @@ import org.w3c.dom.Element;
  * @author Adrian Mouat
  */
 public class DULDelta implements DeltaIF {
-
-    /** If entities were resolved when creating the delta. **/
-    private static final String RESOLVE_ENTITIES = "resolve_entities";
-    
-    /** False constant. **/
-    private static final String FALSE = "false";
-    
-    /** True constant. **/
-    private static final String TRUE = "true";
-    
-    /** If the delta was created as a "reverse patch". **/
-    private static final String REVERSE_PATCH = "reverse_patch";
-    
-    /** The amount of parent sibling context. **/
-    private static final String PARENT_SIBLING_CONTEXT = "par_sib_context";
-    
-    /** The amount of parent context. **/
-    private static final String PARENT_CONTEXT = "par_context";
-    
-    /** The amount of sibling context. **/
-    private static final String SIBLING_CONTEXT = "sib_context";
-    
-    /** Root element of a DUL EditScript. **/
-    private static final String DELTA = "delta";
-    
-    /** Character position of the "new" node. **/
-    private static final String NEW_CHARPOS = "new_charpos";
-    
-    /** Character position of the "old" node. **/
-    private static final String OLD_CHARPOS = "old_charpos";
-    
-    /** Move operation element. **/
-    private static final String MOVE = "move";
-    
-    /** Number of characters to extract from a test node. **/
-    private static final String LENGTH = "length";
-    
-    /** The node for the operation. **/
-    private static final String NODE = "node";
-    
-    /** Delete operation element. **/
-    private static final String DELETE = "delete";
-    
-    /** Character position in text of the node. **/
-    private static final String CHARPOS = "charpos";
-    
-    /** Name of the node. **/
-    private static final String NAME = "name";
-    
-    /** Child number of parent node. **/
-    private static final String CHILDNO = "childno";
-    
-    /** DOM type of the node. **/
-    private static final String NODETYPE = "nodetype";
-    
-    /** Parent of the node. **/
-    private static final String PARENT = "parent";
-    
-    /** Insert operation element. **/ 
-    private static final String INSERT = "insert";
 
     /**
      * The EditScript we are creating.
@@ -149,24 +91,24 @@ public class DULDelta implements DeltaIF {
            DocumentBuilderFactory.newInstance().newDocumentBuilder();
        Document editScript = builder.newDocument();
 
-       Element root = editScript.createElement(DELTA);
+       Element root = editScript.createElement(DULConstants.DELTA);
 
        //Append any context information
        if (DiffFactory.isContext()) {
-           root.setAttribute(SIBLING_CONTEXT, 
+           root.setAttribute(DULConstants.SIBLING_CONTEXT, 
                    Integer.toString(DiffFactory.getSiblingContext()));
-           root.setAttribute(PARENT_CONTEXT,
+           root.setAttribute(DULConstants.PARENT_CONTEXT,
                    Integer.toString(DiffFactory.getParentContext()));
-           root.setAttribute(PARENT_SIBLING_CONTEXT,
+           root.setAttribute(DULConstants.PARENT_SIBLING_CONTEXT,
                    Integer.toString(DiffFactory.getParentSiblingContext()));
        }
 
        if (DiffFactory.isReversePatch()) {
-           root.setAttribute(REVERSE_PATCH, TRUE);
+           root.setAttribute(DULConstants.REVERSE_PATCH, DULConstants.TRUE);
        }
 
        if (!DiffFactory.isResolveEntities()) {
-           root.setAttribute(RESOLVE_ENTITIES, FALSE);
+           root.setAttribute(DULConstants.RESOLVE_ENTITIES, DULConstants.FALSE);
        }
 
        editScript.appendChild(root);
@@ -211,23 +153,23 @@ public class DULDelta implements DeltaIF {
     public final void insert(final Node n, final String parent, 
             final int childno, final int charpos) {
 
-        Element ins = mEditScript.createElement(INSERT);
+        Element ins = mEditScript.createElement(DULConstants.INSERT);
         
-        ins.setAttribute(PARENT, parent);
-        ins.setAttribute(NODETYPE, Integer.toString(n.getNodeType()));
+        ins.setAttribute(DULConstants.PARENT, parent);
+        ins.setAttribute(DULConstants.NODETYPE, Integer.toString(n.getNodeType()));
 
         if (n.getNodeType() != Node.ATTRIBUTE_NODE) {
-            ins.setAttribute(CHILDNO, Integer.toString(childno));
+            ins.setAttribute(DULConstants.CHILDNO, Integer.toString(childno));
         }
 
         if (n.getNodeType() == Node.ATTRIBUTE_NODE 
                 || n.getNodeType() == Node.ELEMENT_NODE 
                 || n.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
-            ins.setAttribute(NAME, n.getNodeName());
+            ins.setAttribute(DULConstants.NAME, n.getNodeName());
         }
         
         if (charpos > 1) {
-            ins.setAttribute(CHARPOS, Integer.toString(charpos));
+            ins.setAttribute(DULConstants.CHARPOS, Integer.toString(charpos));
         }
 
         String value = n.getNodeValue();
@@ -268,8 +210,8 @@ public class DULDelta implements DeltaIF {
      */
     public final void delete(final Node n) {
         
-        Element del = mEditScript.createElement(DELETE);
-        del.setAttribute(NODE, NodeOps.getXPath(n));
+        Element del = mEditScript.createElement(DULConstants.DELETE);
+        del.setAttribute(DULConstants.NODE, NodeOps.getXPath(n));
         
         if (n.getNodeType() == Node.TEXT_NODE) {
             
@@ -277,10 +219,11 @@ public class DULDelta implements DeltaIF {
             int charpos = cn.getXPathCharPos();
             
             if (charpos >= 1) {
-                del.setAttribute(CHARPOS, Integer.toString(charpos));
+                del.setAttribute(DULConstants.CHARPOS, 
+                        Integer.toString(charpos));
             }
 
-            del.setAttribute(LENGTH, 
+            del.setAttribute(DULConstants.LENGTH, 
                     Integer.toString(n.getTextContent().length()));
         }
 
@@ -303,20 +246,20 @@ public class DULDelta implements DeltaIF {
                     "New Character position must be >= 1");
         }
         
-        Element mov = mEditScript.createElement(MOVE);
-        mov.setAttribute(NODE, NodeOps.getXPath(n));
+        Element mov = mEditScript.createElement(DULConstants.MOVE);
+        mov.setAttribute(DULConstants.NODE, NodeOps.getXPath(n));
         
         int ocharpos = new ChildNumber(n).getXPathCharPos();
-        mov.setAttribute(OLD_CHARPOS, Integer.toString(ocharpos));
-        mov.setAttribute(NEW_CHARPOS, Integer.toString(ncharpos));
+        mov.setAttribute(DULConstants.OLD_CHARPOS, Integer.toString(ocharpos));
+        mov.setAttribute(DULConstants.NEW_CHARPOS, Integer.toString(ncharpos));
 
         if (n.getNodeType() == Node.TEXT_NODE) {
-            mov.setAttribute(LENGTH, 
+            mov.setAttribute(DULConstants.LENGTH, 
                     Integer.toString(n.getNodeValue().length()));
         }
 
-        mov.setAttribute(PARENT, NodeOps.getXPath(parent));
-        mov.setAttribute(CHILDNO, Integer.toString(childno));
+        mov.setAttribute(DULConstants.PARENT, NodeOps.getXPath(parent));
+        mov.setAttribute(DULConstants.CHILDNO, Integer.toString(childno));
 
         mEditScript.getDocumentElement().appendChild(mov);
     }
