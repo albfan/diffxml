@@ -4,11 +4,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.diffxml.diffxml.DiffXML;
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.TestDocHelper;
-import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,13 +52,16 @@ public class DULDeltaTest {
         Node ins = testDoc2.createElement("insertTest");
         mDelta.insert(ins, "/a", 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+        
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" name=\"insertTest\" "
                     + "nodetype=\"1\" parent=\"/a\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }
     }
@@ -74,12 +77,15 @@ public class DULDeltaTest {
         ins.setNodeValue("ins");
         mDelta.insert(ins, "/a", 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains("<delta><insert name=\"insertTest\""
                     + " nodetype=\"2\" parent=\"/a\">ins</insert></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -100,8 +106,9 @@ public class DULDeltaTest {
         ins.setAttributeNode(attr2);
         mDelta.insert(ins, "/a", 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" name=\"attrTest\" "
@@ -111,6 +118,8 @@ public class DULDeltaTest {
             assertTrue(out.contains("<insert name=\"attrTest2\" nodetype=\"2\" "
                     + "parent=\"/a/node()[1]\">two</insert></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }
     }
@@ -126,13 +135,16 @@ public class DULDeltaTest {
         ins.setNodeValue("ins");
         mDelta.insert(ins, "/a", 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" nodetype=\"8\" parent=\"/a\">"
                     + "ins</insert></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -149,12 +161,15 @@ public class DULDeltaTest {
         
         mDelta.delete(del);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><delete node=\"/a/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -176,37 +191,46 @@ public class DULDeltaTest {
         
         mDelta.delete(del1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><delete charpos=\"1\" length=\"4\" "
                     + "node=\"/a/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
+            fail("Caught exception: " + e.getMessage());
         }
         
         mDelta.delete(del2);
         os.reset();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delete charpos=\"5\" length=\"8\" "
                     + "node=\"/a/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
+            fail("Caught exception: " + e.getMessage());
         }
         
         mDelta.delete(del3);
         os.reset();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delete charpos=\"13\" length=\"12\" "
                     + "node=\"/a/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }
     }
@@ -224,12 +248,15 @@ public class DULDeltaTest {
         
         mDelta.delete(del);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><delete node=\"/a/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -249,13 +276,16 @@ public class DULDeltaTest {
  
         mDelta.delete(del);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta>"
                     + "<delete node=\"/a/node()[1]/@deleteTest\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -274,14 +304,17 @@ public class DULDeltaTest {
         
         mDelta.move(move, moveTo, 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" new_charpos=\"1\" "
                     + "node=\"/a/node()[1]/node()[1]\" old_charpos=\"1\" "
                     + "parent=\"/a/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
+            fail("Caught exception: " + e.getMessage());
+        } catch (IOException e) {
             fail("Caught exception: " + e.getMessage());
         }        
     }
@@ -301,8 +334,9 @@ public class DULDeltaTest {
         
         mDelta.move(move, moveTo, 2, 9);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+        
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"2\" new_charpos=\"9\" "
@@ -310,7 +344,9 @@ public class DULDeltaTest {
                     + "parent=\"/a/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
-        }        
+        } catch (IOException e) {
+            fail("Caught exception: " + e.getMessage());
+        }       
     }
 
     /**
@@ -327,8 +363,9 @@ public class DULDeltaTest {
         
         mDelta.move(move, moveTo, 1, 1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        DiffXML.outputXML(mDelta.getDocument(), os);
+        
         try {
+            DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" length=\"8\" new_charpos=\"1\" "
@@ -336,7 +373,9 @@ public class DULDeltaTest {
                     + "parent=\"/a/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
-        }        
+        } catch (IOException e) {
+            fail("Caught exception: " + e.getMessage());
+        }
         
     }
 }

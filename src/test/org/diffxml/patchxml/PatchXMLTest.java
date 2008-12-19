@@ -19,7 +19,7 @@ public class PatchXMLTest extends TestCase
 
     public void testFilesExist()
         {
-        assertEquals(true, PatchXML.filesExist());
+        assertEquals(true, PatchXML.checkFilesExistAndWarn());
         }
 
     public static Test suite()

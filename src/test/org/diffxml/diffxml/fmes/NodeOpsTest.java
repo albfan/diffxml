@@ -14,6 +14,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.TestDocHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -143,15 +144,15 @@ public class NodeOpsTest {
                 "<a><b/><c>1</c>23<!--comm--><d attr=\"1\"/></a>");
         Element root = testDoc.getDocumentElement();
         NodeList nodeList = root.getChildNodes();
-        Node[] nodeArray = NodeOps.getElementsOfNodeList(nodeList);
+        Node[] nodeArray = DOMOps.getElementsOfNodeList(nodeList);
         
         assertEquals(nodeList.getLength(), nodeArray.length);
         for (int i = 0; i < nodeArray.length; i++) {
             assertEquals(nodeArray[i], nodeList.item(i));
         }
         
-        assertNull(NodeOps.getElementsOfNodeList(null));
-        assertEquals(NodeOps.getElementsOfNodeList(root.getFirstChild(
+        assertNull(DOMOps.getElementsOfNodeList(null));
+        assertEquals(DOMOps.getElementsOfNodeList(root.getFirstChild(
                 ).getChildNodes()).length, 0);
         
     }

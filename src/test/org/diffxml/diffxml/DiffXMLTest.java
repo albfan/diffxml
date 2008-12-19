@@ -8,7 +8,6 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -38,7 +37,7 @@ public class DiffXMLTest extends TestCase {
 	public final void testOutputXML()	{
 	    DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         try {
-            Fmes.initParser(fac);
+            DOMOps.initParser(fac);
         } catch (ParserInitialisationException e) {
             fail("Could not initialise parser");
         }
@@ -51,7 +50,7 @@ public class DiffXMLTest extends TestCase {
                         docString.getBytes("utf-8"));
                 Document doc = fac.newDocumentBuilder().parse(is);
                 ByteArrayOutputStream os = new ByteArrayOutputStream(); 
-                DiffXML.outputXML(doc, os);
+                DOMOps.outputXML(doc, os);
                 assertEquals(os.toString(), docString);
             } catch (SAXException e) {
                 fail("Caught SAX Exception");

@@ -19,7 +19,7 @@ import org.w3c.dom.Node;
 public class EditScriptTest {
     
    /**
-    * Test hanlding documents with different roots.
+    * Test handling documents with different roots.
     */
     @Test
     public void testMatchingRootNodes() {

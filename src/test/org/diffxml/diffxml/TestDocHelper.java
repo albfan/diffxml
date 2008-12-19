@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -42,7 +41,7 @@ public final class TestDocHelper {
         Document ret = null;
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         try {
-            Fmes.initParser(fac);
+            DOMOps.initParser(fac);
         } catch (ParserInitialisationException e) {
             fail("Could not initialise parser");
         }
