@@ -25,7 +25,6 @@ package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Class to handle general diffxml operations on Nodes.
@@ -44,31 +43,6 @@ public final class NodeOps {
     private NodeOps() {
     }
     
-    /**
-     * Inserts a given node as numbered child of a parent node.
-     *
-     * If childNum doesn't exist the node is simply appended.
-     *
-     * @param childNum  the position to add the node to
-     * @param parent    the node that is to be the parent
-     * @param insNode   the node to be inserted
-     * @return The inserted Node
-     */
-    public static Node insertAsChild(final int childNum, final Node parent,
-            final Node insNode) {
-
-        Node ret;
-        NodeList kids = parent.getChildNodes();
-
-        if (kids.item(childNum) != null) {
-            ret = parent.insertBefore(insNode, kids.item(childNum));
-        } else {
-            ret = parent.appendChild(insNode);
-        }
-        
-        return ret;
-    }
-
     /**
      * Mark the node as being "inorder".
      *
@@ -158,25 +132,6 @@ public final class NodeOps {
         }
         
         return xpath;
-    }
-
-    /**
-     * Returns the NodeList as an array of Nodes.
-     *  
-     * @param nodeList The NodeList to convert
-     * @return A Node[] representing the NodeList.
-     */
-    public static Node[] getElementsOfNodeList(final NodeList nodeList) {
-        
-        Node[] ret = null;
-        if (nodeList != null) {
-            ret = new Node[nodeList.getLength()];
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                ret[i] = nodeList.item(i);
-            }
-        }
-        
-        return ret;
     }
     
 }

@@ -35,10 +35,11 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.DiffXML;
-import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.ParserInitialisationException;
 
 /**
@@ -235,32 +236,26 @@ public final class PatchXML {
      * Output the patched document to stdout.
      *
      * Also outputs patch document if in debug.
-     *
-     * TODO: Check if overlap with fmes code
      * 
      * @param doc the patched document
      * @param patch the patch document
      */
     private static void outputDoc(final Document doc, final Document patch) {
-        // Patch only needed for debug - remove later
+
         try {
-            Transformer serializer = TransformerFactory.newInstance()
-                    .newTransformer();
+ 
             if (dryrun) {
-                serializer.transform(new DOMSource(doc), new StreamResult(
-                        System.out));
+                DOMOps.outputXML(doc, System.out);
             } else {
-                File f1 = new File(mDocFile);
-                serializer.transform(new DOMSource(doc), new StreamResult(f1));
+                DOMOps.outputXML(doc, new FileOutputStream(mDocFile));
             }
             DiffXML.LOG.finer("PatchXML Doc");
             if (OUTPUT_DEBUG) {
-                serializer.transform(new DOMSource(patch), new StreamResult(
-                        System.out));
+                DOMOps.outputXML(patch, System.out);
             }
             System.out.println();
-        } catch (javax.xml.transform.TransformerException te) {
-            System.err.println("Failed to output new document");
+        } catch (IOException e) {
+            System.err.println("Failed to output new document: " + e);
             System.exit(2);
         }
     }
@@ -276,17 +271,16 @@ public final class PatchXML {
         //Set options - instantiates _docFile and _patchFile
         parseArgs(args);
 
-        //Check files exist
         if (!checkFilesExistAndWarn()) {
             System.exit(2);
         }
 
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         try {
-            Fmes.initParser(fac);
+            DOMOps.initParser(fac);
         } catch (ParserInitialisationException e) {
-            System.err
-                    .println("Failed to initialise parser: " + e.getMessage());
+            System.err.println(
+                    "Failed to initialise parser: " + e.getMessage());
             System.exit(2);
         }
 
@@ -297,8 +291,8 @@ public final class PatchXML {
             System.err.println("Failed to configure parser: " + e.getMessage());
             System.exit(2);
         }
+        
         Document doc = null;
-
         try {
             doc = parser.parse(mDocFile);
         } catch (SAXException e) {
@@ -310,7 +304,6 @@ public final class PatchXML {
         }
 
         Document patch = null;
-
         try {
             patch = parser.parse(mPatchFile);
         } catch (SAXException e) {

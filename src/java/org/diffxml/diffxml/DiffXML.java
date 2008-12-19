@@ -25,19 +25,11 @@ package org.diffxml.diffxml;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
@@ -65,12 +57,6 @@ public final class DiffXML {
     /** Logger. **/
     public static final Logger LOG = Logger.getLogger("diffxml");
 
-    /**
-     * Factory used in outputting XML.
-     */
-    private static final TransformerFactory TRANSFORMER_FACTORY =
-        TransformerFactory.newInstance();
-    
     /**
      * Private constructor - shouldn't be called.
      */
@@ -452,46 +438,17 @@ public final class DiffXML {
                         + mFile2 + " differ");
             }
         } else {
-            outputXML(delta, System.out);
+            try {
+                DOMOps.outputXML(delta, System.out);
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
         }
 
         if (differ) {
             System.exit(1);
         } else {
             System.exit(0);
-        }
-
-    }
-
-    /**
-     * Writes given XML document to given stream.
-     *
-     * Uses UTF8 encoding, no indentation, preserves spaces.
-     * Adds XML declaration with standalone set to "yes".
-     *
-     * @param doc DOM document to output
-     * @param os  Stream to output to
-     */
-    public static void outputXML(final Document doc, final OutputStream os) {
-        
-        if (doc == null) {
-            throw new IllegalArgumentException("Null document");
-        }
-
-        try {
-            final Transformer transformer = 
-                TRANSFORMER_FACTORY.newTransformer();
-            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
-            transformer.setOutputProperty(OutputKeys.INDENT, "no");
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            transformer.transform(new DOMSource(doc),
-                    new StreamResult(os));
-
-        } catch (TransformerConfigurationException e1) {
-            System.err.println("Failed to configure serializer " + e1);
-        } catch (TransformerException e) {
-            System.err.println("Failed to serialize document " + e);
         }
 
     }

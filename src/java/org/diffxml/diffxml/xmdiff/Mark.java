@@ -35,7 +35,7 @@ import javax.xml.transform.TransformerException;
 import org.w3c.dom.NamedNodeMap;
 import java.io.File;
 
-import org.diffxml.diffxml.DiffXML;
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.fmes.NodePos;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 
@@ -226,7 +226,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            DiffXML.outputXML(es.getDocument(), System.out);
+            DOMOps.outputXML(es.getDocument(), System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}
@@ -267,7 +267,7 @@ public class Mark
          writer.setCanonical(false);
                 writer.write(es);
              */
-            DiffXML.outputXML(es.getDocument(), System.out);
+            DOMOps.outputXML(es.getDocument(), System.out);
         }
         catch (Exception e)
         {e.printStackTrace();}	

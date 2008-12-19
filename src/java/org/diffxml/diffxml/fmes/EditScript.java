@@ -25,6 +25,7 @@ package org.diffxml.diffxml.fmes;
 
 import java.util.List;
 
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
@@ -207,7 +208,7 @@ public final class EditScript {
                 pos.getCharInsertPosition());
 
         //Take match of parent (z), and insert
-        w = NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+        w = DOMOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
         //Add to matching set
         mMatchings.add(w, x);
@@ -244,7 +245,7 @@ public final class EditScript {
                 pos.getCharInsertPosition());
 
         //Apply move to T1
-        NodeOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+        DOMOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
     }
 
     /**
@@ -360,7 +361,7 @@ public final class EditScript {
                 mDelta.move(a, w, pos.getXPathInsertPosition(), 
                         pos.getCharInsertPosition());
 
-                NodeOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
+                DOMOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
                 NodeOps.setInOrder(a);
                 NodeOps.setInOrder(b);

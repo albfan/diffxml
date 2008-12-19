@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.diffxml.diffxml.DOMOps;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -59,7 +60,7 @@ public final class NodeSequence {
             List<Node> resultSet = new ArrayList<Node>(set1.getLength());
 
             List<Node> set2list = Arrays.asList(
-                    NodeOps.getElementsOfNodeList(set2));
+                    DOMOps.getElementsOfNodeList(set2));
 
             for (int i = 0; i < set1.getLength(); i++) {
                 if (set2list.contains(matchings.getPartner(set1.item(i)))) {

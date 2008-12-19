@@ -27,6 +27,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.Diff;
 import org.diffxml.diffxml.DiffException;
 import org.diffxml.diffxml.DiffFactory;
@@ -89,31 +90,6 @@ public class Fmes implements Diff {
     }
 
     /**
-     * Sets various features on the DOM Parser.
-     *  
-     * @param parserFactory
-     *            The parser to be set up
-     * @throws ParserInitialisationException
-     *             If some feature can't be set
-     */
-
-    public static void initParser(final DocumentBuilderFactory parserFactory) 
-    throws ParserInitialisationException {
-
-        if (!DiffFactory.isResolveEntities()) {
-            parserFactory.setExpandEntityReferences(false);
-        }
-
-        //Turn off DTD stuff - if DTD support changes reconsider
-        parserFactory.setValidating(false);
-        parserFactory.setNamespaceAware(true);
-        
-        parserFactory.setIgnoringComments(false);
-    }
-
-
-
-    /**
      * Calls fmes diff on two files.
      *
      * @return       The delta
@@ -127,7 +103,7 @@ public class Fmes implements Diff {
         
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         try {
-            initParser(fac);
+            DOMOps.initParser(fac);
         } catch (ParserInitialisationException e) {
             throw new DiffException("Failed to initialise parser", e); 
         }
