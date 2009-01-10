@@ -6,22 +6,32 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import java.io.IOException;
+
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.NodeOps;
 import org.diffxml.diffxml.fmes.PrintXML;
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.dul.DULConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 
-import com.sun.org.apache.xpath.internal.XPathAPI;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 
 public class DULPatch {
+
+    private XPath mXPath;
+
     /**
      * Perform update operation.
      *
@@ -32,22 +42,24 @@ public class DULPatch {
     }
 
     /**
-     * Get the parent node pointed to by the parent attributed.
+     * Get the parent node pointed to by the parent attribute.
      *
      * @param doc   document being patched
      * @param attrs attributes of operation node
      * @return the parent node
      */
     private Node getParentFromAttr(final Document doc, 
-            final NamedNodeMap attrs) {
+            final NamedNodeMap attrs) throws PatchFormatException {
         
         Node parent = null;
         try {
-            parent = XPathAPI.selectSingleNode(
-                    doc.getDocumentElement(),
-                    attrs.getNamedItem(DULConstants.PARENT).getNodeValue());
-        } catch (TransformerException e) {
-            System.err.println("Could not resolve XPath for parent for insert");
+            parent = (Node) mXPath.evaluate(
+                    attrs.getNamedItem(DULConstants.PARENT).getNodeValue(),
+                    doc.getDocumentElement(), 
+                    XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            throw new PatchFormatException( 
+                    "Could not resolve XPath for parent attribuute", e);
         }
         
         return parent;
@@ -58,11 +70,73 @@ public class DULPatch {
      *
      * @param attrs attributes of operation node
      * @return the value of nodetype
+     * @throws PatchFormatException If the nodetype is missing or malformed
      */
-    private int getNodeTypeFromAttr(final NamedNodeMap attrs) {
-        //TODO: Deal with cases when no node type attr
-        return Integer.valueOf(
-                attrs.getNamedItem(DULConstants.NODETYPE).getNodeValue());
+    private int getNodeTypeFromAttr(final NamedNodeMap attrs)
+    throws PatchFormatException {
+
+        int val;
+        Node type = attrs.getNamedItem(DULConstants.NODETYPE);
+        if (type != null) {
+            try {
+                val = Integer.valueOf(type.getNodeValue());
+            } catch (NumberFormatException e) {
+                throw new PatchFormatException("Invalid nodetype", e);
+            }
+        } else {
+            throw new PatchFormatException("No nodetype specified");
+        }
+
+        return val;
+    }
+
+    /**
+     * Get value of length attribute.
+     *
+     * @param attrs attributes of operation node
+     * @return the value of the length attr
+     * @throws PatchFormatException If the length is missing or malformed
+     */
+    private int getLengthFromAttr(final NamedNodeMap attrs)
+    throws PatchFormatException {
+
+        int val;
+        Node type = attrs.getNamedItem(DULConstants.LENGTH);
+        if (type != null) {
+            try {
+                val = Integer.valueOf(type.getNodeValue());
+                if (val < 1) {
+                    throw new PatchFormatException("Invalid length");
+                }
+            } catch (NumberFormatException e) {
+                throw new PatchFormatException("Invalid length", e);
+            }
+        } else {
+            throw new PatchFormatException("No length specified");
+        }
+
+        return val;
+    }
+
+    /**
+     * Get value of name attribute.
+     *
+     * @param attrs attributes of operation node
+     * @return the value of the name  attribute
+     * @throws PatchFormatException If the name is missing
+     */
+    private String getNameFromAttr(final NamedNodeMap attrs)
+    throws PatchFormatException {
+
+        String val;
+        Node name = attrs.getNamedItem(DULConstants.NAME);
+        if (name != null) {
+            val = name.getNodeValue();
+        } else {
+            throw new PatchFormatException("No name specified");
+        }
+
+        return val;
     }
 
     /**
@@ -74,21 +148,7 @@ public class DULPatch {
      */
     private int getDOMChildNoFromXPath(final NodeList siblings,
             final int xpathcn) {
-        //Doesn't cope with node names instead of numbers
-        /*
-        int xPathIndex = 0;
-        int j;
-        for (j = 0; j < siblings.getLength(); j++)
-            {
-            index++;
-            if (j > 0 && siblings.item(j).getNodeType() == Node.TEXT_NODE
-                    && siblings.item(j - 1).getNodeType() == Node.TEXT_NODE)
-                xPathIndex--;
-            if (xPathIndex == xpathcn)
-                break;
-            }
-        return j;
-        */
+
         int domIndex = 0;
         int xPathIndex = 1;
         while ((xPathIndex < xpathcn) && (domIndex < siblings.getLength())) {
@@ -102,24 +162,31 @@ public class DULPatch {
         //Handle appending nodes
         if (xPathIndex < xpathcn) {
             domIndex++;
+            xPathIndex++;
         }
-        //TODO: Assert or throw exception if xPathIndex still less than xpathcn
+
+        assert domIndex == xPathIndex;
         return domIndex;
     }
 
     /**
      * Get the value associated with the operation node.
      *
+     * Returns an empty sting if no value.
+     *
      * @param op the operation node
+     * @throws PatchFormatException if there is an error parsing the node
      * @return the string value of the node
      */
-    private String getOpValue(final Node op) {
+    private String getOpValue(final Node op) 
+        throws PatchFormatException {
         
         NodeList opKids = op.getChildNodes();
 
         String value = "";
         if (opKids.getLength() > 1) {
-            System.err.println("Unexpected children in insert operation");
+            throw new PatchFormatException(
+                    "Unexpected children in insert operation");
         } else if ((opKids.getLength() == 1)
                 && (opKids.item(0).getNodeType() == Node.TEXT_NODE)) {
             value = opKids.item(0).getNodeValue();
@@ -172,19 +239,24 @@ public class DULPatch {
     /**
      * Get value of charpos attribute.
      *
-     * Defaults to 1.
+     * Defaults to 1 if not present.
      *
      * @param opAttrs attributes of operation node
      * @return the value of charpos
+     * @throws PatchFormatException for illegal charpos values
      */
-    private int getCharPos(final NamedNodeMap opAttrs) {
+    private int getCharPos(final NamedNodeMap opAttrs)
+    throws PatchFormatException {
         
         int charpos = 1;
 
         Node a = opAttrs.getNamedItem(DULConstants.CHARPOS);
         if (a != null) {
             charpos = Integer.valueOf(a.getNodeValue());
-        }
+            if (charpos < 1) {
+                throw new PatchFormatException("charpos must be >= 1");
+            }
+        } 
 
         return charpos;
     }
@@ -213,10 +285,8 @@ public class DULPatch {
      * @param parent   the node to become the parent of the inserted node
      */
     private void insertAtCharPos(final int charpos, final NodeList siblings,
-            final int domcn, final Node ins, final Node parent) {
-        //TODO: Allow inserting into middle of text node
-        //TODO: Handle errors better
-        //TODO: What about appending text nodes
+            final int domcn, final Node ins, final Node parent, 
+            final Document doc) throws PatchFormatException {
 
         //we know text node at domcn -1
         int cp = charpos;
@@ -233,15 +303,44 @@ public class DULPatch {
             textNodeIndex++;
 
             if (textNodeIndex == siblings.getLength()) {
+                if (cp > 1) {
+                    throw new PatchFormatException("charpos past end of text");
+                }
                 append = true;
                 parent.appendChild(ins);
                 break;
             }
         }
-        if (!append) {
-            parent.insertBefore(ins, siblings.item(textNodeIndex));
-        }
 
+        Node sibNode = siblings.item(textNodeIndex);
+
+        if (!append) {
+            if (cp == 1) {
+                parent.insertBefore(ins, sibNode);
+            } else if (cp == sibNode.getNodeValue().length()) {
+                Node nextSib = sibNode.getNextSibling();
+                if (nextSib != null) {
+                    parent.insertBefore(ins, nextSib);
+                } else {
+                    parent.appendChild(ins);
+                }
+            } else {
+                String text = sibNode.getNodeValue();
+                Node nextSib = sibNode.getNextSibling();
+                parent.removeChild(sibNode);
+                Node text1 = doc.createTextNode(text.substring(0, cp-1));
+                Node text2 = doc.createTextNode(text.substring(cp-1));
+                if (nextSib != null) {
+                    parent.insertBefore(text1, nextSib);
+                    parent.insertBefore(ins, nextSib);
+                    parent.insertBefore(text2, nextSib);
+                } else {
+                    parent.appendChild(text1);
+                    parent.appendChild(ins);
+                    parent.appendChild(text2);
+                }
+            }
+        }
     }
 
     /**
@@ -253,37 +352,27 @@ public class DULPatch {
      * @param charpos  the character position at which to insert the node
      * @param ins      the node to be inserted
      */
-
     private void insertNode(final NodeList siblings, final Element parent,
-            final int domcn, final int charpos, final Node ins) {
+            final int domcn, final int charpos, final Node ins, 
+            final Document doc) throws PatchFormatException {
         
-        //Note siblings(domcn) is node currently at the position we want
-        //to put the node, not the node itself.
+        //siblings(domcn) is the node currently at the position we want to put 
+        //the node
 
-        if ((siblings.getLength() > 0) && (domcn <= siblings.getLength())) {
+        if (domcn > siblings.getLength()) {
+            throw new PatchFormatException(
+                    "Child number past end of nodes");
+        }
+
+        if ((siblings.getLength() > 0)) {
+
             //Check if inserting into text
-            //TODO: Change to use prevNodeIsATextNode method
-            boolean prevNodeTextNode = (domcn >= 1 && 
-                    siblings.item(domcn - 1).getNodeType() == Node.TEXT_NODE);
-            boolean firstNodeTextNode = 
-                (siblings.item(0).getNodeType() == Node.TEXT_NODE);
-            
-            if (prevNodeTextNode) {
-                insertAtCharPos(charpos, siblings, domcn, ins, parent);
-            } else if (domcn == 0 && firstNodeTextNode) {
-                
-                //TODO: This is a poor hack as insertAtCharPos doesn't work
-                if (charpos > 1) {
-                    DiffXML.LOG.fine("here " + ins.getNodeValue());
-                    parent.insertBefore(ins, siblings.item(1));
-                } else {
-                    parent.insertBefore(ins, siblings.item(0));
-                }
-            } else if (domcn == siblings.getLength()) {
-                parent.appendChild(ins);
-            } else {
-                DiffXML.LOG.fine("Applying insertBefore");
+            if (prevNodeIsATextNode(siblings, domcn)) {
+                insertAtCharPos(charpos, siblings, domcn, ins, parent, doc);
+            } else if (domcn < siblings.getLength()) {
                 parent.insertBefore(ins, siblings.item(domcn));
+            } else {
+                parent.appendChild(ins);
             }
         } else {
             parent.appendChild(ins);
@@ -293,21 +382,28 @@ public class DULPatch {
     /**
      * Get the DOM Child number of a node using "childno" attribute.
      *
+     * If attribute doesn't exist, assumes childno = 1.
+     *
      * @param opAttrs  the attributes of the operation
      * @param nodeType the nodeType to be inserted
      * @param siblings the siblings of the node
      * @return the DOM Child number of the node
      */
     private int getDOMChildNo(final NamedNodeMap opAttrs,
-            final int nodeType, final NodeList siblings) {
+            final int nodeType, final NodeList siblings) 
+    throws PatchFormatException {
         
-        //Note init to zero
-        int xpathcn = 0;
+        // First XPath child is 1, first DOM is 0
+        int xpathcn = 1;
         int domcn = 0;
 
         if (opAttrs.getNamedItem(DULConstants.CHILDNO) != null) {
-            xpathcn = Integer.valueOf(opAttrs.getNamedItem(
-                    DULConstants.CHILDNO).getNodeValue());
+            try {
+                xpathcn = Integer.valueOf(opAttrs.getNamedItem(
+                            DULConstants.CHILDNO).getNodeValue());
+            } catch (NumberFormatException e) {
+                throw new PatchFormatException("Invalid childno", e);
+            }
         }
 
         //Convert xpath childno to DOM childno
@@ -323,20 +419,25 @@ public class DULPatch {
      *
      * @param doc the document to be patched
      * @param op  the insert operation node
+     * @throws PatchFormatException if there is an error parsing the op
      */
-    private void doInsert(final Document doc, final Node op) {
+    private void doInsert(final Document doc, final Node op) 
+    throws PatchFormatException {
         
         DiffXML.LOG.fine("Applying insert");
         Node ins;
 
         //Get various variables need for insert
         NamedNodeMap opAttrs = op.getAttributes();
-        Node parent = getNamedParent(doc, opAttrs);
         int charpos = getCharPos(opAttrs);
 
-        //TODO: handle null better
-        if (parent == null) {
-            return;
+        Element parent = null;
+        Node parentNode = getNamedParent(doc, opAttrs);
+        if (parentNode == null) {
+            throw new PatchFormatException(
+                    "Insert operation must specify valid parent.");
+        } else {
+            parent = (Element) parentNode;
         }
 
         NodeList siblings = parent.getChildNodes();
@@ -348,59 +449,89 @@ public class DULPatch {
             case Node.TEXT_NODE:
 
                 ins = doc.createTextNode(getOpValue(op));
-                //System.err.println("domcn: " + domcn + " parent:" +parent.getNodeName());
-                insertNode(siblings, (Element) parent, domcn, charpos, ins);
+                insertNode(siblings, parent, domcn, charpos, ins, doc);
                 break;
 
             case Node.ELEMENT_NODE:
 
-                ins = doc.createElement(
-                        opAttrs.getNamedItem(DULConstants.NAME).getNodeValue());
-                insertNode(siblings, (Element) parent, domcn, charpos, ins);
+                ins = doc.createElement(getNameFromAttr(opAttrs));
+                insertNode(siblings, parent, domcn, charpos, ins, doc);
                 break;
 
             case Node.COMMENT_NODE:
 
                 ins = doc.createComment(getOpValue(op));
-                insertNode(siblings, (Element) parent, domcn, charpos, ins);
+                insertNode(siblings, parent, domcn, charpos, ins, doc);
                 break;
 
             case Node.ATTRIBUTE_NODE:
 
-                String name = opAttrs.getNamedItem(DULConstants.NAME).getNodeValue();
-                ((Element) parent).setAttribute(name, getOpValue(op));
+                parent.setAttribute(getNameFromAttr(opAttrs), getOpValue(op));
                 break;
 
             default:
-                //TODO: consider throwing exception or exiting here
-                System.err.println("Unknown NodeType " + nodeType);
-                return;
+                throw new PatchFormatException("Unknown NodeType " + nodeType);
         }
     }
 
     /**
-     * Find the correct text node to delete.
+     * Delete the appropriate amount of text from a Node.
      *
-     * @param delNode the first text node pointed to
+     * Assumes a normalized document, i.e. no adjacent or empty text nodes.
+     *
+     * @param delNode the text node to delete text from
      * @param charpos the character position at which to delete
-     * @return the text node which should be deleted
+     * @param length the number of characters to delete
+     * @param doc the document being deleted from
+     * @throws PatchFormatException if there is a problem with the patch
+     * @return the deleted text
      */
-    private Node getDelTextNode(final Node delNode, final int charpos) {
+    private String deleteText(final Node delNode, final int charpos, 
+            final int length, final Document doc) 
+    throws PatchFormatException {
         
-        int cp = charpos;
-        //TODO: Allow deleting part of nodes, not just whole nodes
-        NodeList siblings = delNode.getParentNode().getChildNodes();
-        int i = 0;
-        while (!NodeOps.checkIfSameNode(delNode, siblings.item(i))) {
-            i++;
+        if (delNode.getNodeType() != Node.TEXT_NODE) {
+            throw new PatchFormatException(
+                    "Attempt to delete text from non-text node.");
         }
 
-        //TODO: Check conditional, consider charpos > 0
-        while (cp > siblings.item(i).getNodeValue().length()) {
-            cp = cp - siblings.item(i).getNodeValue().length();
-            i++;
+        String text = delNode.getNodeValue();
+        if (charpos > text.length()) {
+            throw new PatchFormatException(
+                    "charpos past end of text node.");
         }
-        return siblings.item(i);
+        if ((length + charpos -1) > text.length()) {
+            throw new PatchFormatException(
+                "length past end of text node.");
+        }
+
+        String newText = text.substring(0, charpos - 1) 
+            + text.substring(charpos - 1 + length);
+        if (newText.length() > 0) {
+            Node newTextNode = doc.createTextNode(newText);
+            delNode.getParentNode().insertBefore(newTextNode, delNode);
+        }
+
+        delNode.getParentNode().removeChild(delNode);
+
+        return text.substring(charpos - 1, charpos - 1 + length);
+    }
+
+    /**
+     * Delete the appropriate amount of text from a Node.
+     *
+     * @param delNode the text node to delete text from
+     * @param charpos the character position at which to delete
+     * @param doc the document being deleted from
+     * @throws PatchFormatException if there is a problem with the patch
+     * @return the deleted text
+     */
+    private String deleteText(final Node delNode, final int charpos, 
+            final Document doc) 
+    throws PatchFormatException {
+
+        int length = delNode.getNodeValue().length() - charpos + 1;
+        return deleteText(delNode, charpos, length, doc);
     }
 
     /**
@@ -427,13 +558,20 @@ public class DULPatch {
      *
      * @param doc     document being patched
      * @param opAttrs attributes of operation node
+     * @throws PatchFormatException if there is an error parsing the attribute
      * @return        node pointed to by "parent" attribute
      */
-
     private Node getNamedParent(final Document doc, 
-            final NamedNodeMap opAttrs) {
+            final NamedNodeMap opAttrs) throws PatchFormatException {
         
-        String xPath = opAttrs.getNamedItem(DULConstants.PARENT).getNodeValue();
+        String xPath;
+        Node n = opAttrs.getNamedItem(DULConstants.PARENT);
+        if (n != null) {
+            xPath = n.getNodeValue();
+        } else {
+            throw new PatchFormatException("No parent attribute");
+        }
+
         return getNodeFromXPath(doc, xPath);
     }
 
@@ -442,19 +580,23 @@ public class DULPatch {
      *
      * @param doc   document being patched
      * @param xPath xPath to the node
+     * @throws PatchFormatException if there is an error parsing the xpath
      * @return      the node pointed to by the xPath
      */
+    private Node getNodeFromXPath(final Document doc, final String xPath) 
+    throws PatchFormatException {
 
-    private Node getNodeFromXPath(final Document doc, final String xPath) {
         Node n = null;
         try {
             //According to API returns *first* match,
             //so should be first text node if text node matched
-            n = XPathAPI.selectSingleNode(doc.getDocumentElement(), xPath);
-        } catch (TransformerException e) {
-            //Consider more fault tolerant behaviour
-            System.err.println("Could not resolve XPath for node");
-            System.exit(1);
+            n = (Node) mXPath.evaluate(
+                    xPath,
+                    doc.getDocumentElement(), 
+                    XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            throw new PatchFormatException(
+                    "Could not resolve XPath for node");
         }
         return n;
     }
@@ -464,9 +606,12 @@ public class DULPatch {
      *
      * @param doc     document being patched
      * @param opAttrs attributes of operation node
+     * @throws PatchFormatException if there is an error parsing the attribute
      * @return        node pointed to by "node" attribute
      */
-    private Node getNamedNode(final Document doc, final NamedNodeMap opAttrs) {
+    private Node getNamedNode(final Document doc, final NamedNodeMap opAttrs) 
+        throws PatchFormatException {
+
         String xPath = opAttrs.getNamedItem(DULConstants.NODE).getNodeValue();
         return getNodeFromXPath(doc, xPath);
     }
@@ -476,26 +621,32 @@ public class DULPatch {
      *
      * @param doc document to be patched
      * @param op  node holding details of delete
+     * @throws PatchFormatException if there is an error parsing the op
      */
+    private void doDelete(final Document doc, final Node op) 
+    throws PatchFormatException {
 
-    private void doDelete(final Document doc, final Node op) {
-
-        //TODO: test behaviour with text nodes
         NamedNodeMap opAttrs = op.getAttributes();
         DiffXML.LOG.fine("Applying delete");
 
         Node delNode = getNamedNode(doc, opAttrs);
 
-        int charpos = getCharPos(opAttrs);
+        //logDeleteVariables(delNode, opAttrs);
 
-        //Text node may actually be different node
-        if (delNode.getNodeType() == Node.TEXT_NODE) {
-            delNode = getDelTextNode(delNode, charpos);
+        if (delNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+            Attr delAttr = (Attr) delNode;
+            delAttr.getOwnerElement().removeAttributeNode(delAttr);
+        } else if (delNode.getNodeType() == Node.TEXT_NODE) {
+            int charpos = getCharPos(opAttrs);
+            try {
+                int length = getLengthFromAttr(opAttrs);
+                deleteText(delNode, charpos, length, doc); 
+            } catch (PatchFormatException e) {
+                deleteText(delNode, charpos, doc);
+            }
+        } else {
+            delNode.getParentNode().removeChild(delNode);
         }
-
-        logDeleteVariables(delNode, opAttrs);
-
-        delNode.getParentNode().removeChild(delNode);
     }
 
     /**
@@ -523,32 +674,37 @@ public class DULPatch {
      *
      * @param doc document to be patched
      * @param op  node holding details of move
+     * @throws PatchFormatException if there is an error parsing the op
      */
-    private void doMove(final Document doc, final Node op) {
+    private void doMove(final Document doc, final Node op) 
+        throws PatchFormatException {
         
-        //TODO: Thorough testing - pretty sure not currently working properly
-
         NamedNodeMap opAttrs = op.getAttributes();
         logMoveVars(opAttrs);
 
         Node moveNode = getNamedNode(doc, opAttrs);
         if (moveNode == null) {
-            System.err.println("Error applying patch.\n"
+            throw new PatchFormatException("Error applying patch.\n"
                     + "Node to move doesn't exist.");
-            System.exit(1);
         }
         DiffXML.LOG.fine("moveNode: " + moveNode.getNodeName());
 
         int oldCharPos = getOldCharPos(opAttrs);
 
-        //Currently only consider deleting nodes, not part of nodes
         if (moveNode.getNodeType() == Node.TEXT_NODE) {
-            moveNode = getDelTextNode(moveNode, oldCharPos);
+            String text = "";
+            try {
+                int length = getLengthFromAttr(opAttrs);
+                text = deleteText(moveNode, oldCharPos, length, doc); 
+            } catch (PatchFormatException e) {
+                text = deleteText(moveNode, oldCharPos, doc);
+            }
+            moveNode = doc.createTextNode(text);
         }
 
         //Find position to move to
         //Get parent
-        Node parent = getNamedParent(doc, opAttrs);
+        Element parent = (Element) getNamedParent(doc, opAttrs);
         DiffXML.LOG.fine("parent: " + parent.getNodeName());
 
         NodeList newSiblings = parent.getChildNodes();
@@ -558,11 +714,12 @@ public class DULPatch {
         int newCharPos = getNewCharPos(opAttrs);
 
         //Perform insert
-        //TODO: Check old node removed and children properly dealt with
 
-        moveNode = moveNode.getParentNode().removeChild(moveNode);
+        if (moveNode.getNodeType() != Node.TEXT_NODE) {
+            moveNode = moveNode.getParentNode().removeChild(moveNode);
+        }
         DiffXML.LOG.fine("newCharPos: " + newCharPos + " domcn: " + domcn);
-        insertNode(newSiblings, (Element) parent, domcn, newCharPos, moveNode);
+        insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);
     }
 
     /**
@@ -570,52 +727,63 @@ public class DULPatch {
      *
      * @param doc   the XML document to be patched
      * @param patch the DUL patch
+     * @throws PatchFormatException if there is an error parsing the patch
      */
-    public final void apply(final Document doc, final Document patch) {
+    public final void apply(final Document doc, final Document patch) 
+        throws PatchFormatException {
+
+        mXPath = XPathFactory.newInstance().newXPath();
+
         NodeIterator ni = ((DocumentTraversal) patch).createNodeIterator(
                 patch.getDocumentElement(), NodeFilter.SHOW_ELEMENT,
                 null, false);
 
         Node op = ni.nextNode();
+
         //Check we have a delta
         if (!op.getNodeName().equals(DULConstants.DELTA)) {
-            System.err.println("Not a delta document!");
-            return;
+            throw new PatchFormatException("All deltas must begin with a "
+                    + DULConstants.DELTA + " element.");
         }
 
         //Cycle through elements applying ops
         op = ni.nextNode();
 
         while (op != null) {
+            //Normalize essential for deletes to work
+            doc.normalize();
             String opName = op.getNodeName();
-            //NamedNodeMap opAttrs = op.getAttributes();
 
-            if (opName.equals(DULConstants.UPDATE)) {
-                doUpdate();
-            } else if (opName.equals(DULConstants.INSERT)) {
-                doInsert(doc, op);
-            } else if (opName.equals(DULConstants.DELETE)) {
-                doDelete(doc, op);
-            } else if (opName.equals(DULConstants.MOVE)) {
-                doMove(doc, op);
-            } else {
-                System.err.println("Do not recognise element: " + opName);
-                System.exit(2);
-            }
-            if (PatchXML.OUTPUT_DEBUG) {
-                try {
-                    System.out.println("Applying: ");
-                    PrintXML.print(op);
-                    System.out.println();
-                    Transformer serializer = TransformerFactory.newInstance()
-                            .newTransformer();
-                    serializer.transform(new DOMSource(doc), new StreamResult(
-                            System.out));
-                    System.out.println();
-                } catch (javax.xml.transform.TransformerException e) {
-                    System.err.println("Failed to do debug output");
-                    System.exit(1);
+            try {
+                if (opName.equals(DULConstants.UPDATE)) {
+                    doUpdate();
+                } else if (opName.equals(DULConstants.INSERT)) {
+                    doInsert(doc, op);
+                } else if (opName.equals(DULConstants.DELETE)) {
+                    doDelete(doc, op);
+                } else if (opName.equals(DULConstants.MOVE)) {
+                    doMove(doc, op);
+                } else {
+                    throw new PatchFormatException("Invalid element: " + opName);
                 }
+
+                if (PatchXML.debug) {
+                    try {
+                        System.err.print("At operation: ");
+                        System.err.println(DOMOps.getNodeAsString(op));
+                        System.err.println("Result: ");
+                        DOMOps.outputXML(doc, System.err);
+                        System.err.println();
+                        System.err.println();
+                    } catch (IOException e) {
+                        System.err.println("Failed to print debug output");
+                        System.exit(1);
+                    }
+                }
+            } catch (PatchFormatException e) {
+                throw new PatchFormatException(
+                        "Error at operation:\n" + DOMOps.getNodeAsString(op),
+                        e);
             }
             op = ni.nextNode();
         }

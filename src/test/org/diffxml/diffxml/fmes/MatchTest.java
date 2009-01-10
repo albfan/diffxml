@@ -1,6 +1,5 @@
 package org.diffxml.diffxml.fmes;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static junit.framework.Assert.fail;
@@ -12,6 +11,7 @@ import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.TestDocHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -219,5 +219,61 @@ public class MatchTest {
         
         Node bZ = bF.getNextSibling();
         assertEquals(bZ, matches.getPartner(aZ));
+    }
+
+    /**
+     * Test elements with different attributes don't match.
+     */
+    @Test
+    public final void testElementsWithDiffAttrs() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b/><c a=\"1\"/></a>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<a><b a=\"1\"/><c a=\"1\"/></a>");
+        
+        //a and c should match, b shouldn't
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        
+        Node root1 = doc1.getDocumentElement();
+        Node root2 = doc2.getDocumentElement();
+        assertEquals(root1, matches.getPartner(root2));
+
+        Node b1 = root1.getFirstChild();
+        assertNull(matches.getPartner(b1));
+
+        Node c1 = b1.getNextSibling();
+        Node c2 = root2.getFirstChild().getNextSibling();
+        assertEquals(c2, matches.getPartner(c1));
+    }
+
+    /**
+     * Test documents with two possible matches matches nearest.
+     *
+     * Currently ignored as not essential and slightly advanced.
+     */
+    @Test
+    @Ignore
+    public final void testMatchNearest() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<a>b<c/>b</a>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<a>z<c/>b</a>");
+        
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        
+        Node aRoot = doc1.getDocumentElement();
+        Node bRoot = doc2.getDocumentElement();
+        assertEquals(bRoot, matches.getPartner(aRoot));
+        
+        Node aB = aRoot.getFirstChild();
+        Node bZ = bRoot.getFirstChild();
+        
+        Node aC = aB.getNextSibling();
+        Node bC = bZ.getNextSibling();
+        assertEquals(bC, matches.getPartner(aC));
+        
+        Node aB2 = aC.getNextSibling();
+        Node bB = bC.getNextSibling();
+        assertEquals(bB, matches.getPartner(aB2));
     }
 }

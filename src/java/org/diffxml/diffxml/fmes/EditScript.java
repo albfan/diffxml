@@ -24,9 +24,11 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import java.util.List;
+import java.io.IOException;
 
 import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.DiffXML;
+import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
 import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
@@ -114,6 +116,9 @@ public final class EditScript {
         // Fifo used to do a breadth first traversal of doc2
         NodeFifo fifo = new NodeFifo();
         fifo.addChildrenOfNode(mDoc2.getDocumentElement());
+        //Special case for aligning children of document elements
+        alignChildren(mDoc1.getDocumentElement(), mDoc2.getDocumentElement(),
+                mMatchings);
 
         while (!fifo.isEmpty()) {
             
@@ -142,6 +147,7 @@ public final class EditScript {
 
         deletePhase(mDoc1.getDocumentElement(), mMatchings);
 
+        // TODO: Assert following
         // Post-Condition es is a minimum cost edit script,
         // Matchings is a total matching and
         // doc1 is isomorphic to doc2
@@ -174,9 +180,7 @@ public final class EditScript {
             NodeOps.setInOrder(mDoc2.getDocumentElement());
             
             mAddedDummyRoot = true;
-
         }
-
     }
 
     /**
@@ -192,7 +196,7 @@ public final class EditScript {
         assert (x != null);
         assert (z != null);
         
-        //Supposed to find the child number (k) to insert w as child of z 
+        //Find the child number (k) to insert w as child of z 
         FindPosition pos = new FindPosition(x, mMatchings);
 
         //Apply insert to doc1
@@ -210,6 +214,7 @@ public final class EditScript {
         //Take match of parent (z), and insert
         w = DOMOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
 
+        outputDebug();
         //Add to matching set
         mMatchings.add(w, x);
 
@@ -246,6 +251,7 @@ public final class EditScript {
 
         //Apply move to T1
         DOMOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
+        outputDebug();
     }
 
     /**
@@ -301,18 +307,15 @@ public final class EditScript {
         if (!matchings.isMatched(n)) {
             mDelta.delete(n);
             n.getParentNode().removeChild(n);
+            outputDebug();
         }
-
     }
 
     /**
      * Mark the children of a node out of order.
      *
-     * Move to helper class if of use to other classes.
-     *
      * @param n the parent of the nodes to mark out of order
      */
-
     private static void markChildrenOutOfOrder(final Node n) {
 
         NodeList kids = n.getChildNodes();
@@ -336,8 +339,6 @@ public final class EditScript {
         }
     }
 
-
-
     /**
      * Moves nodes that are not in order to correct position.
      *
@@ -347,7 +348,6 @@ public final class EditScript {
      * @param stay The List of nodes not to be moved
      * @param matchings The set of matching nodes
      */
-
     private void moveMisalignedNodes(final Node w, final Node[] wSeq, 
             final List<Node> stay, final NodePairs matchings) {
         
@@ -358,16 +358,16 @@ public final class EditScript {
                 Node b = matchings.getPartner(a);
                 FindPosition pos = new FindPosition(b, matchings);
 
-                mDelta.move(a, w, pos.getXPathInsertPosition(), 
+                mDelta.move(a, w, pos.getXPathInsertPosition(),
                         pos.getCharInsertPosition());
 
                 DOMOps.insertAsChild(pos.getDOMInsertPosition(), w, a);
 
                 NodeOps.setInOrder(a);
                 NodeOps.setInOrder(b);
-                }
             }
         }
+    }
 
     /**
      * Aligns children of current node that are not in order.
@@ -377,7 +377,6 @@ public final class EditScript {
 
      * @param matchings  the set of matchings
      */
-
     private void alignChildren(final Node w, final Node x,
             final NodePairs matchings) {
         
@@ -397,5 +396,22 @@ public final class EditScript {
         setNodesInOrder(lcsSeq, matchings);
         
         moveMisalignedNodes(w, wSeq, lcsSeq, matchings);
+    }
+
+    /**
+     * Outputs debug information.
+     */
+    private final void outputDebug() {
+
+        if (DiffFactory.isDebug()) {
+            System.err.println("Result:");
+            try {
+                DOMOps.outputXML(mDoc1, System.err);
+            } catch (IOException e) {
+                System.err.println("Failed to print debug info");
+            }
+            System.err.println();
+            System.err.println();
         }
+    }
 }

@@ -72,12 +72,7 @@ public class FindPositionTest {
         assertEquals("b", b.getNodeName());
         FindPosition fp = new FindPosition(b, pairs);
         assertEquals(1, fp.getDOMInsertPosition());
-        /** 
-         * Again, problems with inserting into text. So we are specifying
-         * Node number 1 (although it will become Node 2) with a character
-         * offset.
-         */
-        assertEquals(1, fp.getXPathInsertPosition());
+        assertEquals(2, fp.getXPathInsertPosition());
         assertEquals(9, fp.getCharInsertPosition());
     }
 

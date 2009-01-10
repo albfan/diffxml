@@ -134,23 +134,30 @@ public final class Match {
             NamedNodeMap aAttrs = a.getAttributes();
             NamedNodeMap bAttrs = b.getAttributes();
 
-            int numberAttrs = 0;
+            int numberAAttrs = 0;
             if (aAttrs != null) {
-                numberAttrs = aAttrs.getLength();
+                numberAAttrs = aAttrs.getLength();
+            }
+            int numberBAttrs = 0;
+            if (bAttrs != null) {
+                numberBAttrs = bAttrs.getLength();
+            }
+            if (numberAAttrs != numberBAttrs) {
+                ret = false;
             }
 
-            for (int i = 0; i < numberAttrs; i++) {
+            int i = 0;
+            while ((ret == true) && (i < numberAAttrs)) {
                 // Check if attr exists in other tag
                 if (bAttrs.getNamedItem(aAttrs.item(i).getNodeName()) == null) {
                     ret = false;
-                    break;
                 }
 
                 if (!bAttrs.getNamedItem(aAttrs.item(i).getNodeName())
                         .getNodeValue().equals(aAttrs.item(i).getNodeValue())) {
                     ret = false;
-                    break;
                 }
+                i++;
             }
         }
         

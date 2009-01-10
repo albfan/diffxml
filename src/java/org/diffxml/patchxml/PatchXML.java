@@ -51,7 +51,7 @@ public final class PatchXML {
     /** 
      * If true, extra debug data is output.
      */
-    public static final boolean OUTPUT_DEBUG = false;
+    public static boolean debug = false;
 
     /**
      * If true, attempt to reverse the sense of the patch.
@@ -112,6 +112,8 @@ public final class PatchXML {
                 dryrun = true;
             } else if (arg.equals("-reverse")) {
                 reverse = true;
+            } else if (arg.equals("-debug")) {
+                debug = true;
             } else {
 
                 //(series of) flag arguments                
@@ -126,6 +128,9 @@ public final class PatchXML {
                             break;
                         case 'd':
                             dryrun = true;
+                            break;
+                        case 'D':
+                            debug = true;
                             break;
                         case 'R':
                             reverse = true;
@@ -235,12 +240,9 @@ public final class PatchXML {
     /**
      * Output the patched document to stdout.
      *
-     * Also outputs patch document if in debug.
-     * 
      * @param doc the patched document
-     * @param patch the patch document
      */
-    private static void outputDoc(final Document doc, final Document patch) {
+    private static void outputDoc(final Document doc) {
 
         try {
  
@@ -249,11 +251,6 @@ public final class PatchXML {
             } else {
                 DOMOps.outputXML(doc, new FileOutputStream(mDocFile));
             }
-            DiffXML.LOG.finer("PatchXML Doc");
-            if (OUTPUT_DEBUG) {
-                DOMOps.outputXML(patch, System.out);
-            }
-            System.out.println();
         } catch (IOException e) {
             System.err.println("Failed to output new document: " + e);
             System.exit(2);
@@ -317,6 +314,16 @@ public final class PatchXML {
         doc.normalize();
         patch.normalize();
 
+        if (debug) {
+            try {
+                System.err.println("Applying patch to: ");
+                DOMOps.outputXML(doc, System.err);
+                System.err.println();
+            } catch (IOException e) {
+                System.err.println("Failed to print debug output");
+            }
+        }
+
         if (reverse) {
             patch = Reverse.go(patch);
         }
@@ -328,8 +335,15 @@ public final class PatchXML {
         }
 
         DULPatch patcher = new DULPatch();
-        patcher.apply(doc, patch);
+        try {
+            patcher.apply(doc, patch);
+        } catch (PatchFormatException e) {
+            System.err.println("Failed to parse Patch:"); 
+            e.printStackTrace();
+            System.exit(2);
+        }
 
-        outputDoc(doc, patch);
+        outputDoc(doc);
+        System.out.println();
     }
 }

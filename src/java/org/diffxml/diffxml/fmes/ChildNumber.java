@@ -164,17 +164,17 @@ public final class ChildNumber {
      * 
      * Handles differences between DOM index and XPath index
      * 
-     * @param i
-     *            the current position in siblings
-     * @return true if index should be incremented
+     * @param i The current position in siblings
+     * @return true If index should be incremented
      */
     private boolean incIndex(final int i) {
 
         boolean inc = true;
  
         // Handle non-coalescing of text nodes
-        if ((i > 0) && nodesAreTextNodes(
-                mSiblings.item(i), mSiblings.item(i - 1))) {
+        if ((i > 0 && nodesAreTextNodes(
+                mSiblings.item(i), mSiblings.item(i - 1))) 
+                || NodeOps.nodeIsEmptyText(mSiblings.item(i))) {
             inc = false;
         }
 
@@ -315,7 +315,8 @@ public final class ChildNumber {
         for (domIndex = 0; domIndex < mSiblings.getLength(); domIndex++) {
             currNode = mSiblings.item(domIndex);
             if (NodeOps.isInOrder(currNode)
-                    && !nodesAreTextNodes(currNode, lastInOrderNode)) {
+                    && !(nodesAreTextNodes(currNode, lastInOrderNode) 
+                        || NodeOps.nodeIsEmptyText(currNode))) {
                 childNo++;
             }
             if (NodeOps.checkIfSameNode(currNode, mNode)) {
@@ -333,9 +334,9 @@ public final class ChildNumber {
    
         mInOrderXPathChildNo = childNo;
         return domIndex;
-        
     }
     
+
     /**
      * Calculate the character position of the node.
      * 

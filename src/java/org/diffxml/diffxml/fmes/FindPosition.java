@@ -56,14 +56,13 @@ public class FindPosition {
 
             //Need position after u
             mInsertPositionDOM = uChildNo.getInOrderDOM() + 1;
+            mInsertPositionXPath = uChildNo.getInOrderXPath() + 1;
 
             //For xpath, character position is used if node is text node
             if (u.getNodeType() == Node.TEXT_NODE) {
-                mInsertPositionXPath = uChildNo.getInOrderXPath();
                 mCharInsertPosition = uChildNo.getInOrderXPathCharPos()
                         + u.getTextContent().length();
             } else {
-                mInsertPositionXPath = uChildNo.getInOrderXPath() + 1;
                 mCharInsertPosition = 1;
             }
         }

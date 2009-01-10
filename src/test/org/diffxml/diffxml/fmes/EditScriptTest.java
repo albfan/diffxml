@@ -85,7 +85,8 @@ public class EditScriptTest {
         NamedNodeMap attrs = insert.getAttributes();
         assertEquals("2", attrs.getNamedItem("childno").getNodeValue());
         assertEquals("c", attrs.getNamedItem("name").getNodeValue());
-        assertEquals("/a", attrs.getNamedItem("parent").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());
         assertEquals("1", attrs.getNamedItem("nodetype").getNodeValue());
     }
 
@@ -111,11 +112,12 @@ public class EditScriptTest {
         Node delete = res.getFirstChild().getFirstChild();
         assertEquals("delete", delete.getNodeName());
         NamedNodeMap attrs = delete.getAttributes();
-        assertEquals("/a/node()[2]", attrs.getNamedItem("node").getNodeValue());
+        assertEquals("/node()[1]/node()[2]", 
+                attrs.getNamedItem("node").getNodeValue());
     }
     
     /**
-     * Test the simple deletion of an element.
+     * Test the simple move of an element.
      */
     @Test
     public final void testSimpleMove() {
@@ -134,13 +136,105 @@ public class EditScriptTest {
         Node move = res.getFirstChild().getFirstChild();
         assertEquals("move", move.getNodeName());
         NamedNodeMap attrs = move.getAttributes();
-        assertEquals("/a/node()[1]/node()[1]", 
+        assertEquals("/node()[1]/node()[1]/node()[1]", 
                 attrs.getNamedItem("node").getNodeValue());
         assertEquals("1", 
                 attrs.getNamedItem("childno").getNodeValue());
-        assertEquals("/a/node()[2]", 
+        assertEquals("/node()[1]/node()[2]", 
                 attrs.getNamedItem("parent").getNodeValue());    
 
     }
 
+    /**
+     * Test insert after text.
+     */
+    @Test
+    public final void testInsertAfterText() {
+
+        Document doc1 = TestDocHelper.createDocument("<a>text</a>");
+        Document doc2 = TestDocHelper.createDocument("<a>text<b/></a>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(4, matchings.size());
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+        Node insert = res.getFirstChild().getFirstChild();
+        assertEquals("insert", insert.getNodeName());
+        NamedNodeMap attrs = insert.getAttributes();
+        assertEquals("2", 
+                attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());    
+        assertEquals("5",  
+                attrs.getNamedItem("charpos").getNodeValue());    
+        assertEquals("1",
+                attrs.getNamedItem("nodetype").getNodeValue());    
+    }
+
+    /**
+     * Test mis-aligned nodes.
+     */
+    @Test
+    public final void testMisalignedNodes() {
+
+        Document doc1 = TestDocHelper.createDocument("<a>b<c/>b</a>");
+        Document doc2 = TestDocHelper.createDocument("<a>z<c/>b</a>");
+
+        NodePairs matchings = new NodePairs();
+        Node docEl1 = doc1.getDocumentElement();
+        Node docEl2 = doc2.getDocumentElement();
+        matchings.add(docEl1, docEl2);
+        matchings.add(docEl1.getFirstChild(), 
+                docEl2.getFirstChild().getNextSibling().getNextSibling());
+        matchings.add(docEl1.getFirstChild().getNextSibling(),
+                docEl2.getFirstChild().getNextSibling());
+
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+        Node move = res.getFirstChild().getFirstChild();
+        assertEquals("move", move.getNodeName());
+        NamedNodeMap attrs = move.getAttributes();
+        assertEquals("2", 
+                attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());    
+        assertEquals("/node()[1]/node()[1]",
+                attrs.getNamedItem("node").getNodeValue());
+        assertEquals("1",
+                attrs.getNamedItem("new_charpos").getNodeValue());
+        assertEquals("1",
+                attrs.getNamedItem("old_charpos").getNodeValue());
+
+        Node insert = move.getNextSibling();
+        assertEquals("insert", insert.getNodeName());
+        attrs = insert.getAttributes();
+        assertEquals("1", 
+                attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());    
+        assertEquals("3",
+                attrs.getNamedItem("nodetype").getNodeValue());    
+        assertEquals("z", insert.getTextContent());
+
+        Node delete = insert.getNextSibling();
+        assertEquals("delete", delete.getNodeName());
+        attrs = delete.getAttributes();
+        assertEquals("/node()[1]/node()[3]",
+                attrs.getNamedItem("node").getNodeValue());
+        assertEquals("1",
+                attrs.getNamedItem("length").getNodeValue());
+        assertEquals("2",
+                attrs.getNamedItem("charpos").getNodeValue());
+
+    }
+    
 }

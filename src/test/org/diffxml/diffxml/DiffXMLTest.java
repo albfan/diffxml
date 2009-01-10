@@ -17,8 +17,8 @@ import junit.framework.TestCase;
 
 public class DiffXMLTest extends TestCase {
 
-    @Test
-	public final void testSimpleDiff() {
+        @Test
+        public final void testSimpleDiff() {
 		Diff d = DiffFactory.createDiff();
 		try {
             d.diff(new File("test1.xml"), new File("test2.xml"));

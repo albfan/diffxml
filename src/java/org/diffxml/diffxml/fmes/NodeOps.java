@@ -109,7 +109,7 @@ public final class NodeOps {
      */
     public static String getXPath(final Node n) {
 
-        Node root = n.getOwnerDocument().getDocumentElement();
+        Node docEl = n.getOwnerDocument().getDocumentElement();
         Node curr = n;        
 
         String xpath;
@@ -122,16 +122,23 @@ public final class NodeOps {
                  + "/@" + n.getNodeName();
         } else {
             ChildNumber cn = new ChildNumber(curr);
-            if (NodeOps.checkIfSameNode(root, curr)) {
-                // Not clear if node() *always* matches the root node in XPath
-                xpath = "/" + n.getNodeName();
+            if (NodeOps.checkIfSameNode(docEl, curr)) {
+                xpath = "/node()[" + cn.getXPath() + "]"; 
+
             } else {
                 xpath = getXPath(curr.getParentNode()) 
-                + "/node()[" + cn.getXPath() + "]";
+                    + "/node()[" + cn.getXPath() + "]";
             }
         }
         
         return xpath;
     }
     
+    /**
+     * Check if node is an empty text node.
+     */
+    public static boolean nodeIsEmptyText(Node n) {
+        return (n.getNodeType() == Node.TEXT_NODE 
+            && n.getNodeValue().length() == 0);
+    }
 }

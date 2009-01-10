@@ -28,6 +28,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.diffxml.diffxml.DiffFactory;
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.fmes.ChildNumber;
 import org.diffxml.diffxml.fmes.NodeOps;
 import org.w3c.dom.NamedNodeMap;
@@ -39,8 +40,6 @@ import org.diffxml.dul.DULConstants;
 
 /**
  * Handle operations related to creating a DUL delta.
- * 
- * TODO: Create interface to allow different formats to be plugged in
  * 
  * @author Adrian Mouat
  */
@@ -179,6 +178,8 @@ public class DULDelta implements DeltaIF {
         }
 
         mEditScript.getDocumentElement().appendChild(ins);
+
+        outputDebug(ins);
         
         // Add any attributes
         if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -228,6 +229,8 @@ public class DULDelta implements DeltaIF {
         }
 
         mEditScript.getDocumentElement().appendChild(del);
+
+        outputDebug(del);
     }
 
     /**
@@ -262,6 +265,18 @@ public class DULDelta implements DeltaIF {
         mov.setAttribute(DULConstants.CHILDNO, Integer.toString(childno));
 
         mEditScript.getDocumentElement().appendChild(mov);
+
+        outputDebug(mov);
     }
 
+    /**
+      * Outputs debug meesage for node.
+      */
+    private void outputDebug(Node n) {
+
+        if (DiffFactory.isDebug()) {
+            System.err.print("Applying: ");
+            System.err.println(DOMOps.getNodeAsString(n));
+        }
+    }
 }

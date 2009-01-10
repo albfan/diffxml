@@ -92,6 +92,8 @@ public final class DiffXML {
             //"wordy" arguments
             if (currentArg.equals("-brief")) {
                 DiffFactory.setBrief(true);
+            } else if (currentArg.equals("-debug")) {
+                DiffFactory.setDebug(true);
             } else if (currentArg.equals("-ignore-all-whitespace")) {
                 DiffFactory.setIgnoreAllWhitespace(true);
                 DiffFactory.setIgnoreWhitespaceNodes(true);

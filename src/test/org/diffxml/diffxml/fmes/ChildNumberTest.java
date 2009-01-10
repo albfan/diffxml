@@ -6,7 +6,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -104,30 +103,43 @@ public class ChildNumberTest {
     public final void testTextNodeChildNo() {
         
         //<parent><a/>12<!--d-->3</parent>
+        Node blank = testDoc.createTextNode("");
         Element a = testDoc.createElement("a");
         Node b = testDoc.createTextNode("1");
         Node c = testDoc.createTextNode("2");
         Node d = testDoc.createComment("d");
         Node e = testDoc.createTextNode("3");
         
+        parent.appendChild(blank); //Should be ignored in XPaths
         parent.appendChild(a);
         parent.appendChild(b);
         parent.appendChild(c);
         parent.appendChild(d);
         parent.appendChild(e);
         
+        ChildNumber blankChildNo = new ChildNumber(blank);
         ChildNumber aChildNo = new ChildNumber(a);
         ChildNumber bChildNo = new ChildNumber(b);
         ChildNumber cChildNo = new ChildNumber(c);
         ChildNumber dChildNo = new ChildNumber(d);
         ChildNumber eChildNo = new ChildNumber(e);
         
-        assertEquals(0, aChildNo.getDOM());
-        assertEquals(1, bChildNo.getDOM());
-        assertEquals(2, cChildNo.getDOM());
-        assertEquals(3, dChildNo.getDOM());
-        assertEquals(4, eChildNo.getDOM());
+        assertEquals(0, blankChildNo.getDOM());
+        assertEquals(1, aChildNo.getDOM());
+        assertEquals(2, bChildNo.getDOM());
+        assertEquals(3, cChildNo.getDOM());
+        assertEquals(4, dChildNo.getDOM());
+        assertEquals(5, eChildNo.getDOM());
         
+        //Force evaluation of xpaths before normalize
+        aChildNo.getXPath();
+        bChildNo.getXPath();
+        cChildNo.getXPath();
+        dChildNo.getXPath();
+        eChildNo.getXPath();
+
+        testDoc.normalize();
+
         XPath xpath = mXPathFac.newXPath();
         try {
             String pre = "//parent/node()[";
@@ -140,13 +152,13 @@ public class ChildNumberTest {
                     "substring(" + pre + bChildNo.getXPath()
                     + "]," + bChildNo.getXPathCharPos() + ",1)",
                     testDoc, XPathConstants.STRING);
-            assertEquals(b.getTextContent(), ret.toString());
+            assertEquals("1", ret.toString());
             
             ret = xpath.evaluate(
                     "substring(" + pre + cChildNo.getXPath() + "],"
                     + cChildNo.getXPathCharPos() + ",1)", testDoc, 
                     XPathConstants.STRING);
-            assertEquals(c.getTextContent(), ret.toString());
+            assertEquals("2", ret.toString());
             
             ret = xpath.evaluate(pre + dChildNo.getXPath() + "]",
                     testDoc, XPathConstants.NODE);

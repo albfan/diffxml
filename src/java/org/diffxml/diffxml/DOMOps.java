@@ -2,6 +2,7 @@ package org.diffxml.diffxml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -70,7 +71,60 @@ public final class DOMOps {
         } catch (TransformerException e) {
             throw new IOException("Failed to serialize document", e);
         }
+    }
+
+    /**
+     * Writes given XML Node to given stream.
+     *
+     * Uses UTF8 encoding, no indentation, preserves spaces.
+     * Omits the XML declaration.
+     * 
+     * @param node Node to output
+     * @param os  Stream to output to
+     * @throws IOException If an error occurs with serialization
+     */
+    public static void outputXML(final Node node, final OutputStream os) 
+    throws IOException {
+        
+        if (node == null) {
+            throw new IllegalArgumentException("Null node");
+        }
     
+        try {
+            final Transformer transformer = 
+                DOMOps.TRANSFORMER_FACTORY.newTransformer();
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.transform(new DOMSource(node),
+                    new StreamResult(os));
+    
+        } catch (TransformerConfigurationException e1) {
+            throw new IOException("Failed to configure serializer", e1);
+        } catch (TransformerException e) {
+            throw new IOException("Failed to serialize document", e);
+        }
+    }
+
+    /**
+     * Gets the string representation of a Node.
+     *
+     * Catches possible IOExceptions and rethrows as unchecked.
+     * @param n The Node to get the String for
+     * @return The String representation of the Node
+     */
+    public static String getNodeAsString(Node n) {
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream(); 
+        try {
+            DOMOps.outputXML(n, os);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    "An error occured when serializing the node", e);
+        }
+        return os.toString();
     }
 
     /**
@@ -107,6 +161,10 @@ public final class DOMOps {
     
         Node ret;
         NodeList kids = parent.getChildNodes();
+        //Needed to first remove child to ensure DOM position is correct
+        if (insNode.getParentNode() != null) {
+            insNode.getParentNode().removeChild(insNode);
+        }
     
         if (kids.item(childNum) != null) {
             ret = parent.insertBefore(insNode, kids.item(childNum));

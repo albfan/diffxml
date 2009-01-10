@@ -8,6 +8,7 @@ import javax.xml.xpath.XPathFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
@@ -66,9 +67,20 @@ public class NodeOpsTest {
     private void testXPathForNode(final Node n, final XPath xp) {
         
         String xpath = NodeOps.getXPath(n);
-        
+        compareXPathResult(n, xpath, xp);
+    }
+    
+    /**
+     * Compares the result of the xpath expression to the expected Node n.
+     *
+     * @param n The expected result node
+     * @param xpath The expression to evaluate
+     * @param xp XPath expression (for efficiency)
+     */
+    private void compareXPathResult(final Node n, final String xpath, final XPath xp ) {
+
         try {
-            Node ret = (Node) xp.evaluate(xpath, n.getOwnerDocument(), 
+            Node ret = (Node) xp.evaluate(xpath, n.getOwnerDocument().getDocumentElement(), 
                     XPathConstants.NODE);
             assertNotNull(ret);
 
@@ -93,27 +105,39 @@ public class NodeOpsTest {
             }
         }
     }
-    
+
     /**
      * Test for the horrible coalesced text nodes issue.
      * 
-     * Unfortunately, this test fails as the XPath context does not contain the
-     * c node. Sigh.
      */
     @Test
-    @Ignore
     public final void testGetXPathWithTextNodes() {
         
         Document testDoc = TestDocHelper.createDocument("<a>b</a>");
         Element root = testDoc.getDocumentElement();
-        Node c = testDoc.createTextNode("c");
+        Node b = root.getFirstChild();
+        Node c = testDoc.createTextNode("c\n");
         root.appendChild(c);
+        Node d = testDoc.createElement("d");
+        root.appendChild(d);
+        Node e = testDoc.createTextNode("e");
+        root.appendChild(e);
+        String bxpath = NodeOps.getXPath(b);
+        String cxpath = NodeOps.getXPath(c);
+        String dxpath = NodeOps.getXPath(d);
+        String expath = NodeOps.getXPath(e);
+
+        //Have to normalize the doc for the XPath context to be correct.
+        testDoc.normalize();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
-        XPath xpath = xPathFac.newXPath();
+        XPath xp = xPathFac.newXPath();
  
-        testXPathForNode(c, xpath);       
+        compareXPathResult(b, bxpath, xp);       
+        compareXPathResult(c, cxpath, xp);       
+        compareXPathResult(d, dxpath, xp);       
+        compareXPathResult(e, expath, xp);       
     }
     
     /**
@@ -134,6 +158,39 @@ public class NodeOpsTest {
         testXPathForNode(attrs.item(0), xpathExpr);
     }   
  
+    /**
+     * Test getting XPath with namespaced root node.
+     */
+    @Test
+    public final void testGetXPathWithNamespace() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<d:a xmlns:d=\"http://test.com\"><b/></d:a>");
+        Element root = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(root, xpathExpr);
+        testXPathForNode(root.getFirstChild(), xpathExpr);
+    }   
+
+    /**
+     * Test check for blank text nodes.
+     */
+    @Test
+    public final void testCheckForBlankText() {
+        Document testDoc = TestDocHelper.createDocument(
+                "<a></a>");
+
+        Node nonBlank = testDoc.createTextNode("a");
+        assertFalse(NodeOps.nodeIsEmptyText(nonBlank));
+
+        Node blank = testDoc.createTextNode("");
+        assertTrue(NodeOps.nodeIsEmptyText(blank));
+    }
+
     /**
      * Test getElementsOfNodeList.
      */

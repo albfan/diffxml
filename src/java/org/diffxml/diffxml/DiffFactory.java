@@ -39,12 +39,17 @@ public final class DiffFactory {
      * changes to options affect in-process diffs.
      */
 
-
     /**
      * Report only if files differ.
      * Default off.
      */
     private static boolean mBrief = false;
+
+    /**
+     * Provide debug output.
+     * Default false.
+     */
+    private static boolean mDebug = false;
 
     /**
      * Ignore all whitespace.
@@ -160,6 +165,23 @@ public final class DiffFactory {
         return mBrief;
     }
 
+    /**
+     * Output extra debug info.
+     * 
+     * @param debug Sets debug output
+     */
+    public static void setDebug(final boolean debug) {
+        mDebug = debug;
+    }
+    
+    /**
+     * If debug mode is on, extra debug info is output.
+     * 
+     * @return True if debug is on
+     */
+    public static boolean isDebug() {
+        return mDebug;
+    }
     /**
      * Sets whether any differences in whitespace should be considered.
      * 

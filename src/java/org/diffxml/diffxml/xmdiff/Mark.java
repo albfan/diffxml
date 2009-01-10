@@ -23,14 +23,11 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.xmdiff;
 
-
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.*;
 import org.w3c.dom.NodeList;
-import com.sun.org.apache.xpath.internal.XPathAPI;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.NamedNodeMap;
 import java.io.File;
@@ -42,6 +39,10 @@ import org.diffxml.diffxml.fmes.delta.DULDelta;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 
 //Should rewrite as external mem prog.
 //All we really need to do is get Recover & pulldiff outputting values then reorder
@@ -51,6 +52,8 @@ public class Mark
 
     public static void mark(Document xm, Document doc1, Document doc2)
     {
+
+        XPath xpath = XPathFactory.newInstance().newXPath();
 
         NodeIterator ni = ((DocumentTraversal) xm).createNodeIterator
         (xm.getDocumentElement(), NodeFilter.SHOW_ELEMENT, null, false);
@@ -68,14 +71,15 @@ public class Mark
 
                 try 
                 {
-                    Node node=XPathAPI.selectSingleNode(
+                    Node node = (Node) xpath.evaluate(
+                            ((Element)op).getAttribute("node"),
                             doc2.getDocumentElement(), 
-                            ((Element)op).getAttribute("node"));
+                            XPathConstants.NODE);
 
                     //Mark the node to be inserted in the tree
                     node.setUserData("insert","true",null);
                 }
-                catch (TransformerException e) {
+                catch (XPathExpressionException e) {
                     System.err.println("Create could not find node to insert: "
                             + ((Element)op).getAttribute("node"));}
 
@@ -85,8 +89,11 @@ public class Mark
                 //Change the delete instruction
                 try
                 {
-                    Node node=XPathAPI.selectSingleNode
-                    (doc1.getDocumentElement(), ((Element)op).getAttribute("node"));	
+                    Node node = (Node) xpath.evaluate(
+                            ((Element)op).getAttribute("node"),
+                            doc1.getDocumentElement(), 
+                            XPathConstants.NODE);
+
                     //Mark node to be deleted
                     if (node==null)
                     {
@@ -94,7 +101,7 @@ public class Mark
                     }
                     node.setUserData("delete","true",null);
                 }
-                catch (TransformerException e) {
+                catch (XPathExpressionException e) {
                     System.err.println("Create could not find node to delete:" + ((Element)op).getAttribute("node"));}
 
             }

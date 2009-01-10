@@ -39,7 +39,7 @@ public final class DULConstants {
     /** Move operation element. **/
     public static final String MOVE = "move";
     
-    /** Number of characters to extract from a test node. **/
+    /** Number of characters to extract from a text node. **/
     public static final String LENGTH = "length";
     
     /** The node for the operation. **/

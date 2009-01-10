@@ -166,7 +166,7 @@ public class DULDeltaTest {
             DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
-                    "<delta><delete node=\"/a/node()[1]\"/></delta>"));
+                    "<delta><delete node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -197,7 +197,7 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><delete charpos=\"1\" length=\"4\" "
-                    + "node=\"/a/node()[1]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -212,7 +212,7 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delete charpos=\"5\" length=\"8\" "
-                    + "node=\"/a/node()[1]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -227,7 +227,7 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delete charpos=\"13\" length=\"12\" "
-                    + "node=\"/a/node()[1]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -253,7 +253,7 @@ public class DULDeltaTest {
             DOMOps.outputXML(mDelta.getDocument(), os);
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
-                    "<delta><delete node=\"/a/node()[1]\"/></delta>"));
+                    "<delta><delete node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -282,7 +282,8 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta>"
-                    + "<delete node=\"/a/node()[1]/@deleteTest\"/></delta>"));
+                    + "<delete node=\"/node()[1]/node()[1]/@deleteTest\"/>"
+                    + "</delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -310,8 +311,9 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" new_charpos=\"1\" "
-                    + "node=\"/a/node()[1]/node()[1]\" old_charpos=\"1\" "
-                    + "parent=\"/a/node()[2]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]/node()[1]\" "
+                    + "old_charpos=\"1\" "
+                    + "parent=\"/node()[1]/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -340,8 +342,9 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"2\" new_charpos=\"9\" "
-                    + "node=\"/a/node()[1]/node()[2]\" old_charpos=\"5\" "
-                    + "parent=\"/a/node()[2]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]/node()[2]\" "
+                    + "old_charpos=\"5\" "
+                    + "parent=\"/node()[1]/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
@@ -369,8 +372,9 @@ public class DULDeltaTest {
             String out = new String(os.toByteArray(), "UTF-8");
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" length=\"8\" new_charpos=\"1\" "
-                    + "node=\"/a/node()[1]/node()[1]\" old_charpos=\"1\" "
-                    + "parent=\"/a/node()[2]\"/></delta>"));
+                    + "node=\"/node()[1]/node()[1]/node()[1]\" "
+                    + "old_charpos=\"1\" "
+                    + "parent=\"/node()[1]/node()[2]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
             fail("Caught exception: " + e.getMessage());
         } catch (IOException e) {
