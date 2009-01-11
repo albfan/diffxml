@@ -225,10 +225,10 @@ public final class EditScript {
      * Performs a move operation according to the algorithm and updates
      * the EditScript.
      *
-     * @param x          current node
+     * @param w          the node to be moved
+     * @param x          the matching node
      * @param z          the partner of x's parent
      * @param matchings  the set of matching nodes
-     * @return           the moved node
      */
     private void doMove(final Node w, final Node x, final Node z, 
             final NodePairs matchings) {
