@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.TestDocHelper;
-import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Attr;
@@ -29,6 +28,11 @@ public class DULDeltaTest {
      * The edit script to add commands to.
      */
     private DULDelta mDelta;
+
+    /**
+     * Encoding for printing documents.
+     */
+    private static final String ENCODING = "UTF-8";
     
     /**
      * Set up the DUL EditScript.
@@ -55,7 +59,7 @@ public class DULDeltaTest {
         
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" name=\"insertTest\" "
                     + "nodetype=\"1\" parent=\"/a\"/></delta>"));
@@ -80,7 +84,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains("<delta><insert name=\"insertTest\""
                     + " nodetype=\"2\" parent=\"/a\">ins</insert></delta>"));
         } catch (UnsupportedEncodingException e) {
@@ -109,7 +113,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" name=\"attrTest\" "
                     + "nodetype=\"1\" parent=\"/a\"/>"));
@@ -138,7 +142,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><insert childno=\"1\" nodetype=\"8\" parent=\"/a\">"
                     + "ins</insert></delta>"));
@@ -164,7 +168,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><delete node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
@@ -194,7 +198,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><delete charpos=\"1\" length=\"4\" "
                     + "node=\"/node()[1]/node()[1]\"/></delta>"));
@@ -209,7 +213,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delete charpos=\"5\" length=\"8\" "
                     + "node=\"/node()[1]/node()[1]\"/></delta>"));
@@ -224,7 +228,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delete charpos=\"13\" length=\"12\" "
                     + "node=\"/node()[1]/node()[1]\"/></delta>"));
@@ -251,7 +255,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><delete node=\"/node()[1]/node()[1]\"/></delta>"));
         } catch (UnsupportedEncodingException e) {
@@ -279,7 +283,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta>"
                     + "<delete node=\"/node()[1]/node()[1]/@deleteTest\"/>"
@@ -308,7 +312,7 @@ public class DULDeltaTest {
 
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" new_charpos=\"1\" "
                     + "node=\"/node()[1]/node()[1]/node()[1]\" "
@@ -339,7 +343,7 @@ public class DULDeltaTest {
         
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><move childno=\"2\" new_charpos=\"9\" "
                     + "node=\"/node()[1]/node()[1]/node()[2]\" "
@@ -369,7 +373,7 @@ public class DULDeltaTest {
         
         try {
             DOMOps.outputXML(mDelta.getDocument(), os);
-            String out = new String(os.toByteArray(), "UTF-8");
+            String out = new String(os.toByteArray(), ENCODING);
             assertTrue(out.contains(
                     "<delta><move childno=\"1\" length=\"8\" new_charpos=\"1\" "
                     + "node=\"/node()[1]/node()[1]/node()[1]\" "
