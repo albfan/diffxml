@@ -256,7 +256,7 @@ public class EditScriptTest {
         Node move = res.getFirstChild().getFirstChild();
         assertEquals("insert", move.getNodeName());
         NamedNodeMap attrs = move.getAttributes();
-        assertEquals(Node.ELEMENT_NODE, 
+        assertEquals(Integer.toString(Node.ELEMENT_NODE), 
                 attrs.getNamedItem("nodetype").getNodeValue());
         assertEquals("3", 
                 attrs.getNamedItem("childno").getNodeValue());
@@ -265,6 +265,9 @@ public class EditScriptTest {
         assertEquals("/node()[1]", 
                 attrs.getNamedItem("parent").getNodeValue());    
 
+        fail("need to check following nodes");
+        //Consider writing helper method for these tests eg
+        //checkOpIsInsert(3, b, /node()[1]) 
     }
 
 }

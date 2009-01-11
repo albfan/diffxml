@@ -276,7 +276,7 @@ public class DULDelta implements DeltaIF {
 
         if (DiffFactory.isDebug()) {
             System.err.print("Applying: ");
-            System.err.println(DOMOps.getNodeAsString(n));
+            System.err.println(DOMOps.getNodeAsStringDeep(n));
         }
     }
 }

@@ -23,6 +23,7 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.DiffFactory;
 
 import java.util.ArrayList;
@@ -104,9 +105,39 @@ public final class Match {
             }
         }
 
+        outputDebug(matchSet, doc1);
         return matchSet;
     }
 
+    /**
+     * Outputs information on the matches for debug purposes.
+     * 
+     * @param matchSet The set of matching Nodes.
+     * @param doc The first document being differenced
+     */
+    private static void outputDebug(final NodePairs matchSet,
+            final Document doc) {
+        
+        if (DiffFactory.isDebug()) {
+            NodeIterator ni = ((DocumentTraversal) doc).createNodeIterator(
+                    doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
+ 
+            Node n;
+            while ((n = ni.nextNode()) != null) {
+                System.err.print(DOMOps.getNodeAsString(n));
+                if (matchSet.isMatched(n)) {
+                    System.err.println(" matches "
+                            + DOMOps.getNodeAsString(matchSet.getPartner(n)));
+                } else {
+                    System.err.println(" unmatched");
+                }
+            }
+            
+            ni.detach();
+            System.err.println();
+        }
+    }
+    
     /**
      * Compares two elements two determine whether they should be matched.
      * 
@@ -147,7 +178,7 @@ public final class Match {
             }
 
             int i = 0;
-            while ((ret == true) && (i < numberAAttrs)) {
+            while (ret && (i < numberAAttrs)) {
                 // Check if attr exists in other tag
                 if (bAttrs.getNamedItem(aAttrs.item(i).getNodeName()) == null) {
                     ret = false;

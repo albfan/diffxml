@@ -442,6 +442,7 @@ public final class DiffXML {
         } else {
             try {
                 DOMOps.outputXML(delta, System.out);
+                System.out.println();
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             }

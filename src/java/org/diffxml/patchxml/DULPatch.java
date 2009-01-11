@@ -1,16 +1,8 @@
 package org.diffxml.patchxml;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import java.io.IOException;
 
 import org.diffxml.diffxml.DiffXML;
-import org.diffxml.diffxml.fmes.NodeOps;
-import org.diffxml.diffxml.fmes.PrintXML;
 import org.diffxml.diffxml.DOMOps;
 import org.diffxml.dul.DULConstants;
 import org.w3c.dom.Document;
@@ -770,7 +762,7 @@ public class DULPatch {
                 if (PatchXML.debug) {
                     try {
                         System.err.print("At operation: ");
-                        System.err.println(DOMOps.getNodeAsString(op));
+                        System.err.println(DOMOps.getNodeAsStringDeep(op));
                         System.err.println("Result: ");
                         DOMOps.outputXML(doc, System.err);
                         System.err.println();
@@ -782,7 +774,7 @@ public class DULPatch {
                 }
             } catch (PatchFormatException e) {
                 throw new PatchFormatException(
-                        "Error at operation:\n" + DOMOps.getNodeAsString(op),
+                        "Error at operation:\n" + DOMOps.getNodeAsStringDeep(op),
                         e);
             }
             op = ni.nextNode();

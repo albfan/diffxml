@@ -95,7 +95,8 @@ public final class DOMOps {
                 DOMOps.TRANSFORMER_FACTORY.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, 
+                    "yes");
             transformer.setOutputProperty(OutputKeys.INDENT, "no");
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.transform(new DOMSource(node),
@@ -109,13 +110,13 @@ public final class DOMOps {
     }
 
     /**
-     * Gets the string representation of a Node.
+     * Gets the string representation of a Node and its children.
      *
      * Catches possible IOExceptions and rethrows as unchecked.
      * @param n The Node to get the String for
      * @return The String representation of the Node
      */
-    public static String getNodeAsString(Node n) {
+    public static String getNodeAsStringDeep(final Node n) {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream(); 
         try {
@@ -127,6 +128,26 @@ public final class DOMOps {
         return os.toString();
     }
 
+    /**
+     * Gets the string representation of a Node but not its children.
+     *
+     * Catches possible IOExceptions and rethrows as unchecked.
+     * @param n The Node to get the String for
+     * @return The String representation of the Node
+     */
+    public static String getNodeAsString(final Node n) {
+
+        Node out = n.cloneNode(false);
+        ByteArrayOutputStream os = new ByteArrayOutputStream(); 
+        try {
+            DOMOps.outputXML(out, os);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    "An error occured when serializing the node", e);
+        }
+        return os.toString();
+    }
+    
     /**
      * Returns the NodeList as an array of Nodes.
      *  

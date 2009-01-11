@@ -325,6 +325,19 @@ public final class EditScript {
     }
 
     /**
+     * Mark the children of a node in order.
+     *
+     * @param n the parent of the nodes to mark in order
+     */
+    private static void markChildrenInOrder(final Node n) {
+
+        NodeList kids = n.getChildNodes();
+        for (int i = 0; i < kids.getLength(); i++) {
+            NodeOps.setInOrder(kids.item(i));
+        }
+    }
+    
+    /**
      * Marks the Nodes in the given list and their partners "inorder".
      *
      * @param seq  the Nodes to mark "inorder"
@@ -365,6 +378,7 @@ public final class EditScript {
 
                 NodeOps.setInOrder(a);
                 NodeOps.setInOrder(b);
+                outputDebug();
             }
         }
     }
@@ -396,12 +410,16 @@ public final class EditScript {
         setNodesInOrder(lcsSeq, matchings);
         
         moveMisalignedNodes(w, wSeq, lcsSeq, matchings);
+        
+        //The following is missing from the algorithm, but is important
+        markChildrenInOrder(w);
+        markChildrenInOrder(x);
     }
 
     /**
      * Outputs debug information.
      */
-    private final void outputDebug() {
+    private void outputDebug() {
 
         if (DiffFactory.isDebug()) {
             System.err.println("Result:");
