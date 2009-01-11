@@ -236,5 +236,35 @@ public class EditScriptTest {
                 attrs.getNamedItem("charpos").getNodeValue());
 
     }
-    
+    /**
+     * Test inserting and moving where marked order of nodes is important.
+     */
+    @Test
+    public final void testOrdering() {
+
+        Document doc1 = TestDocHelper.createDocument("<a><c>6</c><b>7</b></a>");
+        Document doc2 = TestDocHelper.createDocument("<a><b>6</b><b>7</b></a>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(8, matchings.size());
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+        Node move = res.getFirstChild().getFirstChild();
+        assertEquals("insert", move.getNodeName());
+        NamedNodeMap attrs = move.getAttributes();
+        assertEquals(Node.ELEMENT_NODE, 
+                attrs.getNamedItem("nodetype").getNodeValue());
+        assertEquals("3", 
+                attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("b", 
+                attrs.getNamedItem("name").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());    
+
+    }
+
 }
