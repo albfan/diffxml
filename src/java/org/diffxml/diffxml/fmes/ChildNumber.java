@@ -170,11 +170,12 @@ public final class ChildNumber {
     private boolean incIndex(final int i) {
 
         boolean inc = true;
+        Node curr = mSiblings.item(i);
  
         // Handle non-coalescing of text nodes
-        if ((i > 0 && nodesAreTextNodes(
-                mSiblings.item(i), mSiblings.item(i - 1))) 
-                || NodeOps.nodeIsEmptyText(mSiblings.item(i))) {
+        if ((i > 0 && nodesAreTextNodes(curr, mSiblings.item(i - 1))) 
+                || NodeOps.nodeIsEmptyText(curr)
+                || curr.getNodeType() == Node.DOCUMENT_TYPE_NODE) {
             inc = false;
         }
 
@@ -351,7 +352,7 @@ public final class ChildNumber {
                     mInOrderXPathCharPos = mInOrderXPathCharPos 
                         + mSiblings.item(i).getTextContent().length();
                 }
-            } else {
+            } else if (NodeOps.isInOrder(mSiblings.item(i))) {
                 break;
             }
         }

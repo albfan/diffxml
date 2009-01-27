@@ -309,7 +309,7 @@ public class DULPatch {
         if (!append) {
             if (cp == 1) {
                 parent.insertBefore(ins, sibNode);
-            } else if (cp == sibNode.getNodeValue().length()) {
+            } else if (cp > sibNode.getNodeValue().length()) {
                 Node nextSib = sibNode.getNextSibling();
                 if (nextSib != null) {
                     parent.insertBefore(ins, nextSib);
@@ -320,8 +320,8 @@ public class DULPatch {
                 String text = sibNode.getNodeValue();
                 Node nextSib = sibNode.getNextSibling();
                 parent.removeChild(sibNode);
-                Node text1 = doc.createTextNode(text.substring(0, cp-1));
-                Node text2 = doc.createTextNode(text.substring(cp-1));
+                Node text1 = doc.createTextNode(text.substring(0, cp - 1));
+                Node text2 = doc.createTextNode(text.substring(cp - 1));
                 if (nextSib != null) {
                     parent.insertBefore(text1, nextSib);
                     parent.insertBefore(ins, nextSib);
@@ -694,6 +694,10 @@ public class DULPatch {
             moveNode = doc.createTextNode(text);
         }
 
+        if (moveNode.getNodeType() != Node.TEXT_NODE) {
+            moveNode = moveNode.getParentNode().removeChild(moveNode);
+        }
+        
         //Find position to move to
         //Get parent
         Element parent = (Element) getNamedParent(doc, opAttrs);
@@ -706,10 +710,6 @@ public class DULPatch {
         int newCharPos = getNewCharPos(opAttrs);
 
         //Perform insert
-
-        if (moveNode.getNodeType() != Node.TEXT_NODE) {
-            moveNode = moveNode.getParentNode().removeChild(moveNode);
-        }
         DiffXML.LOG.fine("newCharPos: " + newCharPos + " domcn: " + domcn);
         insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);
     }

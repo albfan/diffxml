@@ -33,7 +33,8 @@ import org.w3c.dom.NamedNodeMap;
 import java.io.File;
 
 import org.diffxml.diffxml.DOMOps;
-import org.diffxml.diffxml.fmes.NodePos;
+import org.diffxml.diffxml.fmes.ChildNumber;
+import org.diffxml.diffxml.fmes.NodeOps;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -143,12 +144,13 @@ public class Mark
             //Output insert
 
             //Get charpos
-            int charpos=NodePos.getCharpos(n);
+            ChildNumber cn = new ChildNumber(n);
+            int charpos = cn.getXPathCharPos();
 
             //Get parent path
             Node par=n.getParentNode();
             //Pos par_pos=NodePos.get(par);
-            NodePos parentPos = new NodePos(par);
+            ChildNumber parentNum = new ChildNumber(par);
 
             //Get XPath childno
 
@@ -167,7 +169,7 @@ public class Mark
 
             }
 
-            es.insert(n, parentPos.getXPath(), index, charpos);
+            es.insert(n, NodeOps.getXPath(par), index, charpos);
 
             //Insert any attributes
             NamedNodeMap attrs=n.getAttributes();
@@ -176,10 +178,10 @@ public class Mark
                 if (attrs.getLength()>0)
                 {
                     //Get path
-                    NodePos nPos= new NodePos(n);
+                    ChildNumber cn2 = new ChildNumber(n);
                     for (int j=0; j<attrs.getLength(); j++)
                     {
-                        es.insert(attrs.item(j), nPos.getXPath(), 0, -1);
+                        es.insert(attrs.item(j), NodeOps.getXPath(n), 0, -1);
                     }
                 }
             }
