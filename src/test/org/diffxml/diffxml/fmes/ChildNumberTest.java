@@ -295,7 +295,48 @@ public class ChildNumberTest {
         //assertEquals(5, dChildNo.getInOrderXPathCharPos());
         
     }
+
+    /**
+     * Test counting of text position with intervening nodes.
+     */
+    @Test
+    public final void testTextPositionInOrder() {
     
+        Node a = testDoc.createTextNode("12");
+        NodeOps.setInOrder(a);
+        Node b = testDoc.createElement("three");
+        NodeOps.setOutOfOrder(b);
+        Node c = testDoc.createTextNode("45");
+        NodeOps.setInOrder(c);
+        Element d = testDoc.createElement("six");
+        NodeOps.setInOrder(d);
+        Node e = testDoc.createTextNode("78");
+        NodeOps.setInOrder(e);
+
+        parent.appendChild(a);
+        parent.appendChild(b);
+        parent.appendChild(c);
+        parent.appendChild(d);
+        parent.appendChild(e);
+
+        ChildNumber aChildNo = new ChildNumber(a);
+        ChildNumber bChildNo = new ChildNumber(b);
+        ChildNumber cChildNo = new ChildNumber(c);
+        ChildNumber dChildNo = new ChildNumber(d);
+        ChildNumber eChildNo = new ChildNumber(e);
+
+        assertEquals(1, aChildNo.getInOrderXPath());
+        assertEquals(1, aChildNo.getInOrderXPathCharPos());
+        assertEquals(2, bChildNo.getInOrderXPath());
+        assertEquals(3, bChildNo.getInOrderXPathCharPos());
+        assertEquals(1, cChildNo.getInOrderXPath());
+        assertEquals(3, cChildNo.getInOrderXPathCharPos());
+        assertEquals(2, dChildNo.getInOrderXPath());
+        assertEquals(5, dChildNo.getInOrderXPathCharPos());
+        assertEquals(3, eChildNo.getInOrderXPath());
+        assertEquals(1, eChildNo.getInOrderXPathCharPos());
+    }
+
     /**
      * Check exception thrown if given null.
      */

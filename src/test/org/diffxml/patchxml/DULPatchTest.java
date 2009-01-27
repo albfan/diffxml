@@ -37,7 +37,8 @@ public class DULPatchTest {
 
         try {
             (new DULPatch()).apply(doc1, patch);
-            assertEquals("b", doc1.getDocumentElement().getFirstChild().getNodeName());
+            assertEquals("b", 
+                    doc1.getDocumentElement().getFirstChild().getNodeName());
         } catch (PatchFormatException e) {
             fail("Caught exception " + e);
         }
@@ -114,6 +115,31 @@ public class DULPatchTest {
         }
     }
 
+    /**
+     * Insert element into text.
+     */
+    @Test
+    public final void testInsertIntoText2() {
+        
+        Document doc1 = TestDocHelper.createDocument("<a>xy<b/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert charpos=\"2\" childno=\"2\" name=\"p\" "
+                + "nodetype=\"1\" parent=\"/node()[1]\"/>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            Node text1 = doc1.getDocumentElement().getFirstChild();
+            assertEquals("x", text1.getNodeValue());
+            assertEquals("p", text1.getNextSibling().getNodeName());
+            assertEquals("y", 
+                    text1.getNextSibling().getNextSibling().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
     /**
      * Test inserting attribute.
      */
@@ -195,8 +221,8 @@ public class DULPatchTest {
 
         try {
             (new DULPatch()).apply(doc1, patch);
-            assertEquals("", ((Element) doc1.getDocumentElement().getFirstChild()
-                    ).getAttribute("attr"));
+            assertEquals("", ((Element) doc1.getDocumentElement(
+                    ).getFirstChild()).getAttribute("attr"));
         } catch (PatchFormatException e) {
             fail("Caught exception " + e);
         }
@@ -352,6 +378,30 @@ public class DULPatchTest {
             assertEquals("tt", 
                     b.getNextSibling().getFirstChild().getNodeValue());
             assertEquals("ex", b.getFirstChild().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    /**
+     * Test moves don't count moved node.
+     */
+    @Test
+    public final void testMoveCount() {
+
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b/><c/><d/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<move node=\"/a/node()[1]\" " 
+                + "parent=\"/a\" childno=\"2\"/>" 
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            Node c = doc1.getDocumentElement().getFirstChild();
+            assertEquals("c", c.getNodeName());
+            assertEquals("b", c.getNextSibling().getNodeName());
         } catch (PatchFormatException e) {
             fail("Caught exception " + e);
         }

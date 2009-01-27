@@ -12,7 +12,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.diffxml.diffxml.DOMOps;
@@ -67,20 +66,26 @@ public class NodeOpsTest {
     private void testXPathForNode(final Node n, final XPath xp) {
         
         String xpath = NodeOps.getXPath(n);
+        //Uncomment for debug info
+        //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: " + xpath);
         compareXPathResult(n, xpath, xp);
     }
     
     /**
      * Compares the result of the xpath expression to the expected Node n.
+     * 
+     * Also tests children.
      *
      * @param n The expected result node
      * @param xpath The expression to evaluate
      * @param xp XPath expression (for efficiency)
      */
-    private void compareXPathResult(final Node n, final String xpath, final XPath xp ) {
+    private void compareXPathResult(final Node n, final String xpath, 
+            final XPath xp) {
 
         try {
-            Node ret = (Node) xp.evaluate(xpath, n.getOwnerDocument().getDocumentElement(), 
+            Node ret = (Node) xp.evaluate(
+                    xpath, n.getOwnerDocument().getDocumentElement(), 
                     XPathConstants.NODE);
             assertNotNull(ret);
 
@@ -97,7 +102,8 @@ public class NodeOpsTest {
         } catch (XPathExpressionException e) {
             fail("Caught exception: " + e.getMessage());
         }
-        
+
+        //Test children
         if (!(n.getNodeType() == Node.ATTRIBUTE_NODE)) {
             NodeList list = n.getChildNodes();
             for (int i = 0; i < list.getLength(); i++) {
@@ -213,4 +219,79 @@ public class NodeOpsTest {
                 ).getChildNodes()).length, 0);
         
     }
+    
+    /**
+     * Test getxPath with DTD thing in prolog.
+     */
+    @Test
+    public final void testGetXPathWithDTDProlog() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<!DOCTYPE a [ <!ELEMENT a (#PCDATA)>]><a>text</a>");
+        Element docEl = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);   
+    }
+    
+    /**
+     * Test getxPath with comment in prolog.
+     */
+    @Test
+    public final void testGetXPathWithCommentProlog() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<!-- comment --><a>text</a>");
+        Element docEl = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);
+    }
+    
+    /**
+     * Test handling of newlines in text nodes.
+     */
+    @Test
+    public final void testNewlineIsNotEmpty() {
+        Document testDoc = TestDocHelper.createDocument(
+            "<a>text</a>");
+        
+        Node text1 = testDoc.createTextNode("\r");
+        Node text2 = testDoc.createTextNode("\r\n");
+        Node text3 = testDoc.createTextNode("\n");
+        
+        assertFalse(NodeOps.nodeIsEmptyText(text1));
+        assertEquals(1, text1.getNodeValue().length());
+        assertFalse(NodeOps.nodeIsEmptyText(text2));
+        assertEquals(2, text2.getNodeValue().length());
+        assertFalse(NodeOps.nodeIsEmptyText(text3));
+        assertEquals(1, text3.getNodeValue().length());
+    }
+    
+    /**
+     * Test getting XPath with spaced text nodes.
+     */
+    @Test
+    public final void testGetXPathWithSpacedText() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<a>x<b>4</b>y</a>");
+        Element root = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(root, xpathExpr);
+        testXPathForNode(root.getFirstChild(), xpathExpr);
+    }   
+    
 }
