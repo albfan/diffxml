@@ -110,7 +110,7 @@ public class NodeSequenceTest {
                 "<a><b/>c<!--comment--><d/></a>");
 
         NodePairs pairs = Match.easyMatch(set1, set2);
-        assertEquals(10, pairs.size());
+        assertEquals(12, pairs.size());
         
         Node[] seq1 = NodeSequence.getSequence(
                 set1.getDocumentElement().getChildNodes(), 
@@ -172,7 +172,7 @@ public class NodeSequenceTest {
         Document set2 = TestDocHelper.createDocument(
                 "<a><b/>c<d/>e<f/><z/></a>");
         NodePairs pairs = Match.easyMatch(set1, set2);
-        assertEquals(14, pairs.size());
+        assertEquals(16, pairs.size());
 
         Node[] seq1 = NodeSequence.getSequence(
                 set1.getDocumentElement().getChildNodes(), 
@@ -205,7 +205,8 @@ public class NodeSequenceTest {
         Document set2 = TestDocHelper.createDocument(
                 "<d><e/></d>");
         NodePairs pairs = Match.easyMatch(set1, set2);
-        assertEquals(0, pairs.size());
+        //Remember root nodes always match
+        assertEquals(2, pairs.size());
         
         Node[] seq1 = NodeSequence.getSequence(
                 set1.getDocumentElement().getChildNodes(), 

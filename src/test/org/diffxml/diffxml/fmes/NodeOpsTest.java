@@ -67,7 +67,8 @@ public class NodeOpsTest {
         
         String xpath = NodeOps.getXPath(n);
         //Uncomment for debug info
-        //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: " + xpath);
+        //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: "
+        //    + xpath);
         compareXPathResult(n, xpath, xp);
     }
     
@@ -83,10 +84,16 @@ public class NodeOpsTest {
     private void compareXPathResult(final Node n, final String xpath, 
             final XPath xp) {
 
+        Document doc;
+        if (n.getNodeType() == Node.DOCUMENT_NODE) {
+            doc = (Document) n;
+        } else {
+            doc = n.getOwnerDocument();
+        }
+        
         try {
             Node ret = (Node) xp.evaluate(
-                    xpath, n.getOwnerDocument().getDocumentElement(), 
-                    XPathConstants.NODE);
+                    xpath, doc, XPathConstants.NODE);
             assertNotNull(ret);
 
             if (n.getNodeType() == Node.TEXT_NODE) {
@@ -239,21 +246,23 @@ public class NodeOpsTest {
     }
     
     /**
-     * Test getxPath with comment in prolog.
+     * Test getXPath with comment in prolog.
      */
     @Test
     public final void testGetXPathWithCommentProlog() {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<!-- comment --><a>text</a>");
-        Element docEl = testDoc.getDocumentElement();
+        //Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
         XPath xpathExpr = xPathFac.newXPath();
  
-        testXPathForNode(docEl, xpathExpr);
-        testXPathForNode(docEl.getFirstChild(), xpathExpr);
+        testXPathForNode(testDoc, xpathExpr);
+        //testXPathForNode()
+        //testXPathForNode(docEl, xpathExpr);
+        //testXPathForNode(docEl.getFirstChild(), xpathExpr);
     }
     
     /**

@@ -136,16 +136,16 @@ public class MatchTest {
     }
     
     /**
-     * Test completely different docs - should be no matches.
+     * Test completely different docs - only root nodes should match.
      */
     @Test
     public final void testDifferentDocs() {
         
         NodePairs matches = Match.easyMatch(mTestDoc1a, mTestDoc3a);
-        assertEquals(0, matches.size());
+        assertEquals(2, matches.size());
         
         matches = Match.easyMatch(mTestDoc2a, mTestDoc3b);
-        assertEquals(0, matches.size());
+        assertEquals(2, matches.size());
     }
 
     /**

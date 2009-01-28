@@ -50,29 +50,32 @@ public class NodeDepthTest {
     @Test
     public void testCorrectDepthCalculated() {
         
-        //Try root node
-        Element root = mTestDoc1.getDocumentElement();
-        testCreatingNodeDepth(root, 0);
+        //Try root
+        testCreatingNodeDepth(mTestDoc1, 0);
+        
+        //Try document element
+        Element docEl = mTestDoc1.getDocumentElement();
+        testCreatingNodeDepth(docEl, 1);
         
         //Try first text node
-        Node text1 = root.getFirstChild();
-        testCreatingNodeDepth(text1, 1);
+        Node text1 = docEl.getFirstChild();
+        testCreatingNodeDepth(text1, 2);
         
         //y Node
         Node y = text1.getNextSibling();
-        testCreatingNodeDepth(y, 1);
+        testCreatingNodeDepth(y, 2);
         
         //Comment node
         Node comment = y.getFirstChild();
-        testCreatingNodeDepth(comment, 2);
+        testCreatingNodeDepth(comment, 3);
         
         //z Node
         Node z = comment.getNextSibling();
-        testCreatingNodeDepth(z, 2);
+        testCreatingNodeDepth(z, 3);
         
         //second text node
         Node text2 = z.getNextSibling();
-        testCreatingNodeDepth(text2, 2);                
+        testCreatingNodeDepth(text2, 3);                
     }
     
     /**

@@ -74,7 +74,7 @@ public class EditScriptTest {
         Document doc1 = TestDocHelper.createDocument("<a><b/></a>");
         Document doc2 = TestDocHelper.createDocument("<a><b/><c/></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(4, matchings.size());
+        assertEquals(6, matchings.size());
         assertNull(matchings.getPartner(doc2.getFirstChild().getFirstChild(
                 ).getNextSibling()));
         EditScript es = new EditScript(doc1, doc2, matchings);
@@ -103,7 +103,7 @@ public class EditScriptTest {
         Document doc1 = TestDocHelper.createDocument("<a><b/><c/></a>");
         Document doc2 = TestDocHelper.createDocument("<a><b/></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(4, matchings.size());
+        assertEquals(6, matchings.size());
         assertNull(matchings.getPartner(doc1.getFirstChild().getFirstChild(
                 ).getNextSibling()));
         EditScript es = new EditScript(doc1, doc2, matchings);
@@ -129,7 +129,7 @@ public class EditScriptTest {
         Document doc1 = TestDocHelper.createDocument("<a><b><c/></b><d/></a>");
         Document doc2 = TestDocHelper.createDocument("<a><b/><d><c/></d></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(8, matchings.size());
+        assertEquals(10, matchings.size());
         EditScript es = new EditScript(doc1, doc2, matchings);
         Document res = null;
         try {
@@ -158,7 +158,7 @@ public class EditScriptTest {
         Document doc1 = TestDocHelper.createDocument("<a>text</a>");
         Document doc2 = TestDocHelper.createDocument("<a>text<b/></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(4, matchings.size());
+        assertEquals(6, matchings.size());
         EditScript es = new EditScript(doc1, doc2, matchings);
         Document res = null;
         try {
@@ -249,7 +249,7 @@ public class EditScriptTest {
         Document doc1 = TestDocHelper.createDocument("<a><c>6</c><b>7</b></a>");
         Document doc2 = TestDocHelper.createDocument("<a><b>6</b><b>7</b></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(8, matchings.size());
+        assertEquals(10, matchings.size());
         EditScript es = new EditScript(doc1, doc2, matchings);
         Document res = null;
         try {
@@ -314,7 +314,7 @@ public class EditScriptTest {
         Document doc2 = TestDocHelper.createDocument(
                 "<a>x<p/>y<b/></a>");
         NodePairs matchings = Match.easyMatch(doc1, doc2);
-        assertEquals(8, matchings.size());
+        assertEquals(10, matchings.size());
         EditScript es = new EditScript(doc1, doc2, matchings);
         Document res = null;
         try {
