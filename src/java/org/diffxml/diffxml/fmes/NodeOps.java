@@ -24,6 +24,7 @@ email: amouat@postmaster.co.uk
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
@@ -109,9 +110,7 @@ public final class NodeOps {
      */
     public static String getXPath(final Node n) {
 
-        Node docEl = n.getOwnerDocument().getDocumentElement();
-        Node curr = n;        
-
+ 
         String xpath;
         
         if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -120,15 +119,22 @@ public final class NodeOps {
             ((Attr) n).getOwnerElement();
             xpath = getXPath(((Attr) n).getOwnerElement())
                  + "/@" + n.getNodeName();
+            
+        } else if (n.getNodeType() == Node.DOCUMENT_NODE) {
+            
+            xpath = "/";
+            
+        } else if (n.getParentNode().getNodeType() == Node.DOCUMENT_NODE) {
+            
+            ChildNumber cn = new ChildNumber(n);
+            xpath = "/node()[" + cn.getXPath() + "]"; 
+            
         } else {
-            ChildNumber cn = new ChildNumber(curr);
-            if (NodeOps.checkIfSameNode(docEl, curr)) {
-                xpath = "/node()[" + cn.getXPath() + "]"; 
 
-            } else {
-                xpath = getXPath(curr.getParentNode()) 
-                    + "/node()[" + cn.getXPath() + "]";
-            }
+            ChildNumber cn = new ChildNumber(n);
+
+            xpath = getXPath(n.getParentNode()) 
+                + "/node()[" + cn.getXPath() + "]";
         }
         
         return xpath;
@@ -136,8 +142,11 @@ public final class NodeOps {
     
     /**
      * Check if node is an empty text node.
+     * 
+     * @param n The Node to test.
+     * @return True if it is a 0 sized text node
      */
-    public static boolean nodeIsEmptyText(Node n) {
+    public static boolean nodeIsEmptyText(final Node n) {
         return (n.getNodeType() == Node.TEXT_NODE 
             && n.getNodeValue().length() == 0);
     }

@@ -23,6 +23,7 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml.fmes;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
@@ -68,9 +69,14 @@ public class NodeDepth {
         
         int depth = 0;
         Node tmpNode = node;
-        Node docEl = tmpNode.getOwnerDocument().getDocumentElement();
+        Node doc;
+        if (node.getNodeType() == Node.DOCUMENT_NODE) {
+            doc = node;
+        } else {
+            doc = tmpNode.getOwnerDocument();
+        }
 
-        while (!tmpNode.equals(docEl)) {
+        while (!tmpNode.equals(doc)) {
             depth++;
             tmpNode = tmpNode.getParentNode();
         }

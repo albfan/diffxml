@@ -273,6 +273,10 @@ public final class Match {
                 case Node.TEXT_NODE :
                     ret = compareTextNodes(a, b);
                     break;
+                case Node.DOCUMENT_NODE :
+                    //Always match document nodes
+                    ret = true;
+                    break;
                 default :
                     ret = (a.getNodeValue().equals(b.getNodeValue()));
             }
@@ -294,7 +298,7 @@ public final class Match {
             final Document doc) {
 
         NodeIterator ni = ((DocumentTraversal) doc).createNodeIterator(
-                doc.getDocumentElement(), NodeFilter.SHOW_ALL, null, false);
+                doc, NodeFilter.SHOW_ALL, null, false);
 
         List<NodeDepth> depthSorted = new ArrayList<NodeDepth>();
              
