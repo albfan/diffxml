@@ -31,6 +31,7 @@ import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.fmes.ChildNumber;
 import org.diffxml.diffxml.fmes.NodeOps;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -155,7 +156,8 @@ public class DULDelta implements DeltaIF {
         Element ins = mEditScript.createElement(DULConstants.INSERT);
         
         ins.setAttribute(DULConstants.PARENT, parent);
-        ins.setAttribute(DULConstants.NODETYPE, Integer.toString(n.getNodeType()));
+        ins.setAttribute(DULConstants.NODETYPE, 
+                Integer.toString(n.getNodeType()));
 
         if (n.getNodeType() != Node.ATTRIBUTE_NODE) {
             ins.setAttribute(DULConstants.CHILDNO, Integer.toString(childno));
@@ -198,8 +200,8 @@ public class DULDelta implements DeltaIF {
      * @param childno The child number of the parent node that n will become
      * @param charpos The character position to insert at
      */
-    public final void insert(final Node n, final Node parent, final int childno,
-            final int charpos) {
+    public final void insert(final Node n, final Node parent, 
+            final int childno, final int charpos) {
 
         insert(n, NodeOps.getXPath(parent), childno, charpos);
     }
@@ -270,9 +272,68 @@ public class DULDelta implements DeltaIF {
     }
 
     /**
-      * Outputs debug meesage for node.
+     * Adds an update operation to the delta.
+     * 
+     * @param w The node to update
+     * @param x The node to update it to
+     */
+    public final void update(final Node w, final Node x) {
+        
+        Element update = mEditScript.createElement(DULConstants.UPDATE);
+        String wPath = NodeOps.getXPath(w);
+        update.setAttribute(DULConstants.NODE, NodeOps.getXPath(w));
+        
+        if (w.getNodeType() == Node.ELEMENT_NODE) {
+            update.setTextContent(x.getNodeName());
+            updateAttributes((Element) w, (Element) x);
+        } else {
+            update.setTextContent(x.getNodeValue());
+        } 
+        
+        mEditScript.getDocumentElement().appendChild(update);
+        
+        outputDebug(update);
+    }
+    
+    /**
+     * Updates the attributes of element w to be the same as x's.
+     * 
+     * @param w The Element to update the attributes of
+     * @param x The element holding the correct attributes
+     */
+    private void updateAttributes(final Element w, final Element x) {
+    
+        NamedNodeMap wAttrs = w.getAttributes();
+        NamedNodeMap xAttrs = x.getAttributes();
+        
+        //Delete any attrs of w not in x, update others
+        for (int i = 0; i < wAttrs.getLength(); i++) {
+            
+            Node wAttr = wAttrs.item(i);
+            Node xAttr = xAttrs.getNamedItem(wAttr.getLocalName());
+            if (xAttr == null) {
+               delete(wAttrs.item(i));
+           } else if (wAttr.getNodeValue() != xAttr.getNodeValue()) {
+               update(wAttr, xAttr);
+           }
+        }
+        
+        //Add any attrs in x but not w
+        for (int j = 0; j < xAttrs.getLength(); j++) {
+        
+            Node xAttr = xAttrs.item(j);
+            if (wAttrs.getNamedItem(xAttr.getLocalName()) == null) {
+                insert(xAttr, NodeOps.getXPath(w), 0, 1);
+            }
+        }
+    }
+    
+    /**
+      * Outputs debug message for node.
+      * 
+      * @param n The Node to output debug on
       */
-    private void outputDebug(Node n) {
+    private void outputDebug(final Node n) {
 
         if (DiffFactory.isDebug()) {
             System.err.print("Applying: ");

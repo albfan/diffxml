@@ -86,16 +86,19 @@ public final class Match {
 
         List<NodeDepth> list1 = initialiseAndOrderNodes(doc1);
         List<NodeDepth> list2 = initialiseAndOrderNodes(doc2);
-
+        
+        //Explicitly add document elements and root
+        matchSet.add(doc1, doc2);
+        matchSet.add(doc1.getDocumentElement(), doc2.getDocumentElement());
+        
         // Proceed bottom up on List 1
         for (NodeDepth nd1 : list1) {
-            for (NodeDepth nd2 : list2) {
-                
-                Node n1 = nd1.getNode();
+            Node n1 = nd1.getNode();
+            
+            for (NodeDepth nd2 : list2) {                   
                 Node n2 = nd2.getNode();
                 
                 if (compareNodes(n1, n2)) {
-                    
                     matchSet.add(n1, n2);
                     
                     //Don't want to consider it again
@@ -151,7 +154,7 @@ public final class Match {
      *            Potential match for b
      * @return true if nodes match, false otherwise
      */
-    private static boolean compareElements(final Node a, final Node b) {
+    public static boolean compareElements(final Node a, final Node b) {
 
         boolean ret = false;
         
@@ -288,6 +291,8 @@ public final class Match {
     /**
      * Returns a list of Nodes sorted according to their depths.
      * 
+     * Does *NOT* include root or documentElement
+     * 
      * TreeSet is sorted in reverse order of depth according to
      * NodeInfoComparator.
      * 
@@ -304,7 +309,10 @@ public final class Match {
              
         Node n;
         while ((n = ni.nextNode()) != null) {
-            depthSorted.add(new NodeDepth(n));
+            if (!(NodeOps.checkIfSameNode(doc, n) 
+                    || NodeOps.checkIfSameNode(doc.getDocumentElement(), n))) {
+                depthSorted.add(new NodeDepth(n));
+            }
         }
         
         ni.detach();

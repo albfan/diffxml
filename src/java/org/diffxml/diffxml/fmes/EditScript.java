@@ -33,9 +33,11 @@ import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
 import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
@@ -48,13 +50,7 @@ import org.w3c.dom.NodeList;
  * @author Adrian Mouat
  */
 public final class EditScript {
-    
-   
-    /**
-     * Whether dummy root nodes have been added to the tree.
-     */
-    private boolean mAddedDummyRoot = false;
-    
+        
     /**
      * The original document.
      */
@@ -111,14 +107,13 @@ public final class EditScript {
                     e);
         }
 
-        matchRoots();
-
         // Fifo used to do a breadth first traversal of doc2
         NodeFifo fifo = new NodeFifo();
-        fifo.addChildrenOfNode(mDoc2.getDocumentElement());
-        //Special case for aligning children of document elements
-        alignChildren(mDoc1.getDocumentElement(), mDoc2.getDocumentElement(),
-                mMatchings);
+        fifo.addChildrenOfNode(mDoc2);
+        
+        Node doc2docEl = mDoc2.getDocumentElement();
+        //Special case for aligning children of root node
+        alignChildren(mDoc1, mDoc2, mMatchings);
 
         while (!fifo.isEmpty()) {
             
@@ -129,15 +124,18 @@ public final class EditScript {
 
             Node y = x.getParentNode();
             Node z = mMatchings.getPartner(y);
-
-            logNodes(x, y, z);
             Node w = mMatchings.getPartner(x);
 
             if (!mMatchings.isMatched(x)) {
                 w = doInsert(x, z);
             } else {
                 // TODO: Update should go here
-                if (!mMatchings.getPartner(y).equals(w.getParentNode())) {
+                // Special case for document element
+                if (NodeOps.checkIfSameNode(x, doc2docEl)
+                        && !Match.compareElements(w, x)) {
+                    w = doUpdate(w, x);
+                } else if (!mMatchings.getPartner(y).equals(
+                        w.getParentNode())) {
                     doMove(w, x, z, mMatchings);
                 }
             }
@@ -145,7 +143,7 @@ public final class EditScript {
             alignChildren(w, x, mMatchings);
         }
 
-        deletePhase(mDoc1.getDocumentElement(), mMatchings);
+        deletePhase(mDoc1, mMatchings);
 
         // TODO: Assert following
         // Post-Condition es is a minimum cost edit script,
@@ -156,33 +154,47 @@ public final class EditScript {
     }
 
     /**
-     * Handles non-matching root nodes.
-     *
-     * TODO: Make private. Package for temporary testing.
-     *
+     * Updates a Node to the value of another node.
+     * 
+     * @param w The Node to be updated
+     * @param x The Node to make it like
+     * @return The new Node
      */
-    /*package*/ void matchRoots() {
+    private Node doUpdate(final Node w, final Node x) {
+        
+        Document doc1 = w.getOwnerDocument();
+        Node newW = null;
+        if (w.getNodeType() == Node.ELEMENT_NODE) {
 
-        Element xRoot = mDoc2.getDocumentElement();
-        Node xPartner = mMatchings.getPartner(xRoot);
-        if (xPartner == null 
-                || !(xPartner.equals(mDoc1.getDocumentElement()))) {
+            mDelta.update(w, x);
+
+            //Unfortunately, you can't change the node name in DOM, so we need
+            //to create a new node and copy it all over
             
-            Element dummy1 = mDoc1.createElement("DUMMY");
-            dummy1.appendChild(mDoc1.getDocumentElement());
-            mDoc1.appendChild(dummy1);
-            Element dummy2 = mDoc2.createElement("DUMMY");
-            dummy2.appendChild(xRoot);
-            mDoc2.appendChild(dummy2);
-            mMatchings.add(mDoc2.getDocumentElement(), 
-                    mDoc1.getDocumentElement());
-            NodeOps.setInOrder(mDoc1.getDocumentElement());
-            NodeOps.setInOrder(mDoc2.getDocumentElement());
+            //TODO: Note you don't actually *need* to do this!!!
+            //TODO: Only call this when in debug
+            newW = doc1.createElement(x.getNodeName());
             
-            mAddedDummyRoot = true;
+            // Copy x's attributes to the new element
+            NamedNodeMap attrs = x.getAttributes();
+            for (int i = 0; i < attrs.getLength(); i++) {
+                Attr attr2 = (Attr) doc1.importNode(attrs.item(i), true);
+                newW.getAttributes().setNamedItem(attr2);
+            }
+            
+            // Move all *w's* children
+            while (w.hasChildNodes()) {
+                newW.appendChild(w.getFirstChild());
+            }
+            
+            w.getParentNode().replaceChild(newW, w);
+            mMatchings.remove(w);
+            mMatchings.add(newW, x);   
         }
+        
+        return newW;
     }
-
+    
     /**
      * Inserts (the import of) node x as child of z according to the algorithm 
      * and updates the Edit Script.
@@ -253,38 +265,6 @@ public final class EditScript {
         DOMOps.insertAsChild(pos.getDOMInsertPosition(), z, w);
         outputDebug();
     }
-
-    /**
-     * Logs the names and values of 3 nodes.
-     *
-     * Debug thang.
-     * Note we stupidly do the same thing 3 times and lose generality.
-     * TODO: Move to helper class.
-     *
-     * @param x  first node
-     * @param y  second node
-     * @param z  third node
-     */
-    private static void logNodes(final Node x, final Node y, final Node z) {
-
-        if (x == null) {
-            DiffXML.LOG.warning("x= null");
-        } else {
-            DiffXML.LOG.finer("x=" + x.getNodeName() + " " + x.getNodeValue());
-        }
-        if (y == null) {
-            DiffXML.LOG.warning("y= null");
-        } else {
-            DiffXML.LOG.finer("y=" + y.getNodeName() + " " + y.getNodeValue());
-        }
-
-        if (z == null) {
-            DiffXML.LOG.warning("z= null. Check matchings may be root prob");
-        } else {
-            DiffXML.LOG.finer("z=" + z.getNodeName() + " " + z.getNodeValue());
-        }
-    }
-
 
     /**
      * Performs the deletePhase of the algorithm.

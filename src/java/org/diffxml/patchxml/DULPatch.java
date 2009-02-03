@@ -27,10 +27,36 @@ public class DULPatch {
     /**
      * Perform update operation.
      *
-     * TODO: Write!
+     * @param doc The document being patched
+     * @param op The update operation node
+     * @throws PatchFormatException If the operation is malformed
      */
-    private void doUpdate() {
-        
+    private void doUpdate(final Document doc, final Node op) 
+    throws PatchFormatException {
+
+        NamedNodeMap opAttrs = op.getAttributes();
+        Node updateNode = getNamedNode(doc, opAttrs);
+
+        if (updateNode.getNodeType() == Node.ELEMENT_NODE) {
+            Node newNode = doc.createElement(op.getTextContent());
+            
+            // Copy attributes to the new element
+            NamedNodeMap attrs = updateNode.getAttributes();
+            for (int i = 0; i < attrs.getLength(); i++) {
+                Attr attr2 = (Attr) doc.importNode(attrs.item(i), true);
+                newNode.getAttributes().setNamedItem(attr2);
+            }
+            
+            // Move all the children over
+            while (updateNode.hasChildNodes()) {
+                newNode.appendChild(updateNode.getFirstChild());
+            }
+            updateNode.getParentNode().replaceChild(newNode, updateNode);
+            
+        } else {
+            updateNode.setNodeValue(op.getTextContent());
+        }
+
     }
 
     /**
@@ -619,11 +645,7 @@ public class DULPatch {
     throws PatchFormatException {
 
         NamedNodeMap opAttrs = op.getAttributes();
-        DiffXML.LOG.fine("Applying delete");
-
         Node delNode = getNamedNode(doc, opAttrs);
-
-        //logDeleteVariables(delNode, opAttrs);
 
         if (delNode.getNodeType() == Node.ATTRIBUTE_NODE) {
             Attr delAttr = (Attr) delNode;
@@ -748,7 +770,7 @@ public class DULPatch {
 
             try {
                 if (opName.equals(DULConstants.UPDATE)) {
-                    doUpdate();
+                    doUpdate(doc, op);
                 } else if (opName.equals(DULConstants.INSERT)) {
                     doInsert(doc, op);
                 } else if (opName.equals(DULConstants.DELETE)) {

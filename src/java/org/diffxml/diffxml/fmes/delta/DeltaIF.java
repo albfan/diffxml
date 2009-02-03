@@ -41,7 +41,15 @@ public interface DeltaIF {
      */
     void insert(final Node n, final Node parent, final int childno,
             final int charpos);
-    
+
+    /**
+     * Adds an update operation to the EditScript.
+     * 
+     * @param w The node to be updated
+     * @param x The node it should be equal to
+     */
+    void update(Node w, Node x);
+
     /**
      * Get the XML Document for the EditScript.
      * 

@@ -138,4 +138,20 @@ public class NodePairs {
     public final int size() {
         return mPairs.size();
     }
+
+    /**
+     * Remove a node and it's partner from the list of matchings.
+     * 
+     * @param n The Node to remove
+     */
+    public final void remove(final Node n) {
+        
+        Node nMatch = getPartner(n);
+        
+        nMatch.setUserData(MATCHED, null, null);
+        n.setUserData(MATCHED, null, null);
+        
+        mPairs.remove(getPartner(n));
+        mPairs.remove(n);
+    }
 }
