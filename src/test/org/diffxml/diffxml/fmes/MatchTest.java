@@ -141,11 +141,12 @@ public class MatchTest {
     @Test
     public final void testDifferentDocs() {
         
+        //Remember both root and doc elements are forced to match
         NodePairs matches = Match.easyMatch(mTestDoc1a, mTestDoc3a);
-        assertEquals(2, matches.size());
+        assertEquals(4, matches.size());
         
         matches = Match.easyMatch(mTestDoc2a, mTestDoc3b);
-        assertEquals(2, matches.size());
+        assertEquals(4, matches.size());
     }
 
     /**

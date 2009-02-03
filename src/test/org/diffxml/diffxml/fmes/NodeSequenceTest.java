@@ -205,8 +205,8 @@ public class NodeSequenceTest {
         Document set2 = TestDocHelper.createDocument(
                 "<d><e/></d>");
         NodePairs pairs = Match.easyMatch(set1, set2);
-        //Remember root nodes always match
-        assertEquals(2, pairs.size());
+        //Remember root nodes and document elements always match
+        assertEquals(4, pairs.size());
         
         Node[] seq1 = NodeSequence.getSequence(
                 set1.getDocumentElement().getChildNodes(), 

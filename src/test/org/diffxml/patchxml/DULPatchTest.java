@@ -406,4 +406,48 @@ public class DULPatchTest {
             fail("Caught exception " + e);
         }
     }
+    
+    /**
+     * Test update of element.
+     */
+    @Test
+    public final void testUpdateElement() {
+
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<update node=\"/a/b\">c</update>" 
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            Node c = doc1.getDocumentElement().getFirstChild();
+            assertEquals("c", c.getNodeName());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    /**
+     * Test update of attribute.
+     */
+    @Test
+    public final void testUpdateAttribute() {
+
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b attr=\"test\"/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<update node=\"/a/b/@attr\">newval</update>"  
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            Node c = doc1.getDocumentElement().getFirstChild();
+            assertEquals("newval", ((Element) c).getAttribute("attr"));
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
 }

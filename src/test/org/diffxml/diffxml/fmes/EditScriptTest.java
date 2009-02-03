@@ -23,46 +23,64 @@ import org.w3c.dom.Node;
 public class EditScriptTest {
     
    /**
-    * Test handling documents with different roots.
+    * Test handling documents with different document elements.
     */
     @Test
-    public void testMatchingRootNodes() {
-        
-        //Shouldn't do anything if roots match
-        Document test1 = TestDocHelper.createDocument("<a><b/></a>");
-        Document test2 = TestDocHelper.createDocument("<a><b/></a>");
-        NodePairs matchings = Match.easyMatch(test1, test2);
-        (new EditScript(test1, test2, matchings)).matchRoots();
-        
-        assertEquals("a", test1.getDocumentElement().getNodeName());
-        assertEquals("b", 
-                test1.getDocumentElement().getFirstChild().getNodeName());
-        assertEquals("a", test2.getDocumentElement().getNodeName());
-        assertEquals("b", 
-                test2.getDocumentElement().getFirstChild().getNodeName());
-        
-        //Should add dummy node if they don't
-        test1 = TestDocHelper.createDocument("<a><b/></a>");
-        test2 = TestDocHelper.createDocument("<c><b/></c>");
-        matchings = Match.easyMatch(test1, test2);
-        (new EditScript(test1, test2, matchings)).matchRoots();
-        
-        assertEquals("DUMMY", test1.getDocumentElement().getNodeName());
-        assertEquals("a", 
-                test1.getDocumentElement().getFirstChild().getNodeName());
-        assertEquals("b", 
-                test1.getDocumentElement().getFirstChild().getFirstChild(
-                        ).getNodeName());
+    public final void testNonMatchingDocumentElements() {
+                
+        Document doc1 = TestDocHelper.createDocument("<a><b/></a>");
+        Document doc2 = TestDocHelper.createDocument("<c><b/></c>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(6, matchings.size());
+        assertNull(matchings.getPartner(doc2.getFirstChild().getFirstChild(
+                ).getNextSibling()));
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+        //Non-matching document elements can only be corrected via an update
+        Node update = res.getFirstChild().getFirstChild();
+        assertEquals("update", update.getNodeName());
+        assertEquals("/node()[1]", 
+                update.getAttributes().getNamedItem("node").getNodeValue());
+        assertEquals("c", update.getTextContent());
+    }
+    
+    /**
+     * Test handling differences in prolog.
+     */
+    @Test
+    public final void testDifferentProlog() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<!-- prolog1 --><a><b/></a>");
+        Document doc2 = TestDocHelper.createDocument(
+                "<!-- prolog2 --><a><b/></a>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(6, matchings.size());
 
-        assertEquals("DUMMY", test2.getDocumentElement().getNodeName());
-        assertEquals("c", 
-                test2.getDocumentElement().getFirstChild().getNodeName());
-        assertEquals("b", 
-                test2.getDocumentElement().getFirstChild().getFirstChild(
-                        ).getNodeName());
-        
-        assertEquals(matchings.getPartner(test2.getDocumentElement()), 
-                test1.getDocumentElement());
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+        Node insert = res.getFirstChild().getFirstChild();
+        assertEquals("insert", insert.getNodeName());
+        NamedNodeMap attrs = insert.getAttributes();
+        assertEquals("1", attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("/", attrs.getNamedItem("parent").getNodeValue());
+        assertEquals(Integer.toString(Node.COMMENT_NODE), 
+                attrs.getNamedItem("nodetype").getNodeValue());
+        assertEquals(" prolog2 ", insert.getTextContent());
+
+        Node delete = insert.getNextSibling();
+        assertEquals("delete", delete.getNodeName());
+        attrs = delete.getAttributes();
+        assertEquals("/node()[2]", attrs.getNamedItem("node").getNodeValue());
     }
     
     /**
@@ -191,6 +209,7 @@ public class EditScriptTest {
         NodePairs matchings = new NodePairs();
         Node docEl1 = doc1.getDocumentElement();
         Node docEl2 = doc2.getDocumentElement();
+        matchings.add(doc1, doc2);
         matchings.add(docEl1, docEl2);
         matchings.add(docEl1.getFirstChild(), 
                 docEl2.getFirstChild().getNextSibling().getNextSibling());
