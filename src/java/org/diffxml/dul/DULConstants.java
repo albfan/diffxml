@@ -27,7 +27,7 @@ public final class DULConstants {
     /** The amount of sibling context. **/
     public static final String SIBLING_CONTEXT = "sib_context";
     
-    /** Root element of a DUL EditScript. **/
+    /** Document element of a DUL EditScript. **/
     public static final String DELTA = "delta";
     
     /** Character position of the "new" node. **/

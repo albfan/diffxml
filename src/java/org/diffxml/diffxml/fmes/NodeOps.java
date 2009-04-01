@@ -123,6 +123,10 @@ public final class NodeOps {
         } else if (n.getNodeType() == Node.DOCUMENT_NODE) {
             
             xpath = "/";
+        } else if (n.getNodeType() == Node.DOCUMENT_TYPE_NODE) {
+            
+            throw new IllegalArgumentException(
+                    "DocumentType nodes cannot be identified with XPath");
             
         } else if (n.getParentNode().getNodeType() == Node.DOCUMENT_NODE) {
             

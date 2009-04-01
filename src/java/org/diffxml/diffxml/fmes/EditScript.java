@@ -35,7 +35,6 @@ import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -284,7 +283,8 @@ public final class EditScript {
         }
 
         // If node isn't matched, delete it
-        if (!matchings.isMatched(n)) {
+        if (!matchings.isMatched(n) && 
+                n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             mDelta.delete(n);
             n.getParentNode().removeChild(n);
             outputDebug();

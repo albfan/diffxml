@@ -310,7 +310,8 @@ public final class Match {
         Node n;
         while ((n = ni.nextNode()) != null) {
             if (!(NodeOps.checkIfSameNode(doc, n) 
-                    || NodeOps.checkIfSameNode(doc.getDocumentElement(), n))) {
+                    || NodeOps.checkIfSameNode(doc.getDocumentElement(), n)
+                    || n.getNodeType() == Node.DOCUMENT_TYPE_NODE)) {
                 depthSorted.add(new NodeDepth(n));
             }
         }

@@ -77,7 +77,7 @@ public class DULDelta implements DeltaIF {
     
     /** Prepares an empty Edit Script document.
     *
-    * Makes root element, appends any necessary attributes
+    * Makes document element, appends any necessary attributes
     * and context information.
     *
     * @return a properly formatted, empty edit script
@@ -91,27 +91,28 @@ public class DULDelta implements DeltaIF {
            DocumentBuilderFactory.newInstance().newDocumentBuilder();
        Document editScript = builder.newDocument();
 
-       Element root = editScript.createElement(DULConstants.DELTA);
+       Element docEl = editScript.createElement(DULConstants.DELTA);
 
        //Append any context information
        if (DiffFactory.isContext()) {
-           root.setAttribute(DULConstants.SIBLING_CONTEXT, 
+           docEl.setAttribute(DULConstants.SIBLING_CONTEXT, 
                    Integer.toString(DiffFactory.getSiblingContext()));
-           root.setAttribute(DULConstants.PARENT_CONTEXT,
+           docEl.setAttribute(DULConstants.PARENT_CONTEXT,
                    Integer.toString(DiffFactory.getParentContext()));
-           root.setAttribute(DULConstants.PARENT_SIBLING_CONTEXT,
+           docEl.setAttribute(DULConstants.PARENT_SIBLING_CONTEXT,
                    Integer.toString(DiffFactory.getParentSiblingContext()));
        }
 
        if (DiffFactory.isReversePatch()) {
-           root.setAttribute(DULConstants.REVERSE_PATCH, DULConstants.TRUE);
+           docEl.setAttribute(DULConstants.REVERSE_PATCH, DULConstants.TRUE);
        }
 
        if (!DiffFactory.isResolveEntities()) {
-           root.setAttribute(DULConstants.RESOLVE_ENTITIES, DULConstants.FALSE);
+           docEl.setAttribute(
+                   DULConstants.RESOLVE_ENTITIES, DULConstants.FALSE);
        }
 
-       editScript.appendChild(root);
+       editScript.appendChild(docEl);
 
        return editScript;
    }

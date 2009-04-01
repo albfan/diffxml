@@ -369,8 +369,10 @@ public class DULPatch {
      * @param domcn    the child number to insert the node as
      * @param charpos  the character position at which to insert the node
      * @param ins      the node to be inserted
+     * @param doc      the document we are inserting into
+     * @throws PatchFormatException In case of invalid data
      */
-    private void insertNode(final NodeList siblings, final Element parent,
+    private void insertNode(final NodeList siblings, final Node parent,
             final int domcn, final int charpos, final Node ins, 
             final Document doc) throws PatchFormatException {
         
@@ -380,6 +382,11 @@ public class DULPatch {
         if (domcn > siblings.getLength()) {
             throw new PatchFormatException(
                     "Child number past end of nodes");
+        }
+        if (parent.getNodeType() != Node.ELEMENT_NODE && 
+                parent.getNodeType() != Node.DOCUMENT_NODE) {
+            throw new PatchFormatException(
+                    "Parent must be an element");
         }
 
         if ((siblings.getLength() > 0)) {
@@ -396,7 +403,7 @@ public class DULPatch {
             parent.appendChild(ins);
         }
     }
-
+    
     /**
      * Get the DOM Child number of a node using "childno" attribute.
      *
@@ -449,16 +456,14 @@ public class DULPatch {
         NamedNodeMap opAttrs = op.getAttributes();
         int charpos = getCharPos(opAttrs);
 
-        Element parent = null;
+        //Element parent = null;
         Node parentNode = getNamedParent(doc, opAttrs);
         if (parentNode == null) {
             throw new PatchFormatException(
                     "Insert operation must specify valid parent.");
-        } else {
-            parent = (Element) parentNode;
-        }
+        } 
 
-        NodeList siblings = parent.getChildNodes();
+        NodeList siblings = parentNode.getChildNodes();
         int nodeType = getNodeTypeFromAttr(opAttrs);
 
         int domcn = getDOMChildNo(opAttrs, nodeType, siblings);
@@ -467,24 +472,28 @@ public class DULPatch {
             case Node.TEXT_NODE:
 
                 ins = doc.createTextNode(getOpValue(op));
-                insertNode(siblings, parent, domcn, charpos, ins, doc);
+                insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
 
             case Node.ELEMENT_NODE:
 
                 ins = doc.createElement(getNameFromAttr(opAttrs));
-                insertNode(siblings, parent, domcn, charpos, ins, doc);
+                insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
 
             case Node.COMMENT_NODE:
 
                 ins = doc.createComment(getOpValue(op));
-                insertNode(siblings, parent, domcn, charpos, ins, doc);
+                insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
 
             case Node.ATTRIBUTE_NODE:
 
-                parent.setAttribute(getNameFromAttr(opAttrs), getOpValue(op));
+                if (parentNode.getNodeType() != Node.ELEMENT_NODE) {
+                    throw new PatchFormatException("Parent not an element");
+                }
+                ((Element) parentNode).setAttribute(
+                        getNameFromAttr(opAttrs), getOpValue(op));
                 break;
 
             default:
@@ -518,7 +527,7 @@ public class DULPatch {
             throw new PatchFormatException(
                     "charpos past end of text node.");
         }
-        if ((length + charpos -1) > text.length()) {
+        if ((length + charpos - 1) > text.length()) {
             throw new PatchFormatException(
                 "length past end of text node.");
         }
@@ -550,25 +559,6 @@ public class DULPatch {
 
         int length = delNode.getNodeValue().length() - charpos + 1;
         return deleteText(delNode, charpos, length, doc);
-    }
-
-    /**
-     * Log various attributes of delete operation.
-     *
-     * @param delNode the node to be deleted
-     * @param opAttrs the attributes of the operation node
-     */
-    private void logDeleteVariables(final Node delNode,
-            final NamedNodeMap opAttrs) {
-        
-        DiffXML.LOG.finer("Deleting node "
-                + delNode.getNodeName() + " " + delNode.getNodeValue());
-        if (opAttrs.getNamedItem(DULConstants.LENGTH) != null) {
-            DiffXML.LOG.finer("Supposed length "
-                    + opAttrs.getNamedItem(DULConstants.LENGTH).getNodeValue());
-            DiffXML.LOG.finer("Actual length "
-                    + delNode.getNodeValue().length());
-        }
     }
 
     /**
@@ -778,7 +768,8 @@ public class DULPatch {
                 } else if (opName.equals(DULConstants.MOVE)) {
                     doMove(doc, op);
                 } else {
-                    throw new PatchFormatException("Invalid element: " + opName);
+                    throw new PatchFormatException(
+                            "Invalid element: " + opName);
                 }
 
                 if (PatchXML.debug) {
@@ -796,8 +787,8 @@ public class DULPatch {
                 }
             } catch (PatchFormatException e) {
                 throw new PatchFormatException(
-                        "Error at operation:\n" + DOMOps.getNodeAsStringDeep(op),
-                        e);
+                        "Error at operation:\n"
+                        + DOMOps.getNodeAsStringDeep(op), e);
             }
             op = ni.nextNode();
         }

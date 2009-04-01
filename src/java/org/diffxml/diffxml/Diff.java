@@ -47,7 +47,7 @@ public interface Diff {
      *
      * Returns a patch document representing the differences. 
      * 
-     * The document will have only a root element if the documents are
+     * The document will have only one empty element if the documents are
      * identical.
      *
      * TODO: Consider changing the return type to an interface supporting
