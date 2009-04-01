@@ -357,5 +357,30 @@ public class EditScriptTest {
                 attrs.getNamedItem("old_charpos").getNodeValue());
 
     }
+    
+    /**
+     * Test for DocumentType node handling.
+     * 
+     * Note DocumentType nodes can't be differenced, as can't be referenced by
+     * XPath.
+     */
+    @Test
+    public final void testDocumentType() {
+        Document doc1 = TestDocHelper.createDocument(
+        "<!DOCTYPE a [ ]><a></a>");
+        Document doc2 = TestDocHelper.createDocument(
+        "<a></a>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(4, matchings.size());
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+
+        assertEquals(res.getFirstChild().getChildNodes().getLength(), 0);
+    }
 
 }

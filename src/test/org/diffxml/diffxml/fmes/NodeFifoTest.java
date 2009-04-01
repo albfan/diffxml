@@ -38,19 +38,19 @@ public class NodeFifoTest {
         
         Document testDoc = TestDocHelper.createDocument("<a><b><c/></b></a>");
         NodeFifo fifo = new NodeFifo();
-        Node root = testDoc.getDocumentElement();
-        fifo.push(root);
-        assertEquals(root, fifo.pop());
+        Node docEl = testDoc.getDocumentElement();
+        fifo.push(docEl);
+        assertEquals(docEl, fifo.pop());
         assertNull(fifo.pop());
         
-        Node b =  root.getFirstChild();
-        Node c = root.getFirstChild().getFirstChild();
+        Node b =  docEl.getFirstChild();
+        Node c = docEl.getFirstChild().getFirstChild();
         
-        fifo.push(root);
+        fifo.push(docEl);
         fifo.push(b);
         fifo.push(c);
         
-        assertEquals(root, fifo.pop());
+        assertEquals(docEl, fifo.pop());
         assertEquals(b, fifo.pop());
         assertEquals(c, fifo.pop());
         assertNull(fifo.pop());
@@ -67,18 +67,18 @@ public class NodeFifoTest {
                 "<a><b/><c/><d/></a>");
         
         NodeFifo fifo = new NodeFifo();
-        Node root = testDoc.getDocumentElement();
-        fifo.push(root);
-        fifo.addChildrenOfNode(root);
+        Node docEl = testDoc.getDocumentElement();
+        fifo.push(docEl);
+        fifo.addChildrenOfNode(docEl);
         
-        assertEquals(root, fifo.pop());
+        assertEquals(docEl, fifo.pop());
         assertEquals("b", fifo.pop().getNodeName());
         assertEquals("c", fifo.pop().getNodeName());
         assertEquals("d", fifo.pop().getNodeName());
         assertNull(fifo.pop());
         
         //Check nothing happens if add node with no children
-        fifo.addChildrenOfNode(root.getFirstChild());
+        fifo.addChildrenOfNode(docEl.getFirstChild());
         assertNull(fifo.pop());
         
     }

@@ -450,4 +450,27 @@ public class DULPatchTest {
             fail("Caught exception " + e);
         }
     }
+    
+    /**
+     * Simple insert operation.
+     */
+    @Test
+    public final void testInsertAtRoot() {
+        
+        Document doc1 = TestDocHelper.createDocument("<a></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/\" nodetype=\"" + Node.COMMENT_NODE + "\" "
+                + "childno=\"1\">comment</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            assertEquals("comment", 
+                    doc1.getFirstChild().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+
 }

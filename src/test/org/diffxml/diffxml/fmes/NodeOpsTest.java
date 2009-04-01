@@ -60,16 +60,20 @@ public class NodeOpsTest {
      * Gets the XPath for the node and evaluates it, checking if the same node
      * is returned. 
      * 
+     * DocumentType nodes are ignored as they cannot be identified by an XPath
+     * 
      * @param n The node to test
      * @param xp XPath expression (reused for efficiency only)
      */
     private void testXPathForNode(final Node n, final XPath xp) {
         
-        String xpath = NodeOps.getXPath(n);
-        //Uncomment for debug info
-        //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: "
-        //    + xpath);
-        compareXPathResult(n, xpath, xp);
+        if (n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
+            String xpath = NodeOps.getXPath(n);
+            //Uncomment for debug info
+            //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: "
+            //        + xpath);
+            compareXPathResult(n, xpath, xp);
+        }
     }
     
     /**
@@ -127,14 +131,14 @@ public class NodeOpsTest {
     public final void testGetXPathWithTextNodes() {
         
         Document testDoc = TestDocHelper.createDocument("<a>b</a>");
-        Element root = testDoc.getDocumentElement();
-        Node b = root.getFirstChild();
+        Element docEl = testDoc.getDocumentElement();
+        Node b = docEl.getFirstChild();
         Node c = testDoc.createTextNode("c\n");
-        root.appendChild(c);
+        docEl.appendChild(c);
         Node d = testDoc.createElement("d");
-        root.appendChild(d);
+        docEl.appendChild(d);
         Node e = testDoc.createTextNode("e");
-        root.appendChild(e);
+        docEl.appendChild(e);
         String bxpath = NodeOps.getXPath(b);
         String cxpath = NodeOps.getXPath(c);
         String dxpath = NodeOps.getXPath(d);
@@ -161,8 +165,8 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<a><b attr=\"test\"/></a>");
-        Element root = testDoc.getDocumentElement();
-        NamedNodeMap attrs = root.getFirstChild().getAttributes();
+        Element docEl = testDoc.getDocumentElement();
+        NamedNodeMap attrs = docEl.getFirstChild().getAttributes();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
@@ -172,21 +176,21 @@ public class NodeOpsTest {
     }   
  
     /**
-     * Test getting XPath with namespaced root node.
+     * Test getting XPath with namespaced element.
      */
     @Test
     public final void testGetXPathWithNamespace() {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<d:a xmlns:d=\"http://test.com\"><b/></d:a>");
-        Element root = testDoc.getDocumentElement();
+        Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
         XPath xpathExpr = xPathFac.newXPath();
  
-        testXPathForNode(root, xpathExpr);
-        testXPathForNode(root.getFirstChild(), xpathExpr);
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);
     }   
 
     /**
@@ -212,8 +216,8 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<a><b/><c>1</c>23<!--comm--><d attr=\"1\"/></a>");
-        Element root = testDoc.getDocumentElement();
-        NodeList nodeList = root.getChildNodes();
+        Element docEl = testDoc.getDocumentElement();
+        NodeList nodeList = docEl.getChildNodes();
         Node[] nodeArray = DOMOps.getElementsOfNodeList(nodeList);
         
         assertEquals(nodeList.getLength(), nodeArray.length);
@@ -222,7 +226,7 @@ public class NodeOpsTest {
         }
         
         assertNull(DOMOps.getElementsOfNodeList(null));
-        assertEquals(DOMOps.getElementsOfNodeList(root.getFirstChild(
+        assertEquals(DOMOps.getElementsOfNodeList(docEl.getFirstChild(
                 ).getChildNodes()).length, 0);
         
     }
@@ -235,14 +239,12 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<!DOCTYPE a [ <!ELEMENT a (#PCDATA)>]><a>text</a>");
-        Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
         XPath xpathExpr = xPathFac.newXPath();
  
-        testXPathForNode(docEl, xpathExpr);
-        testXPathForNode(docEl.getFirstChild(), xpathExpr);   
+        testXPathForNode(testDoc, xpathExpr);
     }
     
     /**
@@ -253,16 +255,13 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<!-- comment --><a>text</a>");
-        //Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
         XPath xpathExpr = xPathFac.newXPath();
  
         testXPathForNode(testDoc, xpathExpr);
-        //testXPathForNode()
-        //testXPathForNode(docEl, xpathExpr);
-        //testXPathForNode(docEl.getFirstChild(), xpathExpr);
+ 
     }
     
     /**
@@ -293,14 +292,14 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<a>x<b>4</b>y</a>");
-        Element root = testDoc.getDocumentElement();
+        Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method
         XPathFactory xPathFac = XPathFactory.newInstance();
         XPath xpathExpr = xPathFac.newXPath();
  
-        testXPathForNode(root, xpathExpr);
-        testXPathForNode(root.getFirstChild(), xpathExpr);
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);
     }   
     
 }

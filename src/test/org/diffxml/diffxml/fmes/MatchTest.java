@@ -83,16 +83,16 @@ public class MatchTest {
         
         NodePairs all = Match.easyMatch(mTestDoc1a, mTestDoc1b);
         
-        Node aRoot = mTestDoc1a.getDocumentElement();
-        Node partner = all.getPartner(aRoot);
+        Node aDocEl = mTestDoc1a.getDocumentElement();
+        Node partner = all.getPartner(aDocEl);
         
-        Node bRoot = mTestDoc1b.getDocumentElement();
-        assertEquals(bRoot, partner);
+        Node bDocEl = mTestDoc1b.getDocumentElement();
+        assertEquals(bDocEl, partner);
         
-        Node aB = aRoot.getFirstChild();
+        Node aB = aDocEl.getFirstChild();
         partner = all.getPartner(aB);
         
-        Node bB = bRoot.getFirstChild();
+        Node bB = bDocEl.getFirstChild();
         assertEquals(bB, partner);
         
         Node aC = aB.getFirstChild();
@@ -110,16 +110,16 @@ public class MatchTest {
 
         NodePairs all = Match.easyMatch(mTestDoc2a, mTestDoc2b);
         
-        Node aRoot = mTestDoc2a.getDocumentElement();
-        Node partner = all.getPartner(aRoot);
+        Node aDocEl = mTestDoc2a.getDocumentElement();
+        Node partner = all.getPartner(aDocEl);
         
-        Node bRoot = mTestDoc2b.getDocumentElement();
-        assertEquals(bRoot, partner);
+        Node bDocEl = mTestDoc2b.getDocumentElement();
+        assertEquals(bDocEl, partner);
         
-        Node aText = aRoot.getFirstChild();
+        Node aText = aDocEl.getFirstChild();
         partner = all.getPartner(aText);
         
-        Node bText = bRoot.getFirstChild();
+        Node bText = bDocEl.getFirstChild();
         assertEquals(bText, partner);
 
         Node aB = aText.getNextSibling();
@@ -160,13 +160,13 @@ public class MatchTest {
         
         NodePairs matches = Match.easyMatch(mTestDoc2a, mTestDoc4a);
         
-        Node aRoot = mTestDoc2a.getDocumentElement();
-        Node partner = matches.getPartner(aRoot);
+        Node aDocEl = mTestDoc2a.getDocumentElement();
+        Node partner = matches.getPartner(aDocEl);
         
-        Node bRoot = mTestDoc4a.getDocumentElement();
-        assertEquals(bRoot, partner);
+        Node bDocEl = mTestDoc4a.getDocumentElement();
+        assertEquals(bDocEl, partner);
         
-        Node aText = aRoot.getFirstChild();
+        Node aText = aDocEl.getFirstChild();
         assertNull(matches.getPartner(aText));
         
         Node aB = aText.getNextSibling();
@@ -175,7 +175,7 @@ public class MatchTest {
         Node aComment = aB.getFirstChild();
         partner = matches.getPartner(aComment);
         
-        Node bComment = bRoot.getFirstChild().getNextSibling().getFirstChild();
+        Node bComment = bDocEl.getFirstChild().getNextSibling().getFirstChild();
         assertEquals(bComment, partner);
         
     }
@@ -193,12 +193,12 @@ public class MatchTest {
         
         NodePairs matches = Match.easyMatch(doc1, doc2);
         
-        Node aRoot = doc1.getDocumentElement();
-        Node bRoot = doc2.getDocumentElement();
-        assertEquals(bRoot, matches.getPartner(aRoot));
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
         
-        Node aB = aRoot.getFirstChild();
-        Node bB = bRoot.getFirstChild();
+        Node aB = aDocEl.getFirstChild();
+        Node bB = bDocEl.getFirstChild();
         assertEquals(bB, matches.getPartner(aB));
         
         Node aC = aB.getNextSibling();
@@ -235,15 +235,15 @@ public class MatchTest {
         //a and c should match, b shouldn't
         NodePairs matches = Match.easyMatch(doc1, doc2);
         
-        Node root1 = doc1.getDocumentElement();
-        Node root2 = doc2.getDocumentElement();
-        assertEquals(root1, matches.getPartner(root2));
+        Node decEl1 = doc1.getDocumentElement();
+        Node docEl2 = doc2.getDocumentElement();
+        assertEquals(decEl1, matches.getPartner(docEl2));
 
-        Node b1 = root1.getFirstChild();
+        Node b1 = decEl1.getFirstChild();
         assertNull(matches.getPartner(b1));
 
         Node c1 = b1.getNextSibling();
-        Node c2 = root2.getFirstChild().getNextSibling();
+        Node c2 = docEl2.getFirstChild().getNextSibling();
         assertEquals(c2, matches.getPartner(c1));
     }
 
@@ -262,12 +262,12 @@ public class MatchTest {
         
         NodePairs matches = Match.easyMatch(doc1, doc2);
         
-        Node aRoot = doc1.getDocumentElement();
-        Node bRoot = doc2.getDocumentElement();
-        assertEquals(bRoot, matches.getPartner(aRoot));
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
         
-        Node aB = aRoot.getFirstChild();
-        Node bZ = bRoot.getFirstChild();
+        Node aB = aDocEl.getFirstChild();
+        Node bZ = bDocEl.getFirstChild();
         
         Node aC = aB.getNextSibling();
         Node bC = bZ.getNextSibling();
