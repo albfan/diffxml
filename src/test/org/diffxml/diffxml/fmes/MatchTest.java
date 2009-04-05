@@ -2,12 +2,7 @@ package org.diffxml.diffxml.fmes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static junit.framework.Assert.fail;
 
-import java.io.IOException;
-import java.util.logging.Level;
-
-import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.TestDocHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,17 +42,11 @@ public class MatchTest {
     private static Document mTestDoc4a;
     
     /**
-     * Set up logger and documents before test.
+     * Set up documents before test.
      */
     @BeforeClass
     public static void setUpBeforeClass() {
         
-        try {
-            DiffXML.initLog();
-            DiffXML.LOG.setLevel(Level.OFF);
-        } catch (IOException e) {
-            fail("Exception setting up logger");
-        }
         mTestDoc1a = TestDocHelper.createDocument("<a><b><c/></b></a>");
         mTestDoc1b = TestDocHelper.createDocument("<a><b><c/></b></a>");
         
@@ -277,4 +266,26 @@ public class MatchTest {
         Node bB = bC.getNextSibling();
         assertEquals(bB, matches.getPartner(aB2));
     }
+
+    /**
+     * Test elements with different attributes aren't matched.
+     *
+     */
+    @Test
+    public final void testDifferingAttributes() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<a><b a1=\"y\"/></a>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<a><b a2=\"n\"/></a>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertNull(matches.getPartner(aB));
+        
+    }
+    
 }

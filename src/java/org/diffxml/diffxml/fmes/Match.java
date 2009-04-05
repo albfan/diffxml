@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -183,14 +184,12 @@ public final class Match {
             int i = 0;
             while (ret && (i < numberAAttrs)) {
                 // Check if attr exists in other tag
-                if (bAttrs.getNamedItem(aAttrs.item(i).getNodeName()) == null) {
+                Attr bItem = 
+                    (Attr) bAttrs.getNamedItem(aAttrs.item(i).getNodeName()); 
+                if (bItem == null || !bItem.getNodeValue().equals(
+                        aAttrs.item(i).getNodeValue())) {
                     ret = false;
-                }
-
-                if (!bAttrs.getNamedItem(aAttrs.item(i).getNodeName())
-                        .getNodeValue().equals(aAttrs.item(i).getNodeValue())) {
-                    ret = false;
-                }
+                } 
                 i++;
             }
         }

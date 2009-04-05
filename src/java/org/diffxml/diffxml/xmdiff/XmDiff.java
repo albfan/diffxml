@@ -111,12 +111,10 @@ public class XmDiff implements Diff
 	//Calculate delete costs
 	//Returns number of nodes in doc1
         int num_doc1=delcosts(doc1, D, fA);
-	DiffXML.LOG.fine("Finished delcosts num nodes = " + num_doc1);
 	
 	//Calculate insert costs
 	//Returns number of nodes in doc2
 	int num_doc2=inscosts(doc2, D, fB);
-	DiffXML.LOG.fine("Finished inscosts num nodes = " + num_doc2);
 
 	//Calculate everything else
 	//Need to reset inputs
@@ -165,7 +163,6 @@ public class XmDiff implements Diff
 	//Skip first (hopefully root) tag
 	if(eventType == XmlPullParser.START_TAG) 
 		{
-		DiffXML.LOG.finer("Got start tag value" + doc1.getName());	
 		doc1.next();
 		}
 		
@@ -241,10 +238,8 @@ public class XmDiff implements Diff
 
     public static void PrintPath(ArrayList path, RandomAccessFile file, int depth) throws IOException
 	{
-	DiffXML.LOG.finer("Path" + path);	
 
 	String st=depth +" " + path.toString() + "\n";
-	DiffXML.LOG.finer(st);
 	file.writeBytes(st);
 	}
 
@@ -261,14 +256,12 @@ public class XmDiff implements Diff
 	//Skip first (hopefully root) tag
         if(eventType == XmlPullParser.START_TAG)
        		{
-                DiffXML.LOG.finer("Got start tag" + doc2.getName());
                 doc2.next();
                 }
 
 	do {
             if(eventType == XmlPullParser.START_TAG) 
 		{
-		DiffXML.LOG.finer("j=" +j + " TAG=" + doc2.getName());
                 D[0][j]=D[0][(j-1)] + Costs.costInsert(); //+ costi(node);
                 j++;
 
@@ -299,7 +292,6 @@ public class XmDiff implements Diff
 		}
             else if(eventType == XmlPullParser.TEXT) 
 		{
-		DiffXML.LOG.finer("j=" +j + " TAG=" + doc2.getText());
                 D[0][j]=D[0][(j-1)] + Costs.costInsert(); // + costi(node);
                 j++;
 

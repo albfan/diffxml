@@ -116,8 +116,6 @@ public final class EditScript {
 
         while (!fifo.isEmpty()) {
             
-            DiffXML.LOG.fine("In breadth traversal");
-
             Node x = fifo.pop();
             fifo.addChildrenOfNode(x);
 
@@ -374,8 +372,6 @@ public final class EditScript {
     private void alignChildren(final Node w, final Node x,
             final NodePairs matchings) {
         
-        DiffXML.LOG.fine("In alignChildren");
-
         //Order of w and x is important
         markChildrenOutOfOrder(w);
         markChildrenOutOfOrder(x);

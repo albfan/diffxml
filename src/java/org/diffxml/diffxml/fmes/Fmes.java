@@ -158,9 +158,7 @@ public class Fmes implements Diff {
 
         Document delta = null;
         try {
-            DiffXML.LOG.entering("diff", "EditScript.create");
             delta = (new EditScript(doc1, doc2, matchings)).create();
-            DiffXML.LOG.exiting("diff", "EditScript.create");
         } catch (DocumentCreationException e) {
             throw new DiffException("Failed to create Edit Script ", e); 
         }

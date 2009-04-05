@@ -328,12 +328,6 @@ public final class PatchXML {
             patch = Reverse.go(patch);
         }
 
-        try {
-            DiffXML.initLog();
-        } catch (IOException e) {
-            System.err.println("Failed to init Logging: " + e);
-        }
-
         DULPatch patcher = new DULPatch();
         try {
             patcher.apply(doc, patch);

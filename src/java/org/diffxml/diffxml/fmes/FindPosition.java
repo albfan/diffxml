@@ -32,8 +32,6 @@ public class FindPosition {
      */
     public FindPosition(final Node x, final NodePairs matchings) {
 
-        DiffXML.LOG.fine("Entered findPos");
-
         Node v = getInOrderLeftSibling(x);
 
         if (v == null) {
@@ -67,7 +65,6 @@ public class FindPosition {
             }
         }
 
-        DiffXML.LOG.fine("Exiting findPos normally");
     }
     
     /**

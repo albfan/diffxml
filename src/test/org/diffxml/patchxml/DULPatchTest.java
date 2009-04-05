@@ -187,6 +187,29 @@ public class DULPatchTest {
     }
 
     /**
+     * Test inserting CDATA section.
+     */
+    @Test
+    public final void testInsertingCDATA() {
+        
+        Document doc1 = TestDocHelper.createDocument("<a></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.CDATA_SECTION_NODE 
+                + "\"" + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            Node comment = doc1.getDocumentElement().getFirstChild();
+            assertEquals(Node.CDATA_SECTION_NODE, comment.getNodeType());
+            assertEquals("val", comment.getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    /**
      * Test simple delete operation.
      */
     @Test

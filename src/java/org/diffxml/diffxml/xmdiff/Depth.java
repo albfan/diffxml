@@ -54,8 +54,6 @@ while (st.hasMoreTokens())
 	path=path+"/node()["+st.nextToken()+"]";
 	}
 
-DiffXML.LOG.finer("path " + path + " depth " + depth);
-
 }
 
 }

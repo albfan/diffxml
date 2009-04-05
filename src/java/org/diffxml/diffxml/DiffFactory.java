@@ -23,7 +23,6 @@ email: amouat@postmaster.co.uk
 
 package org.diffxml.diffxml;
 
-
 import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.xmdiff.XmDiff;
 

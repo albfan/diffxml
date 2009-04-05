@@ -57,6 +57,7 @@ public interface Diff {
      * @param f2    Modified file
      * @return Document An XML document containing the differences between the 
      *                  2 files.
+     * @throws DiffException If something goes wrong
      */
 
     Document diff(final File f1, final File f2) throws DiffException;

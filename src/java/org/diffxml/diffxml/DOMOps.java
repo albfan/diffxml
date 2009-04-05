@@ -42,14 +42,16 @@ public final class DOMOps {
     /**
      * Writes given XML document to given stream.
      *
-     * Uses UTF8 encoding, no indentation, preserves spaces.
+     * Uses UTF8 encoding, preserves spaces.
      * Adds XML declaration with standalone set to "yes".
      * 
      * @param doc DOM document to output
      * @param os  Stream to output to
+     * @param indented Whether to indent the output
      * @throws IOException If an error occurs with serialization
      */
-    public static void outputXML(final Document doc, final OutputStream os) 
+    public static void outputXML(final Document doc, final OutputStream os,
+            final boolean indented) 
     throws IOException {
         
         if (doc == null) {
@@ -61,7 +63,13 @@ public final class DOMOps {
                 DOMOps.TRANSFORMER_FACTORY.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
-            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+            
+            if (indented) {
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");    
+            } else {
+                transformer.setOutputProperty(OutputKeys.INDENT, "no");
+            }
+            
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.transform(new DOMSource(doc),
                     new StreamResult(os));
@@ -73,6 +81,37 @@ public final class DOMOps {
         }
     }
 
+    /**
+     * Writes given XML document to given stream.
+     *
+     * Uses UTF8 encoding, no indentation, preserves spaces.
+     * Adds XML declaration with standalone set to "yes".
+     * 
+     * @param doc DOM document to output
+     * @param os  Stream to output to
+     * @throws IOException If an error occurs with serialization
+     */
+    public static void outputXML(final Document doc, final OutputStream os) 
+    throws IOException {
+        outputXML(doc, os, false);
+    }
+
+    /**
+     * Writes given XML document to given stream.
+     *
+     * Uses UTF8 encoding, indentation, preserves spaces.
+     * Adds XML declaration with standalone set to "yes".
+     * 
+     * @param doc DOM document to output
+     * @param os  Stream to output to
+     * @throws IOException If an error occurs with serialization
+     */
+    public static void outputXMLIndented(final Document doc, 
+            final OutputStream os) 
+    throws IOException {
+        outputXML(doc, os, true);
+    }
+    
     /**
      * Writes given XML Node to given stream.
      *

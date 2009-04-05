@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import org.diffxml.diffxml.DOMOps;
 import org.diffxml.diffxml.TestDocHelper;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -193,7 +192,7 @@ public class EditScriptTest {
                 attrs.getNamedItem("parent").getNodeValue());    
         assertEquals("5",  
                 attrs.getNamedItem("charpos").getNodeValue());    
-        assertEquals("1",
+        assertEquals(Integer.toString(Node.ELEMENT_NODE),
                 attrs.getNamedItem("nodetype").getNodeValue());    
     }
 

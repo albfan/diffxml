@@ -26,11 +26,6 @@ package org.diffxml.diffxml;
 import java.io.File;
 import java.io.IOException;
 
-import java.util.logging.Logger;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-
-
 import org.w3c.dom.Document;
 
 
@@ -53,9 +48,6 @@ public final class DiffXML {
 
     /** Second file to be differenced. **/
     private static File mFile2;
-
-    /** Logger. **/
-    public static final Logger LOG = Logger.getLogger("diffxml");
 
     /**
      * Private constructor - shouldn't be called.
@@ -94,136 +86,14 @@ public final class DiffXML {
                 DiffFactory.setBrief(true);
             } else if (currentArg.equals("-debug")) {
                 DiffFactory.setDebug(true);
-            } else if (currentArg.equals("-ignore-all-whitespace")) {
-                DiffFactory.setIgnoreAllWhitespace(true);
-                DiffFactory.setIgnoreWhitespaceNodes(true);
-            } else if (currentArg.equals("-ignore-leading-whitespace")) {
-                DiffFactory.setIgnoreLeadingWhitespace(true);
-                DiffFactory.setIgnoreWhitespaceNodes(true);
-            } else if (currentArg.equals("-ignore-empty-nodes")) {
-                DiffFactory.setIgnoreWhitespaceNodes(true);
-            } else if (currentArg.equals("-ignore-case")) {
-                DiffFactory.setIgnoreCase(true);
-            } else if (currentArg.equals("-ignore-comments")) {
-                DiffFactory.setIgnoreComments(true);
-            } else if (currentArg.equals("-ignore-processing-instructions")) {
-                DiffFactory.setIgnoreProcessingInstructions(true);
             } else if (currentArg.equals("-version")) {
                 printVersionAndExit();
             } else if (currentArg.equals("-help")) {
                 printHelpAndExit();
             } else if (currentArg.equals("-fmes")) {
                 DiffFactory.setFMES(true);
-            } else if (currentArg.equals("-xmdiff")) {
-                DiffFactory.setFMES(false);
-            } else if (currentArg.equals("-tagnames")) {
-                DiffFactory.setUseTagnames(true);
-            } else if (currentArg.equals("-reverse-patch")) {
-                DiffFactory.setReversePatch(true);
-            } else if (currentArg.equals("-sibling-context")) {
-                DiffFactory.setContext(true);
-            } else if (currentArg.equals("-parent-context")) {
-                DiffFactory.setContext(true);
-            } else if (currentArg.equals("-parent-sibling-context")) {
-                DiffFactory.setContext(true);
-                //Defaults to 0 if not specified at all, 1 if specified
-                DiffFactory.setParentSiblingContext(1);
-            } else if (currentArg.equals("-xupdate")) {
-                DiffFactory.setDUL(false);
             } else if (currentArg.equals("-dul")) {
                 DiffFactory.setDUL(true);
-            } else if (currentArg.equals("-remove-entities")) {
-                DiffFactory.setResolveEntities(false);
-                System.err.println("STERN WARNING: Removing entities may lead"
-                        + " to incorrect or misleading results");
-            } else if (currentArg.startsWith("-sibling-context=")) {
-
-                //Arguments with arguments
-
-                //Get the number
-                int num = Integer.parseInt((currentArg.substring(17)));
-
-                if (num < 0) {
-                    System.err.println(
-                        "Sibling Context must positive integer > 0");
-                    System.exit(2);
-                }
-
-                DiffFactory.setContext(true);
-                DiffFactory.setSiblingContext(num);
-            } else if (currentArg.startsWith("-parent-context=")) {
-                //Get the number
-                int num = Integer.parseInt(currentArg.substring(16));
-                if (num < 0) {
-                    System.err.println(
-                    "Parent Context must positive integer > 0");
-                    System.exit(2);
-                }
-
-                DiffFactory.setContext(true);
-                DiffFactory.setParentContext(num);
-            } else if (currentArg.startsWith("-parent-sibling-context=")) {
-                //Get the number
-                int num = Integer.parseInt(currentArg.substring(24));
-                if (num < 0) {
-                    System.err.println(
-                    "Parent Sibling Context must positive integer > 0");
-                    System.exit(2);
-                }
-
-                DiffFactory.setContext(true);
-                DiffFactory.setParentSiblingContext(num);
-            } else if (currentArg.equals("-C")) {
-
-                //Short arguments with arguments
-
-                DiffFactory.setContext(true);
-                if (argNo < args.length) {
-                    //Next argument must be a number
-                    int num = Integer.parseInt(args[argNo++]);
-                    if (num < 1) {
-                        System.err.println(
-                        "-C needs positive integer argument");
-                        System.exit(2);
-                    }
-                    DiffFactory.setSiblingContext(num);
-
-                } else {
-                    System.err.println("-C needs positive integer argument");
-                    System.exit(2);
-                }
-
-            } else if (currentArg.equals("-P")) {
-                DiffFactory.setContext(true);
-                if (argNo < args.length) {
-                    //Next argument must be a number
-                    int num = Integer.parseInt(args[argNo++]);
-                    if (num < 1) {
-                        System.err.println(
-                        "-P needs positive integer argument");
-                        System.exit(2);
-                    }
-                    DiffFactory.setParentContext(num);
-                } else {
-                    System.err.println("-P needs positive integer argument");
-                    System.exit(2);
-                }
-
-            } else if (currentArg.equals("-S")) {
-                DiffFactory.setContext(true);
-                if (argNo < args.length) {
-                    //Next argument must be a number
-                    int num = Integer.parseInt(args[argNo++]);
-                    if (num < 1) {
-                        System.err.println(
-                        "-S needs positive integer argument");
-                        System.exit(2);
-                    }
-                    DiffFactory.setParentSiblingContext(num);
-                } else {
-                    System.err.println("-S needs positive integer argument");
-                    System.exit(2);
-                }
             } else {
 
                 //(series of) flag arguments
@@ -233,29 +103,8 @@ public final class DiffXML {
                         case 'q':
                             DiffFactory.setBrief(true);
                             break;
-                        case 's':
-                            DiffFactory.setIgnoreAllWhitespace(true);
-                            break;
-                        case 'w':
-                            DiffFactory.setIgnoreLeadingWhitespace(true);
-                            break;
-                        case 'e':
-                            DiffFactory.setIgnoreWhitespaceNodes(true);
-                            break;
-                        case 'i':
-                            DiffFactory.setIgnoreCase(true);
-                            break;
-                        case 'r':
-                            DiffFactory.setIgnoreComments(true);
-                            break;
-                        case 'I':
-                            DiffFactory.setIgnoreProcessingInstructions(true);
-                            break;
                         case 'V':
                             printVersionAndExit();
-                            break;
-                        case 'c':
-                            DiffFactory.setContext(true);
                             break;
                         case 'h':
                             printHelpAndExit();
@@ -263,23 +112,8 @@ public final class DiffXML {
                         case 'f':
                             DiffFactory.setFMES(true);
                             break;
-                        case 'x':
-                            DiffFactory.setFMES(false);
-                            break;
-                        case 't':
-                            DiffFactory.setUseTagnames(true);
-                            break;
-                        case 'X':
-                            DiffFactory.setDUL(false);
-                            break;
                         case 'D':
                             DiffFactory.setDUL(true);
-                            break;
-                        case 'p':
-                            DiffFactory.setReversePatch(true);
-                            break;
-                        case 'n':
-                            DiffFactory.setResolveEntities(false);
                             break;
 
                         default:
@@ -298,9 +132,7 @@ public final class DiffXML {
         }
 
         mFile1 = new File(args[argNo]);
-        LOG.fine("mFile1= " + mFile1.getAbsolutePath());
         mFile2 = new File(args[++argNo]);
-        LOG.fine("_file2= " + mFile2.getAbsolutePath());
     }
 
     /**
@@ -320,37 +152,9 @@ public final class DiffXML {
                 "Find the differences between two XML files.\n\n" +
                 "--brief  -q  Report only if files differ, don't output the " +
                 "delta.\n" +
-                "--ignore-all-whitespace  -s  Ignore all whitespace when " +
-                "comparing nodes.\n" +
-                "--ignore-leading-whitespace  -w  Ignore leading and trailing" +
-                " whitespace in \n\ttext nodes.\n\n" +
-                "--ignore-empty-nodes  -e  Ignore text nodes that contain " +
-                "only whitespace.\n" +
-                "--ignore-case  -i  Consider upper and lower case to be the" +
-                " same. \n" +
-                "--ignore-comments  -r  Ignore changes made to comment " +
-                "elements. \n" +
-                "--ignore-processing-instructions  -I  Ignore changes made to" +
-                " processing \n\tinstructions.\n\n" +
                 "--version  -V  Output version number of program.\n" +
-                "--help  -h  Output this help.\n" +
-                "--fmes  -f  Use the FMES algorithm to compute the changes.\n" +
-                "--xmdiff  -x  Use the xmdiff algorithm to compute the " +
-                "changes.\n" +
-                "--tagnames  -t  Output full tag names of elements.\n" +
-                "--reverse-patch  -p  Create output that allows reversing of" +
-                " a patch.\n--remove-entities  -n  Remove all external" +
-        " entities when processing.\n");
+                "--help  -h  Output this help.\n");
 
-        System.out.print("\n--sibling-context=NUM  -C NUM  " +
-                "Create context information output, \n\twith NUM sibling " +
-                "context (default 2).\n" +
-                "--parent-context=NUM  -P NUM  Create context information" +
-                " output, \n\twith NUM parent and child context (default 1)." +
-                " \n" +
-                "--parent-sibling-context=NUM  -S NUM  Create context" +
-                " information output, \n\twith NUM parent sibling context" +
-        " (default 1).\n");
         System.out.print("\nThis product includes software developed by the " +
                 "Indiana University Extreme! Lab " +
         "(http://www.extreme.indiana.edu/).\n\n");
@@ -370,39 +174,11 @@ public final class DiffXML {
     }
 
     /**
-     * Attempts to initialise logging.
-     *
-     * Output is sent to file diffxml.log.
-     * @throws IOException If the logfile can't be created
-     */
-    public static void initLog() throws IOException {
-        FileHandler logFile = new FileHandler("diffxml.log");
-        logFile.setFormatter(new java.util.logging.SimpleFormatter());
-
-        // Send log output to our FileHandler.
-        LOG.addHandler(logFile);
-
-        // Request detail level
-        LOG.setLevel(Level.ALL);
-
-        // We only want messages sent to our file, nowhere else
-        LOG.setUseParentHandlers(false);
-
-    }
-
-    /**
      * Main method. Takes command line arguments, parses them and performs diff.
      *
      * @param args Command line arguments. See printUsageAndExit() for details.
      */
     public static void main(final String[] args) {
-
-        //Start logging
-        try {
-            initLog();
-        } catch (IOException ex) {
-            System.err.println("Unable to instantiate logger " + ex);
-        }
 
         //Set options - instantiates _file1 and _file2
         parseArgs(args);
@@ -441,7 +217,7 @@ public final class DiffXML {
             }
         } else {
             try {
-                DOMOps.outputXML(delta, System.out);
+                DOMOps.outputXMLIndented(delta, System.out);
                 System.out.println();
             } catch (IOException e) {
                 System.err.println(e.getMessage());

@@ -65,6 +65,7 @@ public class DULPatch {
      * @param doc   document being patched
      * @param attrs attributes of operation node
      * @return the parent node
+     * @throws PatchFormatException If the patch is not formatted correctly
      */
     private Node getParentFromAttr(final Document doc, 
             final NamedNodeMap attrs) throws PatchFormatException {
@@ -449,7 +450,6 @@ public class DULPatch {
     private void doInsert(final Document doc, final Node op) 
     throws PatchFormatException {
         
-        DiffXML.LOG.fine("Applying insert");
         Node ins;
 
         //Get various variables need for insert
@@ -475,6 +475,12 @@ public class DULPatch {
                 insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
 
+            case Node.CDATA_SECTION_NODE:
+                
+                ins = doc.createCDATASection(getOpValue(op));
+                insertNode(siblings, parentNode, domcn, charpos, ins, doc);
+                break;
+                
             case Node.ELEMENT_NODE:
 
                 ins = doc.createElement(getNameFromAttr(opAttrs));
@@ -654,26 +660,6 @@ public class DULPatch {
     }
 
     /**
-     * Log various attributes of move.
-     *
-     * @param opAttrs attributes of move
-     */
-    private void logMoveVars(final NamedNodeMap opAttrs) {
-        
-        DiffXML.LOG.finer("Node: "
-                + opAttrs.getNamedItem(DULConstants.NODE).getNodeValue()
-                + " Parent" + opAttrs.getNamedItem(
-                        DULConstants.PARENT).getNodeValue());
-        DiffXML.LOG.finer(DULConstants.CHILDNO
-                + opAttrs.getNamedItem(DULConstants.CHILDNO).getNodeValue());
-
-        if (opAttrs.getNamedItem(DULConstants.LENGTH) != null) {
-            DiffXML.LOG.finer("length "
-                    + opAttrs.getNamedItem(DULConstants.LENGTH).getNodeValue());
-        }
-    }
-
-    /**
      * Apply move operation.
      *
      * @param doc document to be patched
@@ -684,14 +670,12 @@ public class DULPatch {
         throws PatchFormatException {
         
         NamedNodeMap opAttrs = op.getAttributes();
-        logMoveVars(opAttrs);
 
         Node moveNode = getNamedNode(doc, opAttrs);
         if (moveNode == null) {
             throw new PatchFormatException("Error applying patch.\n"
                     + "Node to move doesn't exist.");
         }
-        DiffXML.LOG.fine("moveNode: " + moveNode.getNodeName());
 
         int oldCharPos = getOldCharPos(opAttrs);
 
@@ -713,7 +697,6 @@ public class DULPatch {
         //Find position to move to
         //Get parent
         Element parent = (Element) getNamedParent(doc, opAttrs);
-        DiffXML.LOG.fine("parent: " + parent.getNodeName());
 
         NodeList newSiblings = parent.getChildNodes();
         int domcn = getDOMChildNo(opAttrs, moveNode.getNodeType(), newSiblings);
@@ -722,7 +705,6 @@ public class DULPatch {
         int newCharPos = getNewCharPos(opAttrs);
 
         //Perform insert
-        DiffXML.LOG.fine("newCharPos: " + newCharPos + " domcn: " + domcn);
         insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);
     }
 
