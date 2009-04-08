@@ -27,11 +27,11 @@
   <property name="build.compiler" value="modern"/>
 
   <property name="package" value="org.diffxml"/>
-  <property name="version" value="0.93A" />
+  <property name="version" value="0.94B" />
   <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
   <property name="patch.class" value="${package}/patchxml/PatchXML"/>
-  <property name="test1.file" value="test1.xml"/>
-  <property name="test2.file" value="test2.xml"/>
+  <property name="test1.file" value="test1a.xml"/>
+  <property name="test2.file" value="test2a.xml"/>
   <property name="diffOut.file" value="diff_out.xml"/>
   <property name="patchOut.file" value="patch_out.xml"/>
 
@@ -90,11 +90,13 @@
           depends="jarDiffXML"
           description="creates binary distribution">
 
+          <echo message="build dir = ${build.dir}"/>
           <copy todir="${build.dir}/diffxml">
-              <fileset dir="../diffxml">
+              <fileset dir=".">
                   <exclude name="build/"/>
                   <exclude name="test/"/>
                   <exclude name="suite/"/>
+                  <exclude name="lib/"/>
                   <exclude name="src/"/>
                   <exclude name="INSTALL*"/>
                   <exclude name="build.xml"/>
@@ -102,6 +104,7 @@
                   <exclude name="check.sh"/>
                   <exclude name="*gz"/>
                   <exclude name=".*"/>
+                  <exclude name=".*/"/>
               </fileset>
           </copy>
 
@@ -153,17 +156,25 @@
           <delete file="${build.dir}/diffxml.tar"/>
   </target>
 
+  <target name="install" depends="jarDiffXML" 
+      description="Installs DiffXML">
+
+      <copy file="diffxml.jar" todir="$INSTALL_DIR/lib"/>
+      <copy file="diffxml_install.sh" tofile="$INSTALL_DIR/bin/diffxml/"/>
+  </target>
+
   <target name="copySource"
           description="Copy source files to build">
 
           <copy todir="${build.dir}/diffxml">
-              <fileset dir="../diffxml">
+              <fileset dir=".">
                   <exclude name="build/"/>
                   <exclude name="test/"/>
                   <exclude name="INSTALL*"/>
                   <exclude name="diffxml_checks.xml"/>
                   <exclude name="*gz"/>
                   <exclude name=".*"/>
+                  <exclude name="./"/>
               </fileset>
           </copy>
   </target>
