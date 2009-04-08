@@ -1,7 +1,7 @@
 /*
-Program to apply a DUL patch
+diffxml and patchxml - diff and patch for XML files
 
-Copyright (C) 2002  Adrian Mouat
+Copyright (C) 2002-2009  Adrian Mouat
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Author: Adrian Mouat
-email: amouat@postmaster.co.uk
+email: adrian.mouat@gmail.com
 */
 
 package org.diffxml.patchxml;
@@ -29,17 +29,12 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.diffxml.diffxml.DOMOps;
-import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.fmes.ParserInitialisationException;
 
 /**
@@ -110,8 +105,10 @@ public final class PatchXML {
                 printHelp();
             } else if (arg.equals("-dry-run")) {
                 dryrun = true;
+                /*
             } else if (arg.equals("-reverse")) {
                 reverse = true;
+                */
             } else if (arg.equals("-debug")) {
                 debug = true;
             } else {
@@ -132,10 +129,11 @@ public final class PatchXML {
                         case 'D':
                             debug = true;
                             break;
+                            /*
                         case 'R':
                             reverse = true;
                             break;
-
+                            */
                         default:
                             System.err.println("PatchXML: illegal option "
                                     + flag);
@@ -179,9 +177,11 @@ public final class PatchXML {
         System.out.print(
                 "\n --reverse  -R  Assume that the delta file was created ");
         System.out.print("with the old and new files swapped.");
+        /*
         System.out.print("\n\tAttempt to reverse sense of change before ");
         System.out.print("applying it, e.g. inserts become deletes.\n\n");
-
+        */
+        System.out.print("\n\n");
         printSoftware();
         System.exit(0);
     }
@@ -206,7 +206,7 @@ public final class PatchXML {
      */
     private static void printVersion() {
         
-        System.out.println("patchxml Version 0.93 ALPHA");
+        System.out.println("patchxml Version 0.94 BETA");
         printSoftware();
         System.exit(0);
     }
@@ -219,7 +219,6 @@ public final class PatchXML {
     *
     * @return True only if both files are found.
     */
-
     protected static boolean checkFilesExistAndWarn() {
 
         boolean ret = true;

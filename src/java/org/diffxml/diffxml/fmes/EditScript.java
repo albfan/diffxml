@@ -1,7 +1,7 @@
 /*
-Program to difference two XML files
+diffxml and patchxml - diff and patch for XML files
 
-Copyright (C) 2002-2004  Adrian Mouat
+Copyright (C) 2002-2009  Adrian Mouat
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Author: Adrian Mouat
-email: amouat@postmaster.co.uk
+email: adrian.mouat@gmail.com
 */
 
 package org.diffxml.diffxml.fmes;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.io.IOException;
 
 import org.diffxml.diffxml.DOMOps;
-import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.DiffFactory;
 import org.diffxml.diffxml.fmes.delta.DULDelta;
 import org.diffxml.diffxml.fmes.delta.DeltaIF;
