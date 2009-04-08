@@ -1,5 +1,5 @@
-diffxml Version 0.93 ALPHA
-patchxml Version 0.93 ALPHA
+diffxml Version 0.94 BETA
+patchxml Version 0.94 BETA
  
 Install instructions for diffxml and patchxml
 =============================================
@@ -7,16 +7,13 @@ Install instructions for diffxml and patchxml
 Requirements:
 -------------
 
-Java >= 1.4 (for logging). See http://java.sun.com/j2se/downloads.html
+Java >= 1.5. See http://java.sun.com/j2se/downloads.html
 
-The lib directory should contain the following jars:
+The lib directory should contain the following jar:
 
-   dom3-xercesImpl.jar
-   dom3-xml-apis.jar
    xpp3-1.1.3.4.C.jar
 
-These files relate to Apache Xerces ( http://xml.apache.org/ ) and XPP3 
-( http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html ). 
+See the XPP3 webiste for more details: http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html. 
 
 Running diffxml:
 ----------------
@@ -45,9 +42,9 @@ Finally...
 Please note that this is an unstable alpha release.
 diffxml and patchxml are released under the GNU GPL Version 2.
  
-Send any bug reports / problems to amouat@postmaster.co.uk
+Send any bug reports / problems to adrian.mouat at gmail.com
 
 Adrian Mouat.
 
-13 March 2005.
+7 April 2009.
 

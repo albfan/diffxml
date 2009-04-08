@@ -1,5 +1,5 @@
-diffxml Version 0.93 ALPHA
-patchxml Version 0.93 ALPHA
+diffxml Version 0.94 BETA
+patchxml Version 0.94 BETA
  
 README file for diffxml and patchxml
 ====================================
@@ -21,11 +21,16 @@ Send any bug reports / problems to amouat@postmaster.co.uk
 
 Adrian Mouat.
 
-13 March 2005.
+7 April 2009.
 
 ===================================
  
 Changelog
+
+Verison 0.94 BETA
+-----------------
+
+ - Major bugfixes and refactoring
 
 Version 0.93 ALPHA
 ------------------
@@ -42,7 +47,7 @@ Version 0.92 ALPHA
 
 Several fundamental changes:
 
-- Added Ant build 
+- Added Ant build
 - Re-organisation and renaming of files and directories. 
 - Added jars to standard download.
 - Added automatic test suite to standard download.
@@ -61,13 +66,6 @@ Acknowledgements:
 Eric Saunders for the Ant build and other help.
 Brian Buesker & Lowell Alleman for bug reports and correspondence.
 
-Apache Xalan and Xerces:
- 
-http://xml.apache.org
- 
-This product includes software developed by the
-Apache Software Foundation (http://www.apache.org/).
- 
 XPP3:
  
 http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html
