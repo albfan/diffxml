@@ -132,6 +132,46 @@
           <param name="test2.file" value="suite/working/redir2.xml"/>
       </antcall>
 
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/doctype1.xml"/>
+          <param name="test2.file" value="suite/working/doctype2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/a1.xml"/>
+          <param name="test2.file" value="suite/working/a2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/move1.xml"/>
+          <param name="test2.file" value="suite/working/move2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/r1.xml"/>
+          <param name="test2.file" value="suite/working/r2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/e1.xml"/>
+          <param name="test2.file" value="suite/working/e2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/order1.xml"/>
+          <param name="test2.file" value="suite/working/order2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/sample1.xml"/>
+          <param name="test2.file" value="suite/working/sample2.xml"/>
+      </antcall>
+
+      <antcall target="test">
+          <param name="test1.file" value="suite/working/testa1.xml"/>
+          <param name="test2.file" value="suite/working/testa2.xml"/>
+      </antcall>
+
       <delete file="${diffOut.file}"/>
       <delete file="${patchOut.file}"/>
 
