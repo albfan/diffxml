@@ -9,42 +9,55 @@ Requirements:
 
 Java >= 1.5. See http://java.sun.com/j2se/downloads.html
 
-The lib directory should contain the following jar:
-
-   xpp3-1.1.3.4.C.jar
-
-See the XPP3 webiste for more details: http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html. 
-
 Running diffxml:
 ----------------
 
-The easiest way of running the utilities is to use the diffxml.sh and 
+Unix:
+-----
+
+The easiest way of running the utilities is to use the diffxml.sh and
 patchxml.sh scripts. 
 
-First edit the files so that $DIFFXML_HOME points to the directory where
-diffxml was installed. 
-Next, verify the scripts work by running:
+Verify the scripts work by running:
  
    $ diffxml.sh test1.xml test2.xml > out.xml
    $ patchxml.sh test1.xml out.xml > result
    $ diffxml.sh -q result test2.xml
  
 There should be no output, confirming the files are equivalent.
+
+For more information on usage, run the commands with the "--help" argument.
+
+To install the scripts, try: 
+    $ant install
  
-You can then rename the scripts and add them to a public dir e.g:
+Windows:
+--------
+
+These are command line scripts: run them from a command (DOS) prompt.
+
+The easiest way of running the utilities is to use the diffxml.cmd and
+patchxml.cmd scripts. 
+
+Verify the scripts work by running:
  
-   $ cp diffxml.sh /usr/local/bin/diffxml
-   $ cp patchxml.sh /usr/local/bin/patchxml
- 
+   $ diffxml test1.xml test2.xml > out.xml
+   $ patchxml test1.xml out.xml > result
+   $ diffxml -q result test2.xml
+
+There should be no output, confirming the files are equivalent.
+
+For more information on usage, run the commands with the "--help" argument.
+
 Finally...
 ----------
 
-Please note that this is an unstable alpha release.
+Please note that this is a beta release; it is not yet production quality.
 diffxml and patchxml are released under the GNU GPL Version 2.
  
 Send any bug reports / problems to adrian.mouat at gmail.com
 
 Adrian Mouat.
 
-7 April 2009.
+9 April 2009.
 

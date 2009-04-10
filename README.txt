@@ -4,24 +4,23 @@ patchxml Version 0.94 BETA
 README file for diffxml and patchxml
 ====================================
 
-diffxml and patchxml are tools for comparing and patching XML
-files. 
+diffxml and patchxml are tools for comparing and patching XML files. 
 
-As opposed to the standard Unix tools diff and patch, which 
-operate on a line-by-line basis, diffxml and patchxml operate 
-on the hierarchical tree structure of XML documents, yeilding 
-much more meaningful results.
+As opposed to the standard Unix tools diff and patch, which operate on a
+line-by-line basis, diffxml and patchxml operate on the hierarchical tree
+structure of XML documents, yeilding much more meaningful results.
 
 To build and run diffxml please refer to the INSTALL file.
 
-Please note that this is an unstable alpha release.
-diffxml and patchxml are released under the GNU GPL Version 2.
+Please note that this is a beta release; it should not be considered
+production quality.  diffxml and patchxml are released under the GNU GPL
+Version 2.
  
-Send any bug reports / problems to amouat@postmaster.co.uk
+Send any bug reports / problems to adrian.mouat@gmail.com
 
 Adrian Mouat.
 
-7 April 2009.
+9 April 2009.
 
 ===================================
  

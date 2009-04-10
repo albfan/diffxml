@@ -4,7 +4,7 @@ Version 1.0
  - Add support for namespaces
  - Finish refactoring of patchxml
  - Create a full and thorough test suite
- - Update DUL format
+ - Create user guide with full, updated documentation of DUL
 
 Later versions
 --------------
