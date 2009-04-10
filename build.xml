@@ -109,7 +109,7 @@
           </copy>
 
           <copy file="INSTALL.bin" 
-              tofile="${build.dir}/diffxml/INSTALL"/>
+              tofile="${build.dir}/diffxml/INSTALL.txt"/>
 
           <copy file="${build.dir}/diffxml.jar"
               todir="${build.dir}/diffxml/lib/"/>
@@ -119,10 +119,18 @@
 
           <gzip zipfile="${build.dir}/diffxml-${version}.tar.gz" 
               src="${build.dir}/diffxml.tar"/>
-          <!-- bzip2 zipfile="${build.dir}/diffxml.tar.bz2"
-              src="${build.dir}/diffxml.tar"/-->
+
+          <zip destfile="${build.dir}/diffxml-${version}.zip">
+              <zipfileset dir="${build.dir}/diffxml" filemode="755" prefix="diffxml">
+                  <include name="*sh"/>
+              </zipfileset>
+              <zipfileset dir="${build.dir}/diffxml" prefix="diffxml/">
+                  <exclude name="*sh"/>
+              </zipfileset>
+          </zip>
 
           <delete file="${build.dir}/diffxml.tar"/>  
+
   </target>
 
   <target name="tarDiffXML">
@@ -146,12 +154,21 @@
 
 
           <copy file="INSTALL.src" 
-              tofile="${build.dir}/diffxml/INSTALL"/>
+              tofile="${build.dir}/diffxml/INSTALL.txt"/>
 
           <antcall target="tarDiffXML"/>
 
           <gzip zipfile="${build.dir}/diffxml-src-${version}.tar.gz"
                 src="${build.dir}/diffxml.tar"/>
+
+            <zip destfile="${build.dir}/diffxml-src-${version}.zip">
+                <zipfileset dir="${build.dir}/diffxml" filemode="755" prefix="diffxml">
+                    <include name="*sh"/>
+                </zipfileset>
+                <zipfileset dir="${build.dir}/diffxml" prefix="diffxml/">
+                    <exclude name="*sh"/>
+                </zipfileset>
+            </zip>
 
           <delete file="${build.dir}/diffxml.tar"/>
   </target>
