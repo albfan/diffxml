@@ -13,6 +13,7 @@
                    quickTest      - verifies that the build is working
                    fullTest       - performs further testing
                    clean          - deletes the build
+                   install        - installs diffxml to system
      Default target: compileDiffXML
   -->
 
@@ -22,6 +23,7 @@
 <!-- Global properties -->
 
   <property name="src.dir" value="src"/>
+  <property name="install.dir" value="/usr/local"/>
   <property name="build.dir" value="build"/>
   <property name="lib.dir" value="lib"/>
   <property name="build.compiler" value="modern"/>
@@ -99,7 +101,6 @@
                   <exclude name="lib/"/>
                   <exclude name="src/"/>
                   <exclude name="INSTALL*"/>
-                  <exclude name="build.xml"/>
                   <exclude name="diffxml_checks.xml"/>
                   <exclude name="check.sh"/>
                   <exclude name="*gz"/>
@@ -173,15 +174,8 @@
           <delete file="${build.dir}/diffxml.tar"/>
   </target>
 
-  <target name="install" depends="jarDiffXML" 
-      description="Installs DiffXML">
-
-      <copy file="diffxml.jar" todir="$INSTALL_DIR/lib"/>
-      <copy file="diffxml_install.sh" tofile="$INSTALL_DIR/bin/diffxml/"/>
-  </target>
-
   <target name="copySource"
-          description="Copy source files to build">
+          description="copies source files to build">
 
           <copy todir="${build.dir}/diffxml">
               <fileset dir=".">
@@ -194,6 +188,28 @@
                   <exclude name="./"/>
               </fileset>
           </copy>
+  </target>
+
+  <!-- Install to /usr/local or given install dir -->
+
+  <target name="install"
+      description="installs DiffXML to /usr/local. Run as root. Install to another location with -Dinstall.dir='/my/location/'">
+
+      <copy file="lib/diffxml.jar" todir="${install.dir}/lib"/>
+      <chmod file="${install.dir}/lib/diffxml.jar" perm="ugo+r"/>
+
+      <chmod file="diffxml_install.sh" perm="ugo+rx"/>
+      <chmod file="patchxml_install.sh" perm="ugo+rx"/>
+
+      <copy file="diffxml_install.sh" tofile="${install.dir}/bin/diffxml/"/>
+      <copy file="patchxml_install.sh" tofile="${install.dir}/bin/patchxml/"/>
+
+      <replace file="${install.dir}/bin/diffxml" token="@INSTALL_DIR@" value="${install.dir}"/>
+      <replace file="${install.dir}/bin/patchxml" token="@INSTALL_DIR@" value="${install.dir}"/>
+
+      <chmod file="${install.dir}/bin/diffxml" perm="ugo+rx"/>
+      <chmod file="${install.dir}/bin/patchxml" perm="ugo+rx"/>
+
   </target>
 
 <!-- Test targets -->
