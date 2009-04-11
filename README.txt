@@ -24,47 +24,6 @@ Adrian Mouat.
 
 ===================================
  
-Changelog
-
-Verison 0.94 BETA
------------------
-
- - Major bugfixes and refactoring
-
-Version 0.93 ALPHA
-------------------
-
-This release focused on getting the code into a reasonable
-shape, before starting major bugfixing and adding features.
-
-- Large refactorings
-- Javadoc for most classes
-- Some bugfixes
-
-Version 0.92 ALPHA
-------------------
-
-Several fundamental changes:
-
-- Added Ant build
-- Re-organisation and renaming of files and directories. 
-- Added jars to standard download.
-- Added automatic test suite to standard download.
-- Started javadoc and refactoring of code base.
-- Use of java logging.
-
-Version 0.91 ALPHA
-------------------
-
-Minor update from 0.9 ALPHA
-Fixed minor problems with scripts and added 2 sample testfiles to download.
-Fixed trimming whitespace problem.
-
-Acknowledgements:
- 
-Eric Saunders for the Ant build and other help.
-Brian Buesker & Lowell Alleman for bug reports and correspondence.
-
 XPP3:
  
 http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html
