@@ -73,23 +73,24 @@ public class FindPosition {
             assert (u != null);
 
             ChildNumber uChildNo = new ChildNumber(u);
+            Node w = matchings.getPartner(x);
 
             //Need position after u
             //NOTE: This is different from the FMES algorithm, which *wrongly*
             //indicates we should use the "in-order" child number.
-            if (matchings.isMatched(x)) {
+            if (w != null) {
                 //Doing a move, need to be careful not to count node being moved
-                mInsertPositionDOM = uChildNo.getDOMIgnoring(matchings.getPartner(x)) +1;
-                mInsertPositionXPath = uChildNo.getXPathIgnoring(matchings.getPartner(x)) +1;                
+                mInsertPositionDOM = uChildNo.getDOMIgnoring(w) + 1;
+                mInsertPositionXPath = uChildNo.getXPathIgnoring(w) + 1;
             } else {
-                mInsertPositionDOM = uChildNo.getDOM() +1;
-                mInsertPositionXPath = uChildNo.getXPath() +1;
+                mInsertPositionDOM = uChildNo.getDOM() + 1;
+                mInsertPositionXPath = uChildNo.getXPath() + 1;
             }
 
             //For xpath, character position is used if node is text node
             if (u.getNodeType() == Node.TEXT_NODE) {
-                if (matchings.isMatched(x)) {
-                    mCharInsertPosition = uChildNo.getXPathCharPosIgnoring(matchings.getPartner(x))
+                if (w != null) {
+                    mCharInsertPosition = uChildNo.getXPathCharPosIgnoring(w)
                         + u.getTextContent().length();
                 } else {
                     mCharInsertPosition = uChildNo.getXPathCharPos()

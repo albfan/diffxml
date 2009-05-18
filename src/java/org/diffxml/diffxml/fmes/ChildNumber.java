@@ -28,6 +28,9 @@ import org.w3c.dom.NodeList;
 
 /**
  * Class to hold and calculate DOM and XPath child numbers of node.
+ * 
+ * TODO: Needs a refactoring to deal with ignoring nodes in a cleaner way.
+ * TODO: Check if this class is a bottleneck
  */
 public final class ChildNumber {
     
@@ -358,48 +361,106 @@ public final class ChildNumber {
         }
     }
 
-    public int getXPathIgnoring(Node n) {
-        // Remove the node, run the old method, put it back in
-        Node refNode = n.getNextSibling();
-        Node nPar = n.getParentNode();
-        nPar.removeChild(n);
-        //Invalidate cache
-        mXPathChildNo = -1;
-        getXPath();
-        nPar.insertBefore(n, refNode);
+    /**
+     * Returns the XPath position, ignoring the given node.
+     * 
+     * @param n The node to ignore
+     * @return The XPath position of the node ignoring n
+     */
+    public int getXPathIgnoring(final Node n) {
+
+        int ret;
+        if (n == null) {
+            ret = getXPath();
+        } else {
+
+            if (n.isSameNode(mNode)) {
+                throw new IllegalArgumentException(
+                "Can't ignore the position node");
+            }
+            // Remove the node, run the old method, put it back in
+            // *Always* use n to get the parent in case it is somewhere else in
+            // the tree (in which case we don't need to remove it, but it's easier
+            // than checking
+            Node refNode = n.getNextSibling();
+            Node nPar = n.getParentNode();
+            nPar.removeChild(n);
+
+            //Invalidate cache
+            mXPathChildNo = -1;
+            ret = getXPath();
+            nPar.insertBefore(n, refNode);
+            mXPathChildNo = -1;
+        }
         
-        return mXPathChildNo;
+        return ret;
     }
 
-    public int getDOMIgnoring(Node n) {
+    /**
+     * Gets the DOM index of a node, ignoring the given node.
+     * @param n The node to ignore
+     * @return The DOM index of the node, ignoring n
+     */
+    public int getDOMIgnoring(final Node n) {
         
-        // Remove the node, run the old method, put it back in
-        // *Always* use n to get the parent in case it is somewhere else in
-        // the tree (in which case we don't need to remove it, but it's easier
-        // than checking
-        Node refNode = n.getNextSibling();
-        Node nPar = n.getParentNode();
-        nPar.removeChild(n);
-        //Invalidate cache
-        mDOMChildNo = -1;
-        getDOM();
-        nPar.insertBefore(n, refNode);
-        
-        return mDOMChildNo;
+        int ret;
+        if (n == null) {
+            ret = getDOM();
+        } else {
+            
+            if (n.isSameNode(mNode)) {
+                throw new IllegalArgumentException(
+                "Can't ignore the position node");
+            }
+            
+            // Remove the node, run the old method, put it back in
+            // *Always* use n to get the parent in case it is somewhere else in
+            // the tree (in which case we don't need to remove it, but it's easier
+            // than checking
+            Node refNode = n.getNextSibling();
+            Node nPar = n.getParentNode();
+            nPar.removeChild(n);
+            //Invalidate cache
+            mDOMChildNo = -1;
+            ret = getDOM();
+            nPar.insertBefore(n, refNode);
+            mDOMChildNo = -1;
+        }
+
+        return ret;
     }
 
-    public int getXPathCharPosIgnoring(Node n) {
+    /**
+     * Gets the XPath character position of a node, ignoring the given node.
+     * @param n The node to ignore
+     * @return The DOM index of the node, ignoring n
+     */
+    public int getXPathCharPosIgnoring(final Node n) {
+
+        int ret;
+        if (n == null) {
+            ret = getXPathCharPos();
+        } else {
+
+            if (n.isSameNode(mNode)) {
+                throw new IllegalArgumentException(
+                "Can't ignore the position node");
+            }
+            // Remove the node, run the old method, put it back in
+            // *Always* use n to get the parent in case it is somewhere else in
+            // the tree (in which case we don't need to remove it, but it's easier
+            // than checking
+            Node refNode = n.getNextSibling();
+            Node nPar = n.getParentNode();
+            nPar.removeChild(n);
+            //Invalidate cache
+            mXPathCharPos = -1;
+            ret = getXPathCharPos();
+            nPar.insertBefore(n, refNode);
+            mXPathCharPos = -1;
+        }
         
-        // Remove the node, run the old method, put it back in
-        Node refNode = n.getNextSibling();
-        Node nPar = n.getParentNode();
-        nPar.removeChild(n);
-        //Invalidate cache
-        mXPathCharPos = -1;
-        getXPathCharPos();
-        nPar.insertBefore(n, refNode);
-        
-        return mXPathCharPos;
+        return ret;
     }
 
 }
