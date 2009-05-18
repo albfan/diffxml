@@ -360,6 +360,43 @@ public class ChildNumberTest {
     }
 
     /**
+     * Test counting of text position with intervening nodes.
+     */
+    @Test
+    public final void testIgnoringNodes() {
+    
+        Node a = testDoc.createTextNode("12");
+        Node b = testDoc.createElement("three");
+        Node c = testDoc.createTextNode("45");
+        
+        parent.appendChild(a);
+        parent.appendChild(b);
+        parent.appendChild(c);
+
+        ChildNumber cn = new ChildNumber(c);
+
+        try {
+            cn.getDOMIgnoring(c);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e){
+            //Normal execution
+        }
+        
+        assertEquals(2, cn.getDOMIgnoring(null));
+        assertEquals(1, cn.getDOMIgnoring(b));
+        assertEquals(1, cn.getDOMIgnoring(a));
+        
+        assertEquals(3, cn.getXPathIgnoring(null));
+        assertEquals(1, cn.getXPathIgnoring(b));
+        assertEquals(2, cn.getXPathIgnoring(a));
+       
+        assertEquals(1, cn.getXPathCharPosIgnoring(null));
+        assertEquals(3, cn.getXPathCharPosIgnoring(b));
+        assertEquals(1, cn.getXPathCharPosIgnoring(a));
+ 
+    }
+
+    /**
      * Check exception thrown if given null.
      */
     @Test(expected = IllegalArgumentException.class)
