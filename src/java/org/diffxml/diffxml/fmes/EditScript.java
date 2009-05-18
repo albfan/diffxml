@@ -280,8 +280,8 @@ public final class EditScript {
         }
 
         // If node isn't matched, delete it
-        if (!matchings.isMatched(n) && 
-                n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
+        if (!matchings.isMatched(n) 
+                && n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             mDelta.delete(n);
             n.getParentNode().removeChild(n);
             outputDebug();

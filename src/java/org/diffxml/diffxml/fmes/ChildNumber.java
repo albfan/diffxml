@@ -358,4 +358,48 @@ public final class ChildNumber {
         }
     }
 
+    public int getXPathIgnoring(Node n) {
+        // Remove the node, run the old method, put it back in
+        Node refNode = n.getNextSibling();
+        Node nPar = n.getParentNode();
+        nPar.removeChild(n);
+        //Invalidate cache
+        mXPathChildNo = -1;
+        getXPath();
+        nPar.insertBefore(n, refNode);
+        
+        return mXPathChildNo;
+    }
+
+    public int getDOMIgnoring(Node n) {
+        
+        // Remove the node, run the old method, put it back in
+        // *Always* use n to get the parent in case it is somewhere else in
+        // the tree (in which case we don't need to remove it, but it's easier
+        // than checking
+        Node refNode = n.getNextSibling();
+        Node nPar = n.getParentNode();
+        nPar.removeChild(n);
+        //Invalidate cache
+        mDOMChildNo = -1;
+        getDOM();
+        nPar.insertBefore(n, refNode);
+        
+        return mDOMChildNo;
+    }
+
+    public int getXPathCharPosIgnoring(Node n) {
+        
+        // Remove the node, run the old method, put it back in
+        Node refNode = n.getNextSibling();
+        Node nPar = n.getParentNode();
+        nPar.removeChild(n);
+        //Invalidate cache
+        mXPathCharPos = -1;
+        getXPathCharPos();
+        nPar.insertBefore(n, refNode);
+        
+        return mXPathCharPos;
+    }
+
 }
