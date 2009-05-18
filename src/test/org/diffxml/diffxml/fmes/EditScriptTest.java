@@ -404,4 +404,38 @@ public class EditScriptTest {
         assertEquals(res.getFirstChild().getChildNodes().getLength(), 0);
     }
 
+    /**
+     * Test for irritating bug where unmatched node breaks text.
+     */
+    @Test
+    public final void testCBug() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<p><b>xxx</b>yyy<br/></p>");
+        Document doc2 = TestDocHelper.createDocument(
+                "<p><br/>yyy</p>");
+        NodePairs matchings = Match.easyMatch(doc1, doc2);
+        assertEquals(8, matchings.size());
+        EditScript es = new EditScript(doc1, doc2, matchings);
+        Document res = null;
+        try {
+            res = es.create();
+        } catch (DocumentCreationException e) {
+            fail("Caught Exception");
+        }
+
+        Node move = res.getFirstChild().getFirstChild();
+        assertEquals("move", move.getNodeName());
+        NamedNodeMap attrs = move.getAttributes();
+        assertEquals("3", 
+                attrs.getNamedItem("childno").getNodeValue());
+        assertEquals("/node()[1]", 
+                attrs.getNamedItem("parent").getNodeValue());    
+        assertEquals("/node()[1]/node()[2]",
+                attrs.getNamedItem("node").getNodeValue());
+        assertEquals("1",
+                attrs.getNamedItem("new_charpos").getNodeValue());
+        assertEquals("1",
+                attrs.getNamedItem("old_charpos").getNodeValue());
+
+    }
 }

@@ -323,5 +323,22 @@ public class NodeOpsTest {
         testXPathForNode(docEl, xpathExpr);
         testXPathForNode(docEl.getFirstChild(), xpathExpr);
     }   
-    
+ 
+    /**
+     * Test getting XPath with spaced text nodes.
+     */
+    @Test
+    public final void testBug() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<p><br/>yyy</p>");
+        Element docEl = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);
+    }
 }

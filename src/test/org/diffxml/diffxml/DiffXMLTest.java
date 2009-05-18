@@ -22,6 +22,11 @@ email: adrian.mouat@gmail.com
 */
 package org.diffxml.diffxml;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,24 +39,32 @@ import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import org.junit.*;
-import junit.framework.TestCase;
+public class DiffXMLTest {
 
-public class DiffXMLTest extends TestCase {
-
-        @Test
-        public final void testSimpleDiff() {
-		Diff d = DiffFactory.createDiff();
-		try {
-            d.diff(new File("test1.xml"), new File("test2.xml"));
+    @Test
+    public final void testSimpleDiff() {
+        Diff d = DiffFactory.createDiff();
+        try {
+            d.diff(new File("test1a.xml"), new File("test2a.xml"));
         } catch (DiffException e) {
-            fail("An exception was thrown during the diff");
+            fail("An exception was thrown during the diff: " + e.getMessage());
         }
-		//Need to extend API with method to return document and actually
-		//create a patchxml api!
-		
-	}
-	
+        //TODO: extend API with method to return document and actually
+        //create a patchxml api!
+
+    }
+
+    @Test
+    public final void testGnumericDiff() {
+        Diff d = DiffFactory.createDiff();
+        try {
+            d.diff(new File("suite/working/gnumeric1.xml"), 
+                    new File("suite/working/gnumeric2.xml"));
+        } catch (DiffException e) {
+            fail("An exception was thrown during the diff: " + e.getMessage());
+        }
+    }
+    
 	/**
 	 * Tests outputXML method.
 	 */
