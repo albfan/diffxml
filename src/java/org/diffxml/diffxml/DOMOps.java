@@ -22,11 +22,14 @@ email: adrian.mouat@gmail.com
 */
 package org.diffxml.diffxml;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -39,6 +42,7 @@ import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Utility class for DOM stuff.
@@ -279,6 +283,39 @@ public final class DOMOps {
         parserFactory.setIgnoringComments(false);
     }
 
- 
+    /**
+     * Reads a file into an XML document.
+     * 
+     * Note configuration of parser as in initParser.
+     * 
+     * @param f The file to be read into an XML document
+     * @throws ParserInitialisationException If there is an error starting the
+     * parser
+     * @return The DOM Document representing the file
+     */
+    public static Document getDocument(final File f) 
+    throws ParserInitialisationException {
 
+        DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
+        DOMOps.initParser(fac);
+
+        DocumentBuilder parser = null;
+        try {
+            parser = fac.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new ParserInitialisationException(
+                    "Failed to configure parser", e);
+        }
+
+        Document doc = null;
+        try {
+            doc = parser.parse(f);
+        } catch (SAXException e) {
+            throw new IllegalArgumentException("Failed to parse document", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to parse document", e);
+        }
+        
+        return doc;
+    } 
 }

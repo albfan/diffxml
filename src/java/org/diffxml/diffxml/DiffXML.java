@@ -41,7 +41,7 @@ import org.w3c.dom.Document;
 public final class DiffXML {
 
     /** Version number. **/
-    private static final String VERSION = "0.94 BETA";
+    private static final String VERSION = "0.95 BETA";
 
     /** First file to be differenced. **/
     private static File mFile1;
@@ -201,9 +201,10 @@ public final class DiffXML {
         try {
             delta = diffInstance.diff(mFile1, mFile2);
         } catch (DiffException e) {
-            System.err.println("Internal error when differencing documents.");
+            System.err.println("An error occured:\n" + e.getMessage());
             System.exit(2);
         }
+        
         //Output XML if appropriate
 
         //Documents differ if there are any child nodes in the doc.
@@ -229,7 +230,5 @@ public final class DiffXML {
         } else {
             System.exit(0);
         }
-
     }
-
 }

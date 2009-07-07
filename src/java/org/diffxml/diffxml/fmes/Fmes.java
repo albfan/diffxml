@@ -134,7 +134,7 @@ public class Fmes implements Diff {
         }
 
         return diff(doc1, doc2);
-        }
+    }
 
     /**
      * Differences two DOM documents and returns the delta.

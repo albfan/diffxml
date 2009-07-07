@@ -39,7 +39,7 @@ public class ParserInitialisationException extends Exception {
      * 
      * @param e Chained exception
      */
-    ParserInitialisationException(Exception e) {
+    public ParserInitialisationException(final Exception e) {
         super(e);
     }
     
@@ -49,7 +49,7 @@ public class ParserInitialisationException extends Exception {
      * @param s Description of error
      * @param e Chained exception
      */
-    ParserInitialisationException(String s, Exception e) {
+    public ParserInitialisationException(final String s, final Exception e) {
         super(s, e);
     }
 }

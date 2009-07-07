@@ -22,10 +22,12 @@ email: adrian.mouat@gmail.com
  */
 package org.diffxml.patchxml;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.DOMOps;
+import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.diffxml.dul.DULConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +38,11 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathConstants;
@@ -730,6 +736,7 @@ public class DULPatch {
         insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);
     }
 
+  
     /**
      * Apply DUL patch to XML document.
      *

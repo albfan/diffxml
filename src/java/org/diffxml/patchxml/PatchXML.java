@@ -206,7 +206,7 @@ public final class PatchXML {
      */
     private static void printVersion() {
         
-        System.out.println("patchxml Version 0.94 BETA");
+        System.out.println("patchxml Version 0.95 BETA");
         printSoftware();
         System.exit(0);
     }
