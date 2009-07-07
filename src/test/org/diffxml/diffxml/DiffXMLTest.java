@@ -53,17 +53,6 @@ public class DiffXMLTest {
         //create a patchxml api!
 
     }
-
-    @Test
-    public final void testGnumericDiff() {
-        Diff d = DiffFactory.createDiff();
-        try {
-            d.diff(new File("suite/working/gnumeric1.xml"), 
-                    new File("suite/working/gnumeric2.xml"));
-        } catch (DiffException e) {
-            fail("An exception was thrown during the diff: " + e.getMessage());
-        }
-    }
     
 	/**
 	 * Tests outputXML method.
@@ -96,4 +85,19 @@ public class DiffXMLTest {
             }
 
 	}
+    
+    /**
+     * Test handling document referencing non-existent DTD.
+     */
+    @Test
+    public final void testNoDTDDiff() {
+        Diff d = DiffFactory.createDiff();
+        try {
+            d.diff(new File("suite/error_handling/nodtd1.xml"), 
+                    new File("suite/error_handling/nodtd2.xml"));
+            fail("Expected exception due to non resolvable entity");
+        } catch (DiffException e) {
+            //Expected flow
+        }
+    }
 }
