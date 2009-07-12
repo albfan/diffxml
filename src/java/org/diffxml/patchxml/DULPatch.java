@@ -22,12 +22,9 @@ email: adrian.mouat@gmail.com
  */
 package org.diffxml.patchxml;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.diffxml.diffxml.DiffXML;
 import org.diffxml.diffxml.DOMOps;
-import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.diffxml.dul.DULConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,11 +35,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathConstants;
@@ -537,8 +530,8 @@ public class DULPatch {
 
     /**
      * Delete the appropriate amount of text from a Node.
-     *
-     * Assumes a normalized document, i.e. no adjacent or empty text nodes.
+     * 
+     * Assumes delNode is the start of the text.
      *
      * @param delNode the text node to delete text from
      * @param charpos the character position at which to delete
@@ -551,31 +544,64 @@ public class DULPatch {
             final int length, final Document doc) 
     throws PatchFormatException {
         
-        if (delNode.getNodeType() != Node.TEXT_NODE) {
+        if (!DOMOps.isText(delNode)) {
             throw new PatchFormatException(
                     "Attempt to delete text from non-text node.");
         }
+        
+        if (charpos < 1) {
+            throw new PatchFormatException(
+                "charpos must be >= 1");
+        }
 
         String text = delNode.getNodeValue();
+        String deleted;
+        
         if (charpos > text.length()) {
-            throw new PatchFormatException(
-                    "charpos past end of text node.");
-        }
-        if ((length + charpos - 1) > text.length()) {
-            throw new PatchFormatException(
-                "length past end of text node.");
+            if (DOMOps.isText(delNode.getNextSibling())) {
+                deleted = deleteText(delNode.getNextSibling(), 
+                        charpos - text.length(), length, doc);
+            } else {
+                throw new PatchFormatException(
+                "charpos not within text");
+            }
+        } else {
+
+            int leftover = (length + charpos - 1) - text.length();
+
+            String newText = text.substring(0, charpos - 1);
+            deleted = text.substring(charpos - 1);
+            if (leftover < 0) {
+                newText = newText + text.substring(charpos - 1 + length);
+                deleted = deleted.substring(0, length);
+            }
+
+            if (newText.length() > 0) {
+                Node newTextNode;
+                if (delNode.getNodeType() == Node.TEXT_NODE) {
+                    newTextNode = doc.createTextNode(newText);
+                } else if (delNode.getNodeType() == Node.CDATA_SECTION_NODE) {
+                    newTextNode = doc.createCDATASection(newText);
+                } else {
+                    throw new PatchFormatException(
+                    "Illegal NodeType");
+                }
+                delNode.getParentNode().insertBefore(newTextNode, delNode);
+            }
+
+            if (leftover > 0) {
+                if (DOMOps.isText(delNode.getNextSibling())) {
+                    deleted = deleted + deleteText(
+                            delNode.getNextSibling(), 1, leftover, doc);
+                } else {
+                    throw new PatchFormatException(
+                    "length past end of text");
+                }
+            }
+            delNode.getParentNode().removeChild(delNode);
         }
 
-        String newText = text.substring(0, charpos - 1) 
-            + text.substring(charpos - 1 + length);
-        if (newText.length() > 0) {
-            Node newTextNode = doc.createTextNode(newText);
-            delNode.getParentNode().insertBefore(newTextNode, delNode);
-        }
-
-        delNode.getParentNode().removeChild(delNode);
-
-        return text.substring(charpos - 1, charpos - 1 + length);
+        return deleted;
     }
 
     /**
@@ -591,7 +617,8 @@ public class DULPatch {
             final Document doc) 
     throws PatchFormatException {
 
-        int length = delNode.getNodeValue().length() - charpos + 1;
+        int totalLength = DOMOps.getTextLength(delNode);
+        int length = totalLength - charpos + 1;
         return deleteText(delNode, charpos, length, doc);
     }
 
@@ -671,15 +698,29 @@ public class DULPatch {
         NamedNodeMap opAttrs = op.getAttributes();
         Node delNode = getNamedNode(doc, opAttrs);
 
+        if (delNode == null) {
+            throw new PatchFormatException("Could not resolve XPath for node");
+        }
+        
         if (delNode.getNodeType() == Node.ATTRIBUTE_NODE) {
             Attr delAttr = (Attr) delNode;
             delAttr.getOwnerElement().removeAttributeNode(delAttr);
-        } else if (delNode.getNodeType() == Node.TEXT_NODE) {
+        } else if (DOMOps.isText(delNode)) {
+            
+            //TODO Refactor - unnecessarily complex
             int charpos = getCharPos(opAttrs);
-            try {
-                int length = getLengthFromAttr(opAttrs);
-                deleteText(delNode, charpos, length, doc); 
+            boolean haveLength = true;
+            int length = 0;
+            
+            try {    
+                length = getLengthFromAttr(opAttrs);
             } catch (PatchFormatException e) {
+                haveLength = false;
+            }
+            
+            if (haveLength) {
+                deleteText(delNode, charpos, length, doc);
+            } else {
                 deleteText(delNode, charpos, doc);
             }
         } else {
@@ -735,7 +776,6 @@ public class DULPatch {
         //Perform insert
         insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);
     }
-
   
     /**
      * Apply DUL patch to XML document.

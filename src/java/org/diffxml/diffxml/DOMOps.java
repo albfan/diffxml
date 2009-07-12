@@ -317,5 +317,42 @@ public final class DOMOps {
         }
         
         return doc;
+    }
+
+    /**
+     * Tests if the given node is a text or CDATA node.
+     * 
+     * @param node The node to test
+     * @return True if the type is TEXT_NODE or CDATA_SECTION_NODE 
+     */
+    public static boolean isText(final Node node) {
+     
+        boolean ret = false;
+        if (node != null 
+                && (node.getNodeType() == Node.TEXT_NODE
+                || node.getNodeType() == Node.CDATA_SECTION_NODE)) {
+            ret = true;
+        }
+        return ret;
+    }
+
+    /**
+     * Returns the length of text of the node plus all *following* text nodes
+     * (TEXT_NODE or CDATA_SECTION_NODE).
+     * 
+     * @param node The node to start at
+     * @return The length of text
+     */
+    public static int getTextLength(final Node node) {
+        
+        int length = 0;
+        Node n = node;
+        while (isText(n)) {
+            length = length + n.getNodeValue().length();
+            n = n.getNextSibling();
+        }
+        
+        return length;
+    
     } 
 }
