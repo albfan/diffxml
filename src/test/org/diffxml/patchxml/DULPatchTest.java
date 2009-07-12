@@ -315,7 +315,8 @@ public class DULPatchTest {
             assertEquals("b", doc1.getDocumentElement().getFirstChild(
                         ).getNodeName());
         } catch (PatchFormatException e) {
-            fail("Caught exception " + e);
+            e.printStackTrace();
+            fail("Caught exception " + e.getMessage());
         }
 
         patch = TestDocHelper.createDocument(
@@ -415,7 +416,7 @@ public class DULPatchTest {
                 "<delta>"
                 + "<move node=\"/a/node()[2]/node()[1]\" " 
                 + "parent=\"/a/node()[1]\" childno=\"1\" "
-                + "old_charpos=\"2\" length=\"2\" new_charpos=\"3\"/>" 
+                + "old_charpos=\"2\" length=\"2\"/>" 
                 + "</delta>");
 
         try {
@@ -518,5 +519,189 @@ public class DULPatchTest {
             fail("Caught exception " + e);
         }
     }
+    
+    /**
+     * Test deleting text with CDATA in middle.
+     */
+    @Test
+    public final void testCDATAInText() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<delete node=\"/a/node()[1]\" " 
+                + "charpos=\"3\" length=\"4\"/>" 
+                + "</delta>");
 
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            assertEquals("teext2text3", 
+                    doc1.getDocumentElement().getTextContent());
+            //Shouldn't remove CDATA section
+            assertEquals(Node.CDATA_SECTION_NODE, doc1.getDocumentElement(
+                    ).getFirstChild().getNextSibling().getNodeType());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+
+    /**
+     * Test deleting from end of CDATA into text.
+     */
+    @Test
+    public final void testCDATAInText2() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<delete node=\"/a/node()[1]\" " 
+                + "charpos=\"9\" length=\"4\"/>" 
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            assertEquals("text1texxt3", 
+                    doc1.getDocumentElement().getTextContent());
+            //Shouldn't remove CDATA section
+            assertEquals(Node.CDATA_SECTION_NODE, doc1.getDocumentElement(
+                    ).getFirstChild().getNextSibling().getNodeType());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    /**
+     * Test removing CDATA from centre of text.
+     */
+    @Test
+    public final void testRemoveCDATAFromText() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<delete node=\"/a/node()[1]\" " 
+                + "charpos=\"6\" length=\"5\"/>" 
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            doc1.normalize();
+            assertEquals("text1text3", 
+                    doc1.getDocumentElement().getTextContent());
+            //Should only have 1 text node
+            assertEquals(1, 
+                    doc1.getDocumentElement().getChildNodes().getLength());
+            assertEquals(Node.TEXT_NODE, 
+                    doc1.getDocumentElement().getFirstChild().getNodeType());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+
+    /**
+     * Test insert after CDATA.
+     */
+    @Test
+    public final void testInsertAfterCDATA() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.COMMENT_NODE + "\""
+                + " childno=\"2\" charpos=\"11\""
+                + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            
+            Node cdata = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata.getNodeType());
+            assertEquals("text2", cdata.getNodeValue());
+            assertEquals(Node.COMMENT_NODE, 
+                    cdata.getNextSibling().getNodeType());
+            assertEquals("text3", 
+                    cdata.getNextSibling().getNextSibling().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    /**
+     * Test insert before CDATA.
+     */
+    @Test
+    public final void testInsertBeforeCDATA() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.COMMENT_NODE + "\""
+                + " childno=\"2\" charpos=\"6\""
+                + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            
+            assertEquals("text1", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node comment = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.COMMENT_NODE, comment.getNodeType());
+            assertEquals(Node.CDATA_SECTION_NODE, comment.getNextSibling(
+                    ).getNodeType());
+            assertEquals("text2", 
+                    comment.getNextSibling().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+
+    /**
+     * Test insert into CDATA.
+     */
+    @Test
+    public final void testInsertIntoCDATA() {
+        
+        fail("Not written yet");
+    }
+
+    /**
+     * Test insert text into CDATA.
+     */
+    @Test
+    public final void testInsertTextIntoCDATA() {
+        
+        fail("Not written yet");
+    }
+
+    /**
+     * Test move CDATA.
+     */
+    @Test
+    public final void testMoveCDATA() {
+        
+        fail("Not written yet");
+    }
+
+    /**
+     * Test move part of CDATA.
+     */
+    @Test
+    public final void testMovePartOfCDATA() {
+        
+        fail("Not written yet");
+    }
 }
