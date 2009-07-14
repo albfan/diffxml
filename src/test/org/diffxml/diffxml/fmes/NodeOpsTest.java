@@ -92,8 +92,8 @@ public class NodeOpsTest {
         if (n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             String xpath = NodeOps.getXPath(n);
             //Uncomment for debug info
-            //System.out.println("Node: " + DOMOps.getNodeAsString(n) + " XPath: "
-            //        + xpath);
+            System.out.println("Node: " + DOMOps.getNodeAsString(n) 
+                + " XPath:" + xpath);
             compareXPathResult(n, xpath, xp);
         }
     }
@@ -122,10 +122,16 @@ public class NodeOpsTest {
                     xpath, doc, XPathConstants.NODE);
             assertNotNull(ret);
 
-            if (n.getNodeType() == Node.TEXT_NODE) {
-                assertTrue(ret.getTextContent() 
-                        + " does not contain " + n.getTextContent(), 
-                        ret.getTextContent().contains(n.getTextContent()));
+            if (DOMOps.isText(n)) {
+                Node textNode = ret;
+                String text = "";
+                while (DOMOps.isText(textNode)) {
+                    text = text + textNode.getNodeValue();
+                    textNode = textNode.getNextSibling();
+                }
+                
+                assertTrue(text + " does not contain " + n.getTextContent(), 
+                        text.contains(n.getTextContent()));
             } else {
                 assertTrue(
                         ret.getNodeName() + ":" + ret.getNodeValue() 
@@ -332,6 +338,24 @@ public class NodeOpsTest {
         
         Document testDoc = TestDocHelper.createDocument(
                 "<p><br/>yyy</p>");
+        Element docEl = testDoc.getDocumentElement();
+        
+        //Move to beforeclass method
+        XPathFactory xPathFac = XPathFactory.newInstance();
+        XPath xpathExpr = xPathFac.newXPath();
+ 
+        testXPathForNode(docEl, xpathExpr);
+        testXPathForNode(docEl.getFirstChild(), xpathExpr);
+    }
+    
+    /**
+     * Test getting XPath with CDATA and text.
+     */
+    @Test
+    public final void testCDATAandText() {
+        
+        Document testDoc = TestDocHelper.createDocument(
+                "<p>xxx<![CDATA[yyy]]>zzz</p>");
         Element docEl = testDoc.getDocumentElement();
         
         //Move to beforeclass method

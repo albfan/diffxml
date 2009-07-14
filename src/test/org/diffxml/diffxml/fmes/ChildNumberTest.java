@@ -290,7 +290,7 @@ public class ChildNumberTest {
         
         Node a = testDoc.createTextNode("1234");
         NodeOps.setOutOfOrder(a);
-        Node b = testDoc.createTextNode("56");
+        Node b = testDoc.createCDATASection("56");
         NodeOps.setInOrder(b);
         Node c = testDoc.createTextNode("78");
         NodeOps.setInOrder(c);
@@ -334,18 +334,21 @@ public class ChildNumberTest {
         NodeOps.setInOrder(d);
         Node e = testDoc.createTextNode("78");
         NodeOps.setInOrder(e);
+        Node f = testDoc.createCDATASection("9");
 
         parent.appendChild(a);
         parent.appendChild(b);
         parent.appendChild(c);
         parent.appendChild(d);
         parent.appendChild(e);
+        parent.appendChild(f);
 
         ChildNumber aChildNo = new ChildNumber(a);
         ChildNumber bChildNo = new ChildNumber(b);
         ChildNumber cChildNo = new ChildNumber(c);
         ChildNumber dChildNo = new ChildNumber(d);
         ChildNumber eChildNo = new ChildNumber(e);
+        ChildNumber fChildNo = new ChildNumber(f);
 
         assertEquals(1, aChildNo.getInOrderXPath());
         assertEquals(1, aChildNo.getInOrderXPathCharPos());
@@ -357,6 +360,8 @@ public class ChildNumberTest {
         assertEquals(5, dChildNo.getInOrderXPathCharPos());
         assertEquals(3, eChildNo.getInOrderXPath());
         assertEquals(1, eChildNo.getInOrderXPathCharPos());
+        assertEquals(3, fChildNo.getInOrderXPath());
+        assertEquals(3, fChildNo.getInOrderXPathCharPos());
     }
 
     /**
@@ -378,7 +383,7 @@ public class ChildNumberTest {
         try {
             cn.getDOMIgnoring(c);
             fail("Expected exception");
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             //Normal execution
         }
         

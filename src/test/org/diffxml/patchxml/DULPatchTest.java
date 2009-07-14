@@ -673,35 +673,188 @@ public class DULPatchTest {
      * Test insert into CDATA.
      */
     @Test
-    public final void testInsertIntoCDATA() {
+    public final void testInsertCommentIntoCDATA() {
         
-        fail("Not written yet");
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.COMMENT_NODE + "\""
+                + " childno=\"2\" charpos=\"8\""
+                + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            
+            assertEquals("text1", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node cdata1 = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata1.getNodeType());
+            assertEquals("te", cdata1.getNodeValue());
+            Node comment = cdata1.getNextSibling();
+            assertEquals(Node.COMMENT_NODE, comment.getNodeType());
+            Node cdata2 = comment.getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata2.getNodeType());
+            assertEquals("xt2", cdata2.getNodeValue());
+            
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
     }
 
     /**
      * Test insert text into CDATA.
+     * 
+     * *Should* insert a new node.
+     * 
      */
     @Test
     public final void testInsertTextIntoCDATA() {
+       
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
         
-        fail("Not written yet");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.TEXT_NODE + "\""
+                + " childno=\"2\" charpos=\"8\""
+                + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            
+            assertEquals("text1", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node cdata1 = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata1.getNodeType());
+            assertEquals("te", cdata1.getNodeValue());
+            Node text = cdata1.getNextSibling();
+            assertEquals(Node.TEXT_NODE, text.getNodeType());
+            assertEquals("val", text.getNodeValue());
+            Node cdata2 = text.getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata2.getNodeType());
+            assertEquals("xt2", cdata2.getNodeValue());
+            
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
     }
 
+    /**
+     * Test insert CDATA into CDATA.
+     * 
+     * Should *not* insert a new node.
+     */
+    @Test
+    public final void testInsertCDATAIntoCDATA() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>text3</a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" + Node.CDATA_SECTION_NODE
+                + "\" childno=\"2\" charpos=\"8\""
+                + ">val</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            doc1.normalize();
+            
+            assertEquals("text1", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node cdata = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, cdata.getNodeType());
+            assertEquals("tevalxt2", cdata.getNodeValue());
+            Node text = cdata.getNextSibling();
+            assertEquals(Node.TEXT_NODE, text.getNodeType());
+            assertEquals("text3", text.getNodeValue());
+            
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+
+    
     /**
      * Test move CDATA.
      */
     @Test
     public final void testMoveCDATA() {
         
-        fail("Not written yet");
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>t<b/></a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<move node=\"/a/node()[1]\" " 
+                + "parent=\"/a/node()[2]\" childno=\"1\" "
+                + "old_charpos=\"6\" length=\"5\"/>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            doc1.normalize();
+            
+            assertEquals("text1t", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node b = doc1.getDocumentElement().getFirstChild().getNextSibling();
+            assertEquals("b", b.getNodeName());
+            assertEquals(Node.CDATA_SECTION_NODE, 
+                    b.getFirstChild().getNodeType());
+            assertEquals("text2", b.getFirstChild().getNodeValue());
+            
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
     }
 
     /**
      * Test move part of CDATA.
+     * 
+     * Would be reasonable to throw an exception, as it is really an attempt
+     * to move two nodes.
+     * 
+     * However, I'd rather make sure a text or CDATA node is inserted to keep
+     * things robust.
      */
     @Test
     public final void testMovePartOfCDATA() {
         
-        fail("Not written yet");
+        Document doc1 = TestDocHelper.createDocument(
+        "<a>text1<![CDATA[text2]]>t<b/></a>");
+        
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<move node=\"/a/node()[1]\" " 
+                + "parent=\"/a/node()[2]\" childno=\"1\" "
+                + "old_charpos=\"9\" length=\"3\"/>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            doc1.normalize();
+            
+            assertEquals("text1", doc1.getDocumentElement().getFirstChild(
+                    ).getNodeValue());
+            Node cdata = doc1.getDocumentElement().getFirstChild(
+                    ).getNextSibling();
+            assertEquals(Node.CDATA_SECTION_NODE, 
+                    cdata.getNodeType());
+            assertEquals("tex", cdata.getNodeValue());
+            Node b = cdata.getNextSibling();
+            assertEquals("b", b.getNodeName());
+            assertEquals("t2t", b.getFirstChild().getNodeValue());
+            
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
     }
 }
