@@ -311,8 +311,7 @@ public class DULPatch {
     private boolean prevNodeIsATextNode(final NodeList siblings,
             final int index) {
         
-        return (index > 0
-                && siblings.item(index - 1).getNodeType() == Node.TEXT_NODE);
+        return (index > 0 && DOMOps.isText(siblings.item(index - 1)));
     }
 
     /**
@@ -337,7 +336,7 @@ public class DULPatch {
             textNodeIndex--;
         }
 
-        while (siblings.item(textNodeIndex).getNodeType() == Node.TEXT_NODE
+        while (DOMOps.isText(siblings.item(textNodeIndex))
                 && cp > siblings.item(textNodeIndex).getNodeValue().length()) {
             cp = cp - siblings.item(textNodeIndex).getNodeValue().length();
             textNodeIndex++;
@@ -368,16 +367,38 @@ public class DULPatch {
                 String text = sibNode.getNodeValue();
                 Node nextSib = sibNode.getNextSibling();
                 parent.removeChild(sibNode);
-                Node text1 = doc.createTextNode(text.substring(0, cp - 1));
-                Node text2 = doc.createTextNode(text.substring(cp - 1));
-                if (nextSib != null) {
-                    parent.insertBefore(text1, nextSib);
-                    parent.insertBefore(ins, nextSib);
-                    parent.insertBefore(text2, nextSib);
+                Node text1, text2;
+                
+                if (sibNode.getNodeType() == Node.CDATA_SECTION_NODE
+                        && ins.getNodeType() == Node.CDATA_SECTION_NODE) {
+                 
+                    Node cdata = doc.createCDATASection(
+                            text.substring(0, cp - 1) + ins.getNodeValue()
+                            + text.substring(cp - 1));
+                    if (nextSib != null) {
+                        parent.insertBefore(cdata, nextSib);
+                    } else {
+                        parent.appendChild(cdata);
+                    }
+                    
                 } else {
-                    parent.appendChild(text1);
-                    parent.appendChild(ins);
-                    parent.appendChild(text2);
+                    if (sibNode.getNodeType() == Node.TEXT_NODE) {
+                        text1 = doc.createTextNode(text.substring(0, cp - 1));
+                        text2 = doc.createTextNode(text.substring(cp - 1));
+                    } else { //CDATA
+                        text1 = doc.createCDATASection(
+                                text.substring(0, cp - 1));
+                        text2 = doc.createCDATASection(text.substring(cp - 1));
+                    }
+                    if (nextSib != null) {
+                        parent.insertBefore(text1, nextSib);
+                        parent.insertBefore(ins, nextSib);
+                        parent.insertBefore(text2, nextSib);
+                    } else {
+                        parent.appendChild(text1);
+                        parent.appendChild(ins);
+                        parent.appendChild(text2);
+                    }
                 }
             }
         }
@@ -405,8 +426,8 @@ public class DULPatch {
             throw new PatchFormatException(
                     "Child number past end of nodes");
         }
-        if (parent.getNodeType() != Node.ELEMENT_NODE && 
-                parent.getNodeType() != Node.DOCUMENT_NODE) {
+        if (parent.getNodeType() != Node.ELEMENT_NODE
+                && parent.getNodeType() != Node.DOCUMENT_NODE) {
             throw new PatchFormatException(
                     "Parent must be an element");
         }
@@ -538,9 +559,9 @@ public class DULPatch {
      * @param length the number of characters to delete
      * @param doc the document being deleted from
      * @throws PatchFormatException if there is a problem with the patch
-     * @return the deleted text
+     * @return A node with the deleted text (CDATA or text as appropriate)
      */
-    private String deleteText(final Node delNode, final int charpos, 
+    private Node deleteText(final Node delNode, final int charpos, 
             final int length, final Document doc) 
     throws PatchFormatException {
         
@@ -555,7 +576,7 @@ public class DULPatch {
         }
 
         String text = delNode.getNodeValue();
-        String deleted;
+        Node deleted;
         
         if (charpos > text.length()) {
             if (DOMOps.isText(delNode.getNextSibling())) {
@@ -570,12 +591,18 @@ public class DULPatch {
             int leftover = (length + charpos - 1) - text.length();
 
             String newText = text.substring(0, charpos - 1);
-            deleted = text.substring(charpos - 1);
+            String deletedText = text.substring(charpos - 1);
             if (leftover < 0) {
                 newText = newText + text.substring(charpos - 1 + length);
-                deleted = deleted.substring(0, length);
+                deletedText = deletedText.substring(0, length);
             }
 
+            if (delNode.getNodeType() == Node.TEXT_NODE) {
+                deleted = doc.createTextNode(deletedText);
+            } else {
+                deleted = doc.createCDATASection(deletedText);
+            }
+            
             if (newText.length() > 0) {
                 Node newTextNode;
                 if (delNode.getNodeType() == Node.TEXT_NODE) {
@@ -591,8 +618,9 @@ public class DULPatch {
 
             if (leftover > 0) {
                 if (DOMOps.isText(delNode.getNextSibling())) {
-                    deleted = deleted + deleteText(
-                            delNode.getNextSibling(), 1, leftover, doc);
+                    deleted.setNodeValue(deleted.getNodeValue() 
+                            + deleteText(delNode.getNextSibling(), 1, leftover,
+                                    doc).getNodeValue());
                 } else {
                     throw new PatchFormatException(
                     "length past end of text");
@@ -611,9 +639,9 @@ public class DULPatch {
      * @param charpos the character position at which to delete
      * @param doc the document being deleted from
      * @throws PatchFormatException if there is a problem with the patch
-     * @return the deleted text
+     * @return A CDATA or text node with the deleted text
      */
-    private String deleteText(final Node delNode, final int charpos, 
+    private Node deleteText(final Node delNode, final int charpos, 
             final Document doc) 
     throws PatchFormatException {
 
@@ -748,18 +776,16 @@ public class DULPatch {
 
         int oldCharPos = getOldCharPos(opAttrs);
 
-        if (moveNode.getNodeType() == Node.TEXT_NODE) {
-            String text = "";
+        if (DOMOps.isText(moveNode)) {
+            Node text;
             try {
                 int length = getLengthFromAttr(opAttrs);
                 text = deleteText(moveNode, oldCharPos, length, doc); 
             } catch (PatchFormatException e) {
                 text = deleteText(moveNode, oldCharPos, doc);
             }
-            moveNode = doc.createTextNode(text);
-        }
-
-        if (moveNode.getNodeType() != Node.TEXT_NODE) {
+            moveNode = text;
+        } else {
             moveNode = moveNode.getParentNode().removeChild(moveNode);
         }
         

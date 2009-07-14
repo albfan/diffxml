@@ -23,6 +23,7 @@ email: adrian.mouat@gmail.com
 
 package org.diffxml.diffxml.fmes;
 
+import org.diffxml.diffxml.DOMOps;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -195,8 +196,8 @@ public final class ChildNumber {
 
         boolean areText = true;
 
-        for (Node n : nodes) {
-            if ((n == null) || (n.getNodeType() != Node.TEXT_NODE)) {
+        for (Node n : nodes) {            
+            if (!DOMOps.isText(n)) {
                 areText = false;
                 break;
             }
@@ -267,7 +268,7 @@ public final class ChildNumber {
         
         mXPathCharPos = 1;
         for (int i = (domIndex - 1); i >= 0; i--) {
-            if (mSiblings.item(i).getNodeType() == Node.TEXT_NODE) {
+            if (DOMOps.isText(mSiblings.item(i))) {
                 mXPathCharPos = mXPathCharPos 
                     + mSiblings.item(i).getTextContent().length();
             } else {
@@ -350,7 +351,7 @@ public final class ChildNumber {
         
         mInOrderXPathCharPos = 1;
         for (int i = (domIndex - 1); i >= 0; i--) {
-            if (mSiblings.item(i).getNodeType() == Node.TEXT_NODE) {
+            if (DOMOps.isText(mSiblings.item(i))) {
                 if (NodeOps.isInOrder(mSiblings.item(i))) {
                     mInOrderXPathCharPos = mInOrderXPathCharPos 
                         + mSiblings.item(i).getTextContent().length();
@@ -380,8 +381,8 @@ public final class ChildNumber {
             }
             // Remove the node, run the old method, put it back in
             // *Always* use n to get the parent in case it is somewhere else in
-            // the tree (in which case we don't need to remove it, but it's easier
-            // than checking
+            // the tree (in which case we don't need to remove it, but it's 
+            // easier than checking
             Node refNode = n.getNextSibling();
             Node nPar = n.getParentNode();
             nPar.removeChild(n);
@@ -415,8 +416,8 @@ public final class ChildNumber {
             
             // Remove the node, run the old method, put it back in
             // *Always* use n to get the parent in case it is somewhere else in
-            // the tree (in which case we don't need to remove it, but it's easier
-            // than checking
+            // the tree (in which case we don't need to remove it, but it's 
+            // easier than checking
             Node refNode = n.getNextSibling();
             Node nPar = n.getParentNode();
             nPar.removeChild(n);
@@ -448,8 +449,8 @@ public final class ChildNumber {
             }
             // Remove the node, run the old method, put it back in
             // *Always* use n to get the parent in case it is somewhere else in
-            // the tree (in which case we don't need to remove it, but it's easier
-            // than checking
+            // the tree (in which case we don't need to remove it, but it's 
+            // easier than checking
             Node refNode = n.getNextSibling();
             Node nPar = n.getParentNode();
             nPar.removeChild(n);
