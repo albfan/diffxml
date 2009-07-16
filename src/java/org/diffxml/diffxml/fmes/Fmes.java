@@ -64,8 +64,7 @@ public class Fmes implements Diff {
         
         boolean ret = false;
         // Check if ignorable whitespace
-        if (DiffFactory.isIgnoreWhitespaceNodes()
-                && n.getNodeType() == Node.TEXT_NODE) {
+        if (DiffFactory.isIgnoreWhitespaceNodes() && DOMOps.isText(n)) {
             StringTokenizer st = new StringTokenizer(n.getNodeValue());
             if (!st.hasMoreTokens()) {
                 ret = true;

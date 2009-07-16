@@ -216,7 +216,7 @@ public class DULDelta implements DeltaIF {
         Element del = mEditScript.createElement(DULConstants.DELETE);
         del.setAttribute(DULConstants.NODE, NodeOps.getXPath(n));
         
-        if (n.getNodeType() == Node.TEXT_NODE) {
+        if (DOMOps.isText(n)) {
             
             ChildNumber cn = new ChildNumber(n);
             int charpos = cn.getXPathCharPos();
@@ -258,7 +258,7 @@ public class DULDelta implements DeltaIF {
         mov.setAttribute(DULConstants.OLD_CHARPOS, Integer.toString(ocharpos));
         mov.setAttribute(DULConstants.NEW_CHARPOS, Integer.toString(ncharpos));
 
-        if (n.getNodeType() == Node.TEXT_NODE) {
+        if (DOMOps.isText(n)) {
             mov.setAttribute(DULConstants.LENGTH, 
                     Integer.toString(n.getNodeValue().length()));
         }

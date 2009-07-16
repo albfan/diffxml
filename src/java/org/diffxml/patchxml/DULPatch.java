@@ -193,8 +193,7 @@ public class DULPatch {
         int xPathIndex = 1;
         while ((xPathIndex < xpathcn) && (domIndex < siblings.getLength())) {
             if (!((prevNodeIsATextNode(siblings, domIndex))
-                    && (siblings.item(domIndex).getNodeType() 
-                            == Node.TEXT_NODE))) {
+                    && (DOMOps.isText(siblings.item(domIndex))))) {
                 xPathIndex++;
             }
             domIndex++;
@@ -228,7 +227,7 @@ public class DULPatch {
             throw new PatchFormatException(
                     "Unexpected children in insert operation");
         } else if ((opKids.getLength() == 1)
-                && (opKids.item(0).getNodeType() == Node.TEXT_NODE)) {
+                && (DOMOps.isText(opKids.item(0)))) {
             value = opKids.item(0).getNodeValue();
         }
 

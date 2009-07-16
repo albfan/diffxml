@@ -273,6 +273,7 @@ public final class Match {
                     ret = compareElements(a, b);
                     break;
                 case Node.TEXT_NODE :
+                case Node.CDATA_SECTION_NODE:
                     ret = compareTextNodes(a, b);
                     break;
                 case Node.DOCUMENT_NODE :

@@ -23,6 +23,7 @@ email: adrian.mouat@gmail.com
 
 package org.diffxml.diffxml.fmes;
 
+import org.diffxml.diffxml.DOMOps;
 import org.w3c.dom.Node;
 
 /**
@@ -88,7 +89,7 @@ public class FindPosition {
             }
 
             //For xpath, character position is used if node is text node
-            if (u.getNodeType() == Node.TEXT_NODE) {
+            if (DOMOps.isText(u)) {
                 if (w != null) {
                     mCharInsertPosition = uChildNo.getXPathCharPosIgnoring(w)
                         + u.getTextContent().length();
