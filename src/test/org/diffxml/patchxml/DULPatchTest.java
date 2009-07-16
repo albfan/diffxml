@@ -29,9 +29,6 @@ import static org.junit.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import org.diffxml.diffxml.TestDocHelper;
-import org.diffxml.patchxml.DULPatch;
-import org.diffxml.patchxml.PatchFormatException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

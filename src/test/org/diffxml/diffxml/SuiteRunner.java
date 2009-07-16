@@ -5,8 +5,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import org.diffxml.diffxml.fmes.Fmes;
 import org.diffxml.diffxml.fmes.ParserInitialisationException;
@@ -17,6 +15,8 @@ import org.w3c.dom.Document;
 
 /**
  * Runs all the test cases in the suite.
+ * 
+ * Ant seems to insist on the extends :(
  * 
  * @author Adrian Mouat
  *
@@ -88,8 +88,10 @@ public class SuiteRunner {
         }
 
         try {
-            delta = diffInstance.diff(dB, dA);
+            delta = diffInstance.diff(DOMOps.getDocument(fB), dA);
         } catch (DiffException e) {
+            fail("Diff threw exception: " + e.getMessage());
+        } catch (ParserInitialisationException e) {
             fail("Diff threw exception: " + e.getMessage());
         }
         
@@ -102,15 +104,16 @@ public class SuiteRunner {
     @Test
     public final void runSuite() {
         
+        
         File suiteDir = new File(SUITE_DIR);
         for (File fA : suiteDir.listFiles(new FilesEndAFilter())) {
-            
-            
+                        
             File fB = new File(fA.getAbsolutePath().replace("A.xml", "B.xml"));
             //System.out.println("Got: " + fA.getAbsolutePath() 
             //        + " " + fB.getAbsolutePath());
             runFMESTest(fA, fB);
         }
-        
     }
+    
 }
+

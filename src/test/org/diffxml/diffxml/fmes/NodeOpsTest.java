@@ -92,8 +92,8 @@ public class NodeOpsTest {
         if (n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             String xpath = NodeOps.getXPath(n);
             //Uncomment for debug info
-            System.out.println("Node: " + DOMOps.getNodeAsString(n) 
-                + " XPath:" + xpath);
+            //System.out.println("Node: " + DOMOps.getNodeAsString(n) 
+            //    + " XPath:" + xpath);
             compareXPathResult(n, xpath, xp);
         }
     }
