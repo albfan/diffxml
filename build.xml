@@ -29,7 +29,7 @@
   <property name="build.compiler" value="modern"/>
 
   <property name="package" value="org.diffxml"/>
-  <property name="version" value="0.94B" />
+  <property name="version" value="0.95B" />
   <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
   <property name="patch.class" value="${package}/patchxml/PatchXML"/>
   <property name="test1.file" value="test1a.xml"/>
@@ -42,7 +42,7 @@
 
   <path id="classpath">
       <pathelement location="${build.dir}"/>
-      <pathelement location="${build.dir}/org.diffxml.jar"/>
+      <pathelement location="${build.dir}/diffxml.jar"/>
 
       <fileset dir="${lib.dir}">
 	  <include name="*.jar"/>
@@ -180,7 +180,7 @@
           <copy todir="${build.dir}/diffxml">
               <fileset dir=".">
                   <exclude name="build/"/>
-                  <exclude name="test/"/>
+                  <!--<exclude name="test/"/>-->
                   <exclude name="INSTALL*"/>
                   <exclude name="diffxml_checks.xml"/>
                   <exclude name="*gz"/>
@@ -261,10 +261,24 @@
     <delete file="${patchOut.file}"/>
   </target>
 
-  <!-- Regression test -->
+  <!-- Run the test suite -->
 
-  <target name="fullTest" description="runs a fuller regression test">
-      <ant antfile="suite/build.xml"/>
+  <target name="fullTest" depends="compileDiffXML" 
+          description="Runs the full test suite">
+
+      <junit fork="yes" printsummary="yes" showoutput="yes" haltonerror="yes">
+          <classpath>
+              <pathelement location="${lib.dir}/junit-4.4.jar"/>
+              <pathelement location="${build.dir}"/>
+	  </classpath>
+          <batchtest>
+	      <fileset dir="src/test">
+	          <include name="**/SuiteRunner.java"/>
+              </fileset>
+	      <formatter type="plain" usefile="false"/>
+	  </batchtest>
+      </junit>
+
   </target>
 
   <!-- ctags -->
