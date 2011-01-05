@@ -159,42 +159,61 @@ public final class Match {
 
         boolean ret = false;
         
-        if (a.getNodeName().equals(b.getNodeName())) {
+        if (equalsOrBothNull(a.getNamespaceURI(), b.getNamespaceURI())) {
 
-            //Compare attributes
-            
-            //Attributes are equal until we find one that doesn't match
-            ret = true;
-            
-            NamedNodeMap aAttrs = a.getAttributes();
-            NamedNodeMap bAttrs = b.getAttributes();
+            if (a.getLocalName().equals(b.getLocalName())) {
 
-            int numberAAttrs = 0;
-            if (aAttrs != null) {
-                numberAAttrs = aAttrs.getLength();
-            }
-            int numberBAttrs = 0;
-            if (bAttrs != null) {
-                numberBAttrs = bAttrs.getLength();
-            }
-            if (numberAAttrs != numberBAttrs) {
-                ret = false;
-            }
+                //Compare attributes
 
-            int i = 0;
-            while (ret && (i < numberAAttrs)) {
-                // Check if attr exists in other tag
-                Attr bItem = 
-                    (Attr) bAttrs.getNamedItem(aAttrs.item(i).getNodeName()); 
-                if (bItem == null || !bItem.getNodeValue().equals(
-                        aAttrs.item(i).getNodeValue())) {
+                //Attributes are equal until we find one that doesn't match
+                ret = true;
+
+                NamedNodeMap aAttrs = a.getAttributes();
+                NamedNodeMap bAttrs = b.getAttributes();
+
+                int numberAAttrs = 0;
+                if (aAttrs != null) {
+                    numberAAttrs = aAttrs.getLength();
+                }
+                int numberBAttrs = 0;
+                if (bAttrs != null) {
+                    numberBAttrs = bAttrs.getLength();
+                }
+                if (numberAAttrs != numberBAttrs) {
                     ret = false;
-                } 
-                i++;
+                }
+
+                int i = 0;
+                while (ret && (i < numberAAttrs)) {
+                    // Check if attr exists in other tag
+                    Attr bItem = 
+                        (Attr) bAttrs.getNamedItem(aAttrs.item(i).getNodeName()); 
+                    if (bItem == null || !bItem.getNodeValue().equals(
+                            aAttrs.item(i).getNodeValue())) {
+                        ret = false;
+                    } 
+                    i++;
+                }
             }
         }
         
         return ret;
+    }
+
+    /**
+     * Helper method just checks if objects are equal or both null.
+     * 
+     * @param a Object to compare to b
+     * @param b Object to compare to a
+     * @return True if objects are equal or both are null
+     */
+    private static boolean equalsOrBothNull(Object a, Object b) {
+        
+        if (a == null) {
+            return (b == null);
+        } 
+        
+        return a.equals(b);
     }
 
     /**

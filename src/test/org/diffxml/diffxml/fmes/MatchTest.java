@@ -310,4 +310,43 @@ public class MatchTest {
         
     }
     
+    /**
+     * Elements with different prefixes but same namespace should match.
+     *
+     */
+    @Test
+    public final void testDifferingNamespacePrefix() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<root xmlns:a=\"http://example.com\"><a:a></a:a></root>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<root xmlns:b=\"http://example.com\"><b:a></b:a></root>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertEquals(bDocEl.getFirstChild(), matches.getPartner(aB));
+    }
+
+    /**
+     * Elements with same prefix but different namespace should not match.
+     *
+     */
+    @Test
+    public final void testDifferingNamespace() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<root xmlns:a=\"http://example.com\"><a:a></a:a></root>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<root xmlns:a=\"http://different.com\"><a:a></a:a></root>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertNull(matches.getPartner(aB));
+    }
 }

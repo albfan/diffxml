@@ -82,6 +82,7 @@ public class SuiteRunner {
             dA = DOMOps.getDocument(fA);
             patcher.apply(dA, delta);
         } catch (PatchFormatException e) {
+            e.printStackTrace();
             fail("Failed to parse Patch: " + e.getMessage()); 
         } catch (ParserInitialisationException e) {
             fail("Could not parse documents: " + e.getMessage());
@@ -109,8 +110,12 @@ public class SuiteRunner {
         for (File fA : suiteDir.listFiles(new FilesEndAFilter())) {
                         
             File fB = new File(fA.getAbsolutePath().replace("A.xml", "B.xml"));
+            
+            //Uncomment following to see list of files being compared
             //System.out.println("Got: " + fA.getAbsolutePath() 
             //        + " " + fB.getAbsolutePath());
+            
+            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceB.xml"));
             runFMESTest(fA, fB);
         }
     }
