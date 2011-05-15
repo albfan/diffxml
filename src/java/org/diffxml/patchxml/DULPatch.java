@@ -542,7 +542,13 @@ public class DULPatch {
                 ((Element) parentNode).setAttribute(
                         getNameFromAttr(opAttrs), getOpValue(op));
                 break;
-
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                
+                ins = doc.createProcessingInstruction(
+                        getNameFromAttr(opAttrs), getOpValue(op));
+                insertNode(siblings, parentNode, domcn, charpos, ins, doc);
+                break;
+                
             default:
                 throw new PatchFormatException("Unknown NodeType " + nodeType);
         }

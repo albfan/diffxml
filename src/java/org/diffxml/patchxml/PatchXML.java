@@ -272,13 +272,7 @@ public final class PatchXML {
         }
 
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        try {
-            DOMOps.initParser(fac);
-        } catch (ParserInitialisationException e) {
-            System.err.println(
-                    "Failed to initialise parser: " + e.getMessage());
-            System.exit(2);
-        }
+        DOMOps.initParser(fac);
 
         DocumentBuilder parser = null;
         try {

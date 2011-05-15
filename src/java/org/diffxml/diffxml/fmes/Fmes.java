@@ -99,11 +99,7 @@ public class Fmes implements Diff {
         
         
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        try {
-            DOMOps.initParser(fac);
-        } catch (ParserInitialisationException e) {
-            throw new DiffException("Failed to initialise parser", e); 
-        }
+        DOMOps.initParser(fac);
 
         DocumentBuilder db = null;
         Document doc1 = null;

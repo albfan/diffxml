@@ -5,9 +5,11 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.diffxml.diffxml.fmes.Fmes;
-import org.diffxml.diffxml.fmes.ParserInitialisationException;
 import org.diffxml.patchxml.DULPatch;
 import org.diffxml.patchxml.PatchFormatException;
 import org.junit.Test;
@@ -62,18 +64,19 @@ public class SuiteRunner {
 
         Document dA = null;
         Document dB = null;
-        try {
-            dA = DOMOps.getDocument(fA);
-            dB = DOMOps.getDocument(fB);
-        } catch (ParserInitialisationException e) {
-            fail("Could not parse documents: " + e.getMessage());
-        }
+
+        dA = DOMOps.getDocument(fA);
+        dB = DOMOps.getDocument(fB);
+
 
         Document delta = null;
         try {
             delta = diffInstance.diff(dA, dB);
+            DOMOps.outputXML(delta, new FileOutputStream("/tmp/out4.xml"), true);
         } catch (DiffException e) {
             fail("Diff threw exception: " + e.getMessage());
+        } catch (IOException e) {
+            fail("Caught IO exception:" + e.getMessage());
         }
         
         DULPatch patcher = new DULPatch();
@@ -81,19 +84,30 @@ public class SuiteRunner {
             //Note the diff will modify dA, so need to read in again
             dA = DOMOps.getDocument(fA);
             patcher.apply(dA, delta);
+            
+            //TODO: For some reason it is necessary to write diff out to file
+            //and back in again. Investigate why.
+            File tmp = File.createTempFile("diffxmltest", ".xml");
+            DOMOps.outputXML(dA, new FileOutputStream(tmp), false);
+            dA = DOMOps.getDocument(tmp);
+            tmp.delete();
         } catch (PatchFormatException e) {
-            e.printStackTrace();
             fail("Failed to parse Patch: " + e.getMessage()); 
-        } catch (ParserInitialisationException e) {
-            fail("Could not parse documents: " + e.getMessage());
+        } catch (FileNotFoundException e) {
+            fail("Caught Exception: " + e.getMessage());
+        } catch (IOException e) {
+            fail("Caught Exception: " + e.getMessage());
         }
 
         try {
             delta = diffInstance.diff(DOMOps.getDocument(fB), dA);
+            DOMOps.outputXML(delta, new FileOutputStream("/tmp/d.xml"), false);
         } catch (DiffException e) {
             fail("Diff threw exception: " + e.getMessage());
-        } catch (ParserInitialisationException e) {
-            fail("Diff threw exception: " + e.getMessage());
+        } catch (FileNotFoundException e) {
+            fail("Caught Exception: " + e.getMessage());
+        } catch (IOException e) {
+            fail("Caught Exception: " + e.getMessage());
         }
         
         assertFalse(delta.getDocumentElement().hasChildNodes());
@@ -115,6 +129,7 @@ public class SuiteRunner {
             //System.out.println("Got: " + fA.getAbsolutePath() 
             //        + " " + fB.getAbsolutePath());
             
+            //Use the following to run on a single file
             //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceB.xml"));
             runFMESTest(fA, fB);
         }

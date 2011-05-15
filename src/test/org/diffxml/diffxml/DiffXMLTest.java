@@ -60,12 +60,8 @@ public class DiffXMLTest {
     @Test
 	public final void testOutputXML()	{
 	    DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        try {
-            DOMOps.initParser(fac);
-        } catch (ParserInitialisationException e) {
-            fail("Could not initialise parser");
-        }
-        
+	    DOMOps.initParser(fac);
+       
             try {
                 String docString = "<?xml version=\"1.0\" encoding=\"UTF-8\""
                     + " standalone=\"yes\"?><x>  <y> "

@@ -266,11 +266,8 @@ public final class DOMOps {
      *  
      * @param parserFactory
      *            The parser to be set up
-     * @throws ParserInitialisationException
-     *             If some feature can't be set
      */
-    public static void initParser(final DocumentBuilderFactory parserFactory) 
-    throws ParserInitialisationException {
+    public static void initParser(final DocumentBuilderFactory parserFactory) {
     
         if (!DiffFactory.isResolveEntities()) {
             parserFactory.setExpandEntityReferences(false);
@@ -279,6 +276,14 @@ public final class DOMOps {
         //Turn off DTD stuff - if DTD support changes reconsider
         parserFactory.setValidating(false);
         parserFactory.setNamespaceAware(true);
+        try {
+            parserFactory.setFeature(
+                    "http://apache.org/xml/features/nonvalidating/load-external-dtd", 
+                    false);
+        } catch (ParserConfigurationException e) {
+            //Should never happen, but probably won't matter
+            System.err.println("Failed to configure non-loading of DTDs");
+        }
         
         parserFactory.setIgnoringComments(false);
     }
@@ -289,12 +294,9 @@ public final class DOMOps {
      * Note configuration of parser as in initParser.
      * 
      * @param f The file to be read into an XML document
-     * @throws ParserInitialisationException If there is an error starting the
-     * parser
      * @return The DOM Document representing the file
      */
-    public static Document getDocument(final File f) 
-    throws ParserInitialisationException {
+    public static Document getDocument(final File f) {
 
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
         DOMOps.initParser(fac);
@@ -303,8 +305,8 @@ public final class DOMOps {
         try {
             parser = fac.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            throw new ParserInitialisationException(
-                    "Failed to configure parser", e);
+            //Nothing we can do if this fails :(
+            throw new IllegalArgumentException("Failed to configure parser");
         }
 
         Document doc = null;

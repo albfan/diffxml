@@ -88,9 +88,12 @@ public final class Match {
         List<NodeDepth> list1 = initialiseAndOrderNodes(doc1);
         List<NodeDepth> list2 = initialiseAndOrderNodes(doc2);
         
-        //Explicitly add document elements and root
+        //Explicitly add document elements, doctype elements and root
         matchSet.add(doc1, doc2);
         matchSet.add(doc1.getDocumentElement(), doc2.getDocumentElement());
+        if (doc1.getDoctype() != null && doc2.getDoctype() != null) {
+            matchSet.add(doc1.getDoctype(), doc2.getDoctype());
+        }
         
         // Proceed bottom up on List 1
         for (NodeDepth nd1 : list1) {

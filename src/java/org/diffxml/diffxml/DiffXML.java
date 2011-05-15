@@ -41,7 +41,7 @@ import org.w3c.dom.Document;
 public final class DiffXML {
 
     /** Version number. **/
-    private static final String VERSION = "0.95 BETA";
+    private static final String VERSION = "0.96 BETA";
 
     /** First file to be differenced. **/
     private static File mFile1;

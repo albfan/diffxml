@@ -62,11 +62,7 @@ public final class TestDocHelper {
         
         Document ret = null;
         DocumentBuilderFactory fac = DocumentBuilderFactory.newInstance();
-        try {
-            DOMOps.initParser(fac);
-        } catch (ParserInitialisationException e) {
-            fail("Could not initialise parser");
-        }
+        DOMOps.initParser(fac);
                 
         try {
             ByteArrayInputStream is = new ByteArrayInputStream(
