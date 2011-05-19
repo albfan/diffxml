@@ -108,9 +108,7 @@ public class NodeFifo {
 
         if (kids != null) {
             for (int i = 0; i < kids.getLength(); i++) {
-                if (Fmes.isBanned(kids.item(i)) 
-                        || (kids.item(i).getNodeType(
-                                ) == Node.DOCUMENT_TYPE_NODE)) {
+                if (Fmes.isBanned(kids.item(i))) {
                     continue;
                 }
 

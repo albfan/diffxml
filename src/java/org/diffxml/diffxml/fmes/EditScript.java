@@ -203,7 +203,15 @@ public final class EditScript {
 
         assert (x != null);
         assert (z != null);
-        
+
+        if (x.getNodeType() == Node.DOCUMENT_TYPE_NODE) {
+
+            //Doctype nodes can't be effectively (or at least easily) 
+            //edited with XPath and DOM
+            throw new IllegalArgumentException("Doctype nodes not supported");
+
+        }
+
         //Find the child number (k) to insert w as child of z 
         FindPosition pos = new FindPosition(x, mMatchings);
 

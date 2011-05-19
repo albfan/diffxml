@@ -549,6 +549,11 @@ public class DULPatch {
                 insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
                 
+            case Node.DOCUMENT_TYPE_NODE:
+                
+                throw new PatchFormatException(
+                        "Cannot insert doctype nodes into existing documents");
+                
             default:
                 throw new PatchFormatException("Unknown NodeType " + nodeType);
         }

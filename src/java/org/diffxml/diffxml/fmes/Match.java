@@ -91,8 +91,14 @@ public final class Match {
         //Explicitly add document elements, doctype elements and root
         matchSet.add(doc1, doc2);
         matchSet.add(doc1.getDocumentElement(), doc2.getDocumentElement());
-        if (doc1.getDoctype() != null && doc2.getDoctype() != null) {
-            matchSet.add(doc1.getDoctype(), doc2.getDoctype());
+        
+        //Kill any doctype nodes - they can't be edited effectively with DOM
+        //nor can xpath select them
+        if (doc1.getDoctype() != null) {
+            doc1.removeChild(doc1.getDoctype());
+        }
+        if (doc2.getDoctype() != null) {
+            doc2.removeChild(doc2.getDoctype());
         }
         
         // Proceed bottom up on List 1
