@@ -854,4 +854,44 @@ public class DULPatchTest {
             fail("Caught exception " + e);
         }
     }
+    
+    @Test
+    public final void testInsertPI() {
+        
+        Document doc1 = TestDocHelper.createDocument("<a></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/\" nodetype=\"" 
+                + Node.PROCESSING_INSTRUCTION_NODE + "\" "
+                + "childno=\"1\" name=\"piname\">pivalue</insert>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            assertEquals("pivalue", 
+                    doc1.getFirstChild().getNodeValue());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    @Test
+    public final void testDeletePI() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+                "<?Processing Instruction?><a><b/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<delete node=\"/node()[1]\" />" 
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            //Now document element should be only child
+            assertEquals(1, doc1.getChildNodes().getLength());
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
 }
