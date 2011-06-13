@@ -99,5 +99,11 @@ public final class DULConstants {
     
     /** True constant. **/
     public static final String TRUE = "true";
+
+    /** Namespace attribute. **/
+    public static final String NAMESPACE = "ns";
+    
+    /** Namespace of DUL. **/
+    public static final String DUL_NAMESPACE = "http://www.adrianmouat.com/dul";
     
 }

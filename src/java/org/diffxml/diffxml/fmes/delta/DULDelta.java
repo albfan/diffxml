@@ -90,7 +90,8 @@ public class DULDelta implements DeltaIF {
            DocumentBuilderFactory.newInstance().newDocumentBuilder();
        Document editScript = builder.newDocument();
 
-       Element docEl = editScript.createElement(DULConstants.DELTA);
+       Element docEl = editScript.createElementNS(
+               DULConstants.DUL_NAMESPACE, DULConstants.DELTA);
 
        //Append any context information
        if (DiffFactory.isContext()) {
@@ -166,7 +167,12 @@ public class DULDelta implements DeltaIF {
         if (n.getNodeType() == Node.ATTRIBUTE_NODE 
                 || n.getNodeType() == Node.ELEMENT_NODE 
                 || n.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
-            ins.setAttribute(DULConstants.NAME, n.getNodeName());
+            if (n.getLocalName() != null) {
+                ins.setAttribute(DULConstants.NAMESPACE, n.getNamespaceURI());
+                ins.setAttribute(DULConstants.NAME, n.getLocalName());
+            } else {
+                ins.setAttribute(DULConstants.NAME, n.getNodeName());
+            }
         }
         
         if (charpos > 1) {
@@ -280,7 +286,6 @@ public class DULDelta implements DeltaIF {
     public final void update(final Node w, final Node x) {
         
         Element update = mEditScript.createElement(DULConstants.UPDATE);
-        String wPath = NodeOps.getXPath(w);
         update.setAttribute(DULConstants.NODE, NodeOps.getXPath(w));
         
         if (w.getNodeType() == Node.ELEMENT_NODE) {
@@ -298,6 +303,10 @@ public class DULDelta implements DeltaIF {
     /**
      * Updates the attributes of element w to be the same as x's.
      * 
+     * Ignores xmlns attributes - these are assumed to be part of the document
+     * structure rather than the content. Different namespaces will cause
+     * comparison of elements etc to fail.
+     * 
      * @param w The Element to update the attributes of
      * @param x The element holding the correct attributes
      */
@@ -310,20 +319,28 @@ public class DULDelta implements DeltaIF {
         for (int i = 0; i < wAttrs.getLength(); i++) {
             
             Node wAttr = wAttrs.item(i);
-            Node xAttr = xAttrs.getNamedItem(wAttr.getLocalName());
-            if (xAttr == null) {
-               delete(wAttrs.item(i));
-           } else if (wAttr.getNodeValue() != xAttr.getNodeValue()) {
-               update(wAttr, xAttr);
-           }
+            
+            if (!NodeOps.isNamespaceAttr(wAttr)) { 
+                Node xAttr = xAttrs.getNamedItemNS(wAttr.getNamespaceURI(), wAttr.getLocalName());
+                if (xAttr == null) {
+                    delete(wAttrs.item(i));
+                } else if (!wAttr.getNodeValue().equals(xAttr.getNodeValue())) {
+                    update(wAttr, xAttr);
+                }
+            }
         }
         
         //Add any attrs in x but not w
         for (int j = 0; j < xAttrs.getLength(); j++) {
-        
+
             Node xAttr = xAttrs.item(j);
-            if (wAttrs.getNamedItem(xAttr.getLocalName()) == null) {
-                insert(xAttr, NodeOps.getXPath(w), 0, 1);
+            
+            if (!NodeOps.isNamespaceAttr(xAttr)) {
+                
+                if (wAttrs.getNamedItemNS(xAttr.getNamespaceURI(), 
+                        xAttr.getLocalName()) == null) {
+                    insert(xAttr, NodeOps.getXPath(w), 0, 1);
+                }
             }
         }
     }

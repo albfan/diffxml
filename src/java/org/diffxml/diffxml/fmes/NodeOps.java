@@ -24,6 +24,9 @@ email: adrian.mouat@gmail.com
 package org.diffxml.diffxml.fmes;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
@@ -36,6 +39,11 @@ public final class NodeOps {
      * Key for user data on whether the node is in order.
      */
     private static final String INORDER = "inorder";
+    
+    /**
+     * XML Namepscae URI. Probably a better place to get this from.
+     */
+    public static final String XMLNS = "http://www.w3.org/2000/xmlns/";
     
     /**
      * Disallow instantiation.
@@ -152,5 +160,80 @@ public final class NodeOps {
     public static boolean nodeIsEmptyText(final Node n) {
         return (n.getNodeType() == Node.TEXT_NODE 
             && n.getNodeValue().length() == 0);
+    }
+
+    /**
+     * Copies a node from one Document to another, including attributes but
+     * no children.
+     * 
+     * Required as importNode does not handle namespaces well for element nodes
+     * 
+     * @param mDoc1 Document that x is to be copied to
+     * @param x The node to copy
+     * @return A copy of the node in mDoc1
+     */
+    public static Node copyNodeToDoc(Document doc, Node x) {
+        
+        Node copy;
+        if (x.getNodeType() == Node.ELEMENT_NODE) {
+            Element copyEl = doc.createElementNS(
+                    x.getNamespaceURI(), x.getNodeName());
+            NamedNodeMap attrs = ((Element) x).getAttributes();
+            
+            for (int i = 0; i < attrs.getLength(); i++) {
+                Attr a = (Attr) attrs.item(i);
+                copyEl.setAttributeNS(
+                        a.getNamespaceURI(), a.getNodeName(), a.getNodeValue());    
+            }
+            
+            copy = copyEl;
+            
+        } else {
+            copy = doc.importNode(x, false);
+        }
+        
+        return copy;
+    }
+
+    /**
+     * Gets the local name of the node if not null, else just the node name.
+     * 
+     * Avoids issues with getLocalName returning null.
+     * 
+     * @param n Node to get the name of
+     * @return The local name of the node
+     */
+    public static String getLocalName(Node a) {
+        String ret = a.getLocalName();
+        if (ret == null) {
+            ret = a.getNodeName();
+        }
+        
+        return ret;
+    }
+
+    /**
+     * Returns true if the attribute is namespace declaration.
+     * 
+     * Takes a node to avoid casts.
+     * 
+     * @param n Attribute to check if namespace declaration
+     * @return True if namespace declaration
+     */
+    public static boolean isNamespaceAttr(Node n) {
+        
+        boolean ret = false;
+        
+        if (n.getNamespaceURI() != null) {
+            if (n.getNamespaceURI().equals(NodeOps.XMLNS)) {
+                ret = true;
+            } else if (n.getLocalName().equals("xmlns")) {
+                ret = true;
+            }
+        } else if (n.getNodeName().equals("xmlns")) {
+            ret = true;
+        }
+        
+        return ret;
     }
 }

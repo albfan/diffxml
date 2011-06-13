@@ -59,7 +59,8 @@ public class DULPatch {
         Node updateNode = getNamedNode(doc, opAttrs);
 
         if (updateNode.getNodeType() == Node.ELEMENT_NODE) {
-            Node newNode = doc.createElement(op.getTextContent());
+            Node newNode = doc.createElementNS(getNameSpaceFromAttr(opAttrs),
+                    op.getTextContent());
             
             // Copy attributes to the new element
             NamedNodeMap attrs = updateNode.getAttributes();
@@ -179,6 +180,28 @@ public class DULPatch {
         return val;
     }
 
+    /**
+     * Get value of namespace attribute.
+     * 
+     * Returns null if not existent, *does not* throw exception.
+     *
+     * @param attrs attributes of operation node
+     * @return the value of the name  attribute
+     */
+    private String getNameSpaceFromAttr(final NamedNodeMap attrs)
+    throws PatchFormatException {
+
+        String val;
+        Node name = attrs.getNamedItem(DULConstants.NAMESPACE);
+        if (name != null) {
+            val = name.getNodeValue();
+        } else {
+            val = null;
+        }
+
+        return val;
+    }
+    
     /**
      * Get the DOM Child Number equivalent of the XPath childnumber.
      *
@@ -524,7 +547,8 @@ public class DULPatch {
                 
             case Node.ELEMENT_NODE:
 
-                ins = doc.createElement(getNameFromAttr(opAttrs));
+                ins = doc.createElementNS(getNameSpaceFromAttr(opAttrs),
+                        getNameFromAttr(opAttrs));
                 insertNode(siblings, parentNode, domcn, charpos, ins, doc);
                 break;
 
@@ -539,7 +563,8 @@ public class DULPatch {
                 if (parentNode.getNodeType() != Node.ELEMENT_NODE) {
                     throw new PatchFormatException("Parent not an element");
                 }
-                ((Element) parentNode).setAttribute(
+                ((Element) parentNode).setAttributeNS(
+                        getNameSpaceFromAttr(opAttrs),
                         getNameFromAttr(opAttrs), getOpValue(op));
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:

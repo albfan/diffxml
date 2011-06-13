@@ -34,6 +34,7 @@ import org.diffxml.diffxml.fmes.delta.DeltaInitialisationException;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -169,13 +170,15 @@ public final class EditScript {
             
             //TODO: Note you don't actually *need* to do this!!!
             //TODO: Only call this when in debug
-            newW = doc1.createElement(x.getNodeName());
+            newW = doc1.createElementNS(x.getNamespaceURI(), x.getLocalName());
             
-            // Copy x's attributes to the new element
+            // Copy x's attributes to the new element except xml
             NamedNodeMap attrs = x.getAttributes();
             for (int i = 0; i < attrs.getLength(); i++) {
-                Attr attr2 = (Attr) doc1.importNode(attrs.item(i), true);
-                newW.getAttributes().setNamedItem(attr2);
+                if (!NodeOps.isNamespaceAttr(attrs.item(i))) {
+                    Attr attr2 = (Attr) doc1.importNode(attrs.item(i), true);
+                    newW.getAttributes().setNamedItem(attr2);
+                }
             }
             
             // Move all *w's* children
@@ -216,9 +219,9 @@ public final class EditScript {
         FindPosition pos = new FindPosition(x, mMatchings);
 
         //Apply insert to doc1
-        //The node we want to insert is the import of x with attributes but no
+        //The node we want to insert is the copy of x with attributes but no
         //children
-        Node w = mDoc1.importNode(x, false);
+        Node w = NodeOps.copyNodeToDoc(mDoc1, x); 
 
         //Need to set in order as won't be revisited
         NodeOps.setInOrder(w);
@@ -292,7 +295,7 @@ public final class EditScript {
                 && n.getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             mDelta.delete(n);
             n.getParentNode().removeChild(n);
-            outputDebug();
+         
         }
     }
 

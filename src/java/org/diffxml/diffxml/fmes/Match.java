@@ -152,7 +152,9 @@ public final class Match {
     }
     
     /**
-     * Compares two elements two determine whether they should be matched.
+     * Compares two elements to determine whether they should be matched.
+     * 
+     * xmlns attributes are ignored.
      * 
      * TODO: This method is critical in getting good results. Will need to be
      * tweaked. In addition, it may be an idea to allow certain doc types to
@@ -168,9 +170,9 @@ public final class Match {
 
         boolean ret = false;
         
-        if (equalsOrBothNull(a.getNamespaceURI(), b.getNamespaceURI())) {
-
-            if (a.getLocalName().equals(b.getLocalName())) {
+        if (equalsOrBothNullOrEmpty(a.getNamespaceURI(), b.getNamespaceURI())) {
+                
+            if (NodeOps.getLocalName(a).equals(NodeOps.getLocalName(b))) {
 
                 //Compare attributes
 
@@ -180,29 +182,49 @@ public final class Match {
                 NamedNodeMap aAttrs = a.getAttributes();
                 NamedNodeMap bAttrs = b.getAttributes();
 
-                int numberAAttrs = 0;
+                int noAAttrs = 0;
                 if (aAttrs != null) {
-                    numberAAttrs = aAttrs.getLength();
+                    noAAttrs = aAttrs.getLength();
                 }
-                int numberBAttrs = 0;
-                if (bAttrs != null) {
-                    numberBAttrs = bAttrs.getLength();
-                }
-                if (numberAAttrs != numberBAttrs) {
-                    ret = false;
-                }
-
+       
                 int i = 0;
-                while (ret && (i < numberAAttrs)) {
-                    // Check if attr exists in other tag
-                    Attr bItem = 
-                        (Attr) bAttrs.getNamedItem(aAttrs.item(i).getNodeName()); 
-                    if (bItem == null || !bItem.getNodeValue().equals(
-                            aAttrs.item(i).getNodeValue())) {
-                        ret = false;
-                    } 
+                int numANonXMLNSAttrs = 0;
+                while (ret && (i < noAAttrs)) {
+                    // Check if attr exists in other tag if not xmlns
+                    Attr aItem = (Attr) aAttrs.item(i);
+                    if (!NodeOps.isNamespaceAttr(aItem)) {
+                        numANonXMLNSAttrs++;
+                        
+                        Attr bItem = (Attr) bAttrs.getNamedItemNS(
+                                aItem.getNamespaceURI(), 
+                                aItem.getLocalName()); 
+                        if (bItem == null || !bItem.getNodeValue().equals(
+                                aAttrs.item(i).getNodeValue())) {
+                            ret = false;
+                        } 
+                    }
                     i++;
                 }
+                
+                //Finally we need to check there are no extra attributes in b
+                //that are not xmlns attributes
+                if (ret != false) {
+                    int noBAttrs = 0;
+                    int numBNonXMLNSAttrs = 0;
+                    if (bAttrs != null) {
+                        noBAttrs = bAttrs.getLength();
+                    }
+                    for (i = 0; i < noBAttrs; i++) {
+                        if (!NodeOps.isNamespaceAttr(bAttrs.item(i))) {
+                            numBNonXMLNSAttrs++;
+                        }
+                    }
+
+                    if (numBNonXMLNSAttrs != numANonXMLNSAttrs) {
+                        ret = false;
+                    }
+                }
+                
             }
         }
         
@@ -210,16 +232,16 @@ public final class Match {
     }
 
     /**
-     * Helper method just checks if objects are equal or both null.
+     * Helper method just checks if String are equal or both null or empty.
      * 
-     * @param a Object to compare to b
-     * @param b Object to compare to a
-     * @return True if objects are equal or both are null
+     * @param a String to compare to b
+     * @param b String to compare to a
+     * @return True if Strings equal or both are null or empty
      */
-    private static boolean equalsOrBothNull(Object a, Object b) {
+    private static boolean equalsOrBothNullOrEmpty(String a, String b) {
         
-        if (a == null) {
-            return (b == null);
+        if (a == null || a.trim() == "") {
+            return (b == null || b.trim() == "");
         } 
         
         return a.equals(b);
@@ -300,7 +322,7 @@ public final class Match {
                 case Node.ELEMENT_NODE :
                     ret = compareElements(a, b);
                     break;
-                case Node.TEXT_NODE :
+                case Node.TEXT_NODE:
                 case Node.CDATA_SECTION_NODE:
                     ret = compareTextNodes(a, b);
                     break;
