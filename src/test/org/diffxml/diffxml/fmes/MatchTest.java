@@ -349,4 +349,66 @@ public class MatchTest {
         Node aB = aDocEl.getFirstChild();
         assertNull(matches.getPartner(aB));
     }
+    
+    /**
+     * Elements with redundant namespace declarations should match
+     *
+     */
+    @Test
+    public final void testRedundantNamespacePrefix() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<root xmlns:a=\"http://example.com\"><a:a></a:a></root>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<root xmlns:b=\"http://example.com\" " +
+                "xmlns:c=\"http://example2.com\"><b:a " +
+                "xmlns=\"http://example3.com\"></b:a></root>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertEquals(bDocEl.getFirstChild(), matches.getPartner(aB));
+    }
+
+    /**
+     * Different styles of declaring namespaces should match
+     *
+     */
+    @Test
+    public final void testDeclareNamespaces() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<root xmlns:a=\"http://example.com\"><a:a></a:a></root>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<root><a xmlns=\"http://example.com\"></a></root>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertEquals(bDocEl.getFirstChild(), matches.getPartner(aB));
+    }
+
+    /**
+     * Test matching XML namespace.
+     *
+     */
+    @Test
+    public final void testXMLNamespaceMatching() {
+        Document doc1 = TestDocHelper.createDocument(
+                "<root><a xml:lang=\"en\" lang=\"en\"></a></root>"); 
+        Document doc2 = TestDocHelper.createDocument(
+                "<root><a xml:lang=\"en\" lang=\"en\"></a></root>");
+     
+        NodePairs matches = Match.easyMatch(doc1, doc2);
+        Node aDocEl = doc1.getDocumentElement();
+        Node bDocEl = doc2.getDocumentElement();
+        assertEquals(bDocEl, matches.getPartner(aDocEl));
+        
+        Node aB = aDocEl.getFirstChild();
+        assertEquals(bDocEl.getFirstChild(), matches.getPartner(aB));
+    }
 }

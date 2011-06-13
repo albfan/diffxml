@@ -85,23 +85,13 @@ public class SuiteRunner {
             dA = DOMOps.getDocument(fA);
             patcher.apply(dA, delta);
             
-            //TODO: For some reason it is necessary to write diff out to file
-            //and back in again. Investigate why.
-            File tmp = File.createTempFile("diffxmltest", ".xml");
-            DOMOps.outputXML(dA, new FileOutputStream(tmp), false);
-            dA = DOMOps.getDocument(tmp);
-            tmp.delete();
         } catch (PatchFormatException e) {
-            fail("Failed to parse Patch: " + e.getMessage()); 
-        } catch (FileNotFoundException e) {
-            fail("Caught Exception: " + e.getMessage());
-        } catch (IOException e) {
-            fail("Caught Exception: " + e.getMessage());
+            e.printStackTrace();
         }
 
         try {
             delta = diffInstance.diff(DOMOps.getDocument(fB), dA);
-            DOMOps.outputXML(delta, new FileOutputStream("/tmp/d.xml"), false);
+            DOMOps.outputXML(delta, new FileOutputStream("/tmp/d.xml"), true);
         } catch (DiffException e) {
             fail("Diff threw exception: " + e.getMessage());
         } catch (FileNotFoundException e) {
@@ -109,7 +99,7 @@ public class SuiteRunner {
         } catch (IOException e) {
             fail("Caught Exception: " + e.getMessage());
         }
-        
+
         assertFalse(delta.getDocumentElement().hasChildNodes());
     }
 
@@ -130,7 +120,7 @@ public class SuiteRunner {
             //        + " " + fB.getAbsolutePath());
             
             //Use the following to run on a single file
-            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/namespaceB.xml"));
+            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/piA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/piB.xml"));
             runFMESTest(fA, fB);
         }
     }

@@ -876,6 +876,32 @@ public class DULPatchTest {
     }
     
     @Test
+    public final void testInsertWithNamespace() {
+        
+        Document doc1 = TestDocHelper.createDocument(
+                "<a xmlns:n=\"http://example.com\"><n:b/></a>");
+        Document patch = TestDocHelper.createDocument(
+                "<delta>"
+                + "<insert parent=\"/a\" nodetype=\"" 
+                + Node.ELEMENT_NODE + "\" "
+                + "childno=\"2\" name=\"c\" ns=\"http://new.com\"/>"
+                + "</delta>");
+
+        try {
+            (new DULPatch()).apply(doc1, patch);
+            assertEquals(1, 
+                    doc1.getDocumentElement().getElementsByTagNameNS(
+                            "http://example.com", "b").getLength());
+            assertEquals(1, 
+                    doc1.getDocumentElement().getElementsByTagNameNS(
+                            "http://new.com", "c").getLength());
+
+        } catch (PatchFormatException e) {
+            fail("Caught exception " + e);
+        }
+    }
+    
+    @Test
     public final void testDeletePI() {
         
         Document doc1 = TestDocHelper.createDocument(
