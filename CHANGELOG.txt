@@ -1,3 +1,16 @@
+Version 0.96 BETA
+-----------------
+
+Improved windows cmd files (thanks to Paul Gale).
+Fixed bug identified by Christian Oudard
+Fixed cdata handling (thanks to Bodo Bergmann)
+Refactored test suite
+Fixed bug identified by Brian Sletten
+
+Version 0.95 BETA
+-----------------
+
+Minor improvements to documentation, scripts and package.
 
 Verison 0.94 BETA
 -----------------

@@ -704,7 +704,12 @@ public class DULPatch {
             throw new PatchFormatException("No parent attribute");
         }
 
-        return getNodeFromXPath(doc, xPath);
+        Node ret = getNodeFromXPath(doc, xPath);
+        if (ret == null) {
+            throw new PatchFormatException(
+                    "Failed to find parent node: " + xPath);
+        }
+        return ret;
     }
 
     /**
@@ -811,6 +816,17 @@ public class DULPatch {
 
         int oldCharPos = getOldCharPos(opAttrs);
 
+        //Find position to move to
+        //Get parent
+        Element parent = (Element) getNamedParent(doc, opAttrs);
+
+        NodeList newSiblings = parent.getChildNodes();
+        int domcn = getDOMChildNo(opAttrs, moveNode.getNodeType(), newSiblings);
+
+        //Get new charpos
+        int newCharPos = getNewCharPos(opAttrs);
+
+        //Perform delete
         if (DOMOps.isText(moveNode)) {
             Node text;
             try {
@@ -824,15 +840,6 @@ public class DULPatch {
             moveNode = moveNode.getParentNode().removeChild(moveNode);
         }
         
-        //Find position to move to
-        //Get parent
-        Element parent = (Element) getNamedParent(doc, opAttrs);
-
-        NodeList newSiblings = parent.getChildNodes();
-        int domcn = getDOMChildNo(opAttrs, moveNode.getNodeType(), newSiblings);
-
-        //Get new charpos
-        int newCharPos = getNewCharPos(opAttrs);
 
         //Perform insert
         insertNode(newSiblings, parent, domcn, newCharPos, moveNode, doc);

@@ -13,7 +13,7 @@ Later versions
  - Support reversing the sense of a patch
  - Create a "visualiser" of some sort
  - Support other output formats such as xquery update
- - Optmise algorithms
+ - Optimise algorithms
  - Create an API for use with other applications
 
 Complete originally planned options:

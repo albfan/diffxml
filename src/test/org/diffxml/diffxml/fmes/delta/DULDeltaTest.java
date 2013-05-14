@@ -201,7 +201,7 @@ public class DULDeltaTest {
     }
 
     /**
-     * Test deleting a text nodes.
+     * Test deleting a text node.
      */
     @Test
     public final void testDeleteTextNode() {

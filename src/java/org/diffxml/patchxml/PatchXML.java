@@ -35,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.diffxml.diffxml.DOMOps;
-import org.diffxml.diffxml.fmes.ParserInitialisationException;
 
 /**
  * Applies a DUL patch to an XML document.

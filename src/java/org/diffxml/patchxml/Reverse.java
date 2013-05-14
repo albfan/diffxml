@@ -30,6 +30,22 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 
+/** 
+ * This is a messy bit of old code that doesn't currently work.
+ * 
+ * Note that it is quite simple in theory; just loop backwards through the
+ * operations and reverse each operations:
+ * 
+ *   - delete becomes insert (requires knowing value & name of node)
+ *   - move should easy
+ *   - insert becomes delete
+ *   - update requires knowing original value
+ *   
+ *   The problem is extra data is needed for insert and delete
+ *   
+ * @author Adrian Mouat
+ *
+ */
 public class Reverse
 {
 

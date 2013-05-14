@@ -120,7 +120,7 @@ public class SuiteRunner {
             //        + " " + fB.getAbsolutePath());
             
             //Use the following to run on a single file
-            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/piA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/piB.xml"));
+            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/brianA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/brianB.xml"));
             runFMESTest(fA, fB);
         }
     }

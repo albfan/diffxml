@@ -1,5 +1,5 @@
-diffxml Version 0.94 BETA
-patchxml Version 0.94 BETA
+diffxml Version 0.95 BETA
+patchxml Version 0.95 BETA
  
 README file for diffxml and patchxml
 ====================================

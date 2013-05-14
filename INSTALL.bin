@@ -1,5 +1,5 @@
-diffxml Version 0.94 BETA
-patchxml Version 0.94 BETA
+diffxml Version 0.95 BETA
+patchxml Version 0.95 BETA
  
 Install instructions for diffxml and patchxml
 =============================================
@@ -20,16 +20,21 @@ patchxml.sh scripts.
 
 Verify the scripts work by running:
  
-   $ diffxml.sh test1.xml test2.xml > out.xml
-   $ patchxml.sh test1.xml out.xml > result
-   $ diffxml.sh -q result test2.xml
+   $ ./diffxml.sh test1a.xml test2a.xml > out.xml
+   $ ./patchxml.sh test1a.xml out.xml > result
+   $ ./diffxml.sh -q result test2a.xml
  
 There should be no output, confirming the files are equivalent.
 
 For more information on usage, run the commands with the "--help" argument.
 
-To install the scripts, try: 
-    $ant install
+If you have Apache Ant, you can install diffxml by running:
+ 
+   $ ant install
+
+By default this installs to "/usr/local/", to install to a different directory:
+
+   $ ant -Dinstall.dir="/my/location/" install
  
 Windows:
 --------
