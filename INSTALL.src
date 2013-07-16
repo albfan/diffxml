@@ -1,5 +1,5 @@
-diffxml Version 0.95 BETA
-patchxml Version 0.95 BETA
+diffxml Version 0.96 BETA
+patchxml Version 0.96 BETA
  
 Install instructions for diffxml and patchxml
 =============================================
@@ -76,10 +76,8 @@ By default this installs to "/usr/local/", to install to a different directory:
 Windows:
 --------
 
-These are command line scripts: run them from a command (DOS) prompt.
-
 The easiest way of running the utilities is to use the diffxml.cmd and
-patchxml.cmd scripts. 
+patchxml.cmd scripts from a DOS (command) prompt. 
 
 Verify the scripts work by running:
  
@@ -94,11 +92,10 @@ For more information on usage, run the commands with the "--help" argument.
 4. Finally...
 -------------
 
-Please note that this is a beta release; it is not yet production quality.
 diffxml and patchxml are released under the GNU GPL Version 2.
  
 Send any bug reports / problems to adrian.mouat at gmail.com
 
 Adrian Mouat.
 
-9 April 2009.
+16 July 2013.

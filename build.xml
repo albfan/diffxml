@@ -29,7 +29,7 @@
   <property name="build.compiler" value="modern"/>
 
   <property name="package" value="org.diffxml"/>
-  <property name="version" value="0.95B" />
+  <property name="version" value="0.96B" />
   <property name="diffxml.class" value="${package}/diffxml/DiffXML"/>
   <property name="patch.class" value="${package}/patchxml/PatchXML"/>
   <property name="test1.file" value="test1a.xml"/>
