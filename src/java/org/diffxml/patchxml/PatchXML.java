@@ -173,10 +173,11 @@ public final class PatchXML {
         System.out.print(
                 "\n --dry-run  -d  Print results of applying the changes ");
         System.out.print("without modifying any files.");
+        /*
         System.out.print(
                 "\n --reverse  -R  Assume that the delta file was created ");
         System.out.print("with the old and new files swapped.");
-        /*
+        
         System.out.print("\n\tAttempt to reverse sense of change before ");
         System.out.print("applying it, e.g. inserts become deletes.\n\n");
         */
@@ -205,7 +206,7 @@ public final class PatchXML {
      */
     private static void printVersion() {
         
-        System.out.println("patchxml Version 0.95 BETA");
+        System.out.println("patchxml Version 0.96 BETA");
         printSoftware();
         System.exit(0);
     }
