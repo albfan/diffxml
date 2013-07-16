@@ -183,9 +183,10 @@
                   <!--<exclude name="test/"/>-->
                   <exclude name="INSTALL*"/>
                   <exclude name="diffxml_checks.xml"/>
+		  <exclude name="suite/broken/"/>
                   <exclude name="*gz"/>
                   <exclude name=".*"/>
-                  <exclude name="./"/>
+                  <exclude name=".*/"/>
               </fileset>
           </copy>
   </target>
