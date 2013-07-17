@@ -1,5 +1,5 @@
-diffxml Version 0.95 BETA
-patchxml Version 0.95 BETA
+diffxml Version 0.96 BETA
+patchxml Version 0.96 BETA
  
 README file for diffxml and patchxml
 ====================================
@@ -20,7 +20,7 @@ Send any bug reports / problems to adrian.mouat@gmail.com
 
 Adrian Mouat.
 
-9 April 2009.
+17 July 2013
 
 ===================================
  
