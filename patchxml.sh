@@ -3,9 +3,29 @@
 # then call patchxml with the given arguments
 
 #First find out where we are relative to the user dir
-callPath=${0%/*}
+CALLPATH=${0%/*}
 
-if [[ -n "${callPath}" ]]; then
-    callPath=${callPath}/
+if [[ -n "${CALLPATH}" ]]; then
+  CALLPATH=${CALLPATH}/
 fi
-java -cp ${callPath}build:${callPath}lib/diffxml.jar org.diffxml.patchxml.PatchXML "$@"
+
+if [ -v JAVA_HOME ]
+then
+  JAVA_BIN="$JAVA_HOME/bin/java"
+elif [ -v JDK_HOME ]
+then
+  JAVA_BIN="$JDK_HOME/jre/bin/java"
+elif type java &>/dev/null
+then
+   JAVA_BIN=java
+else
+   cat <<EOF
+
+no java executable was found. Install it or define 
+variable "JAVA_HOME" or "JDK_HOME"
+EOF
+   exit 1
+fi
+
+"$JAVA_BIN" -cp ${callPath}build:${callPath}lib/diffxml.jar org.diffxml.patchxml.PatchXML "$@"
+
