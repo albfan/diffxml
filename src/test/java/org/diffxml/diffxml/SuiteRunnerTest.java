@@ -17,13 +17,10 @@ import org.w3c.dom.Document;
 
 /**
  * Runs all the test cases in the suite.
- * 
- * Ant seems to insist on the extends :(
- * 
  * @author Adrian Mouat
  *
  */
-public class SuiteRunner {
+public class SuiteRunnerTest {
 
     /** Where the test files are stored. */
     private static final String SUITE_DIR = "src/test/resources/suite";
