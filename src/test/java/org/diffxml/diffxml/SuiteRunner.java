@@ -26,7 +26,7 @@ import org.w3c.dom.Document;
 public class SuiteRunner {
 
     /** Where the test files are stored. */
-    private static final String SUITE_DIR = "suite";
+    private static final String SUITE_DIR = "src/test/resources/suite";
 
     /**
      * Returns only files ending in "A.xml".
@@ -114,15 +114,13 @@ public class SuiteRunner {
         for (File fA : suiteDir.listFiles(new FilesEndAFilter())) {
                         
             File fB = new File(fA.getAbsolutePath().replace("A.xml", "B.xml"));
+
+            System.out.println("Got: " + fA.getAbsolutePath() + " " + fB.getAbsolutePath());
             
-            //Uncomment following to see list of files being compared
-            //System.out.println("Got: " + fA.getAbsolutePath() 
-            //        + " " + fB.getAbsolutePath());
-            
-            //Use the following to run on a single file
-            //runFMESTest(new File("/home/adrian/workspace/diffxml_cvs/suite/brianA.xml"), new File("/home/adrian/workspace/diffxml_cvs/suite/brianB.xml"));
             runFMESTest(fA, fB);
         }
+        //Use the following to run on a single file
+        runFMESTest(new File("src/test/resources/suite/brianA.xml"), new File("src/test/resources/suite/brianB.xml"));
     }
     
 }
